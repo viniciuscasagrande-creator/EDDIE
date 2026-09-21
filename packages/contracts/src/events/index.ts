@@ -5,3 +5,4 @@ export * as SacEvents from './sac.js';
 export * as AcessoEvents from './acesso.js';
 export * as FinanceiroEvents from './financeiro.js';
 export * as MarketingEvents from './marketing.js';
+export * as ComercialEvents from './comercial.js';

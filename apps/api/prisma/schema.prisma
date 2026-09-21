@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro"]
+  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm"]
 }
 
 // ============================================================================
@@ -471,4 +471,132 @@ model DivergenciaConciliacao {
   @@map("divergencias_conciliacao")
   @@schema("financeiro")
 }
+
+// ============================================================================
+//  COMERCIAL / CRM — Relacionamento B2B, Carteira, Pipeline e Negociações
+//  Regra: Clientes são exclusivamente os PRODUTORES (B2B). Comprador final é do SAC.
+// ============================================================================
+
+model ProdutorB2B {
+  id                     String                 @id @default(uuid()) @db.Uuid
+  tenantId               String                 @db.Uuid
+  razaoSocial            String
+  nomeFantasia           String
+  documento              String                 // CNPJ ou CPF do produtor
+  email                  String
+  telefone               String?
+  executivoResponsavelId String                 @db.Uuid
+  status                 String                 @default("prospeccao") // prospeccao | ativo | inativo | em_negociacao
+  observacoes            String?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  oportunidades          OportunidadeComercial[]
+  condicoes              CondicaoComercial[]
+  atividades             AtividadeComercial[]
+
+  @@index([tenantId, executivoResponsavelId])
+  @@index([tenantId, status])
+  @@map("produtores_b2b")
+  @@schema("crm")
+}
+
+model OportunidadeComercial {
+  id                     String                   @id @default(uuid()) @db.Uuid
+  tenantId               String                   @db.Uuid
+  produtorId             String                   @db.Uuid
+  produtor               ProdutorB2B              @relation(fields: [produtorId], references: [id], onDelete: Cascade)
+  titulo                 String
+  valorEstimado          Decimal                  @db.Decimal(14, 2)
+  etapa                  String                   @default("prospeccao") // prospeccao | qualificacao | diagnostico | proposta | negociacao | contrato | ganho | perdido
+  probabilidadePercentual Int                     @default(20)
+  dataFechamentoPrevista DateTime?
+  executivoId            String                   @db.Uuid
+  motivoPerda            String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  historicoEtapas        HistoricoEtapaPipeline[]
+  atividades             AtividadeComercial[]
+
+  @@index([tenantId, executivoId, etapa])
+  @@index([produtorId])
+  @@map("oportunidades_comerciais")
+  @@schema("crm")
+}
+
+model HistoricoEtapaPipeline {
+  id             String                @id @default(uuid()) @db.Uuid
+  tenantId       String                @db.Uuid
+  oportunidadeId String                @db.Uuid
+  oportunidade   OportunidadeComercial @relation(fields: [oportunidadeId], references: [id], onDelete: Cascade)
+  etapaAnterior  String
+  etapaNova      String
+  motivo         String?
+  alteradoPor    String                @db.Uuid
+  alteradoEm     DateTime              @default(now())
+
+  @@index([oportunidadeId])
+  @@map("historico_etapas_pipeline")
+  @@schema("crm")
+}
+
+model CondicaoComercial {
+  id                          String      @id @default(uuid()) @db.Uuid
+  tenantId                    String      @db.Uuid
+  produtorId                  String      @db.Uuid
+  produtor                    ProdutorB2B @relation(fields: [produtorId], references: [id], onDelete: Cascade)
+  /// ID do evento no schema eventos (escalar sem @relation cross-schema). Null = condição padrão do produtor
+  eventoId                    String?     @db.Uuid
+  taxaServicoPercentual       Decimal     @db.Decimal(5, 2)
+  taxaProcessamentoPercentual Decimal     @db.Decimal(5, 2)
+  prazoRepasseDias            Int         @default(2)
+  vigenciaInicio              DateTime
+  vigenciaFim                 DateTime?
+  status                      String      @default("rascunho") // rascunho | em_aprovacao | aprovada | revogada
+  aprovadoPor                 String?     @db.Uuid
+  aprovadoEm                  DateTime?
+  createdAt                   DateTime    @default(now())
+  updatedAt                   DateTime    @updatedAt
+
+  @@index([tenantId, produtorId, status])
+  @@index([eventoId])
+  @@map("condicoes_comerciais")
+  @@schema("crm")
+}
+
+model AtividadeComercial {
+  id             String                 @id @default(uuid()) @db.Uuid
+  tenantId       String                 @db.Uuid
+  produtorId     String                 @db.Uuid
+  produtor       ProdutorB2B            @relation(fields: [produtorId], references: [id], onDelete: Cascade)
+  oportunidadeId String?                @db.Uuid
+  oportunidade   OportunidadeComercial? @relation(fields: [oportunidadeId], references: [id], onDelete: SetNull)
+  tipo           String                 // ligacao | reuniao | email | proposta | visita | followup
+  descricao      String
+  dataAgendada   DateTime
+  realizada      Boolean                @default(false)
+  realizadaEm    DateTime?
+  executadoPor   String                 @db.Uuid
+  createdAt      DateTime               @default(now())
+
+  @@index([tenantId, executadoPor, realizada])
+  @@index([produtorId])
+  @@map("atividades_comerciais")
+  @@schema("crm")
+}
+
+model MetaComercial {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  executivoId    String   @db.Uuid
+  periodo        String   // Ex: "2026-Q3", "2026-09"
+  valorMeta      Decimal  @db.Decimal(14, 2)
+  valorRealizado Decimal  @default(0) @db.Decimal(14, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, executivoId, periodo])
+  @@map("metas_comerciais")
+  @@schema("crm")
+}
+
 

@@ -9,6 +9,7 @@ import * as Sac from './events/sac.js';
 import * as Acesso from './events/acesso.js';
 import * as Financeiro from './events/financeiro.js';
 import * as Marketing from './events/marketing.js';
+import * as Comercial from './events/comercial.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -48,6 +49,11 @@ export const EventCatalog = {
   [Marketing.PixelConfigurado.name]: Marketing.PixelConfigurado,
   [Marketing.CupomCriado.name]: Marketing.CupomCriado,
   [Marketing.ConversaoAtribuida.name]: Marketing.ConversaoAtribuida,
+  [Comercial.ProdutorB2BCadastrado.name]: Comercial.ProdutorB2BCadastrado,
+  [Comercial.OportunidadeCriada.name]: Comercial.OportunidadeCriada,
+  [Comercial.EtapaPipelineAlterada.name]: Comercial.EtapaPipelineAlterada,
+  [Comercial.CondicaoComercialAprovada.name]: Comercial.CondicaoComercialAprovada,
+  [Comercial.AtividadeComercialRegistrada.name]: Comercial.AtividadeComercialRegistrada,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;
