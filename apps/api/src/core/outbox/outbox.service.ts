@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventEnvelope } from '@eddie/contracts';
+import { EventEnvelope } from '@ticketing/contracts';
 
 export interface PrismaTransactionClient {
   outboxEvent: {
