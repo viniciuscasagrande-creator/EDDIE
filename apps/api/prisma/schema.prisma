@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm"]
+  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm", "marketing"]
 }
 
 // ============================================================================
@@ -598,5 +598,149 @@ model MetaComercial {
   @@map("metas_comerciais")
   @@schema("crm")
 }
+
+// ============================================================================
+//  MARKETING — Campanhas, Tracking Multi-Pixel, Central UTM e Atribuição
+// ============================================================================
+
+model CampanhaMarketing {
+  id             String                @id @default(uuid()) @db.Uuid
+  tenantId       String                @db.Uuid
+  produtorId     String                @db.Uuid
+  /// ID do evento no schema eventos (escalar sem @relation cross-schema)
+  eventoId       String                @db.Uuid
+  nome           String
+  objetivo       String                // lancamento | virada_lote | contagem_regressiva | promocional | reengajamento
+  status         String                @default("rascunho") // rascunho | agendada | ativa | pausada | com_alerta | erro | encerrada
+  orcamentoTotal Decimal               @db.Decimal(14, 2)
+  gastoAtual     Decimal               @default(0) @db.Decimal(14, 2)
+  canais         String[]              // meta, google, tiktok, spotify, whatsapp, email
+  iniciaEm       DateTime?
+  terminaEm      DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  utms           UtmLink[]
+  cupons         CupomMarketing[]
+  conversoes     ConversaoMarketing[]
+  alertas        AlertaMarketing[]
+
+  @@index([tenantId, eventoId, status])
+  @@index([produtorId])
+  @@map("campanhas_marketing")
+  @@schema("marketing")
+}
+
+model PixelTracking {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @db.Uuid
+  produtorId       String    @db.Uuid
+  /// ID do evento no schema eventos (escalar sem @relation cross-schema)
+  eventoId         String    @db.Uuid
+  provedor         String    // meta | google | tiktok | spotify
+  pixelExternalId  String    // identificador externo na plataforma (ex: pixel id Meta)
+  nome             String?
+  status           String    @default("ativo") // ativo | inativo | com_falha
+  ultimaAtividadeEm DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([tenantId, eventoId, provedor])
+  @@map("pixels_tracking")
+  @@schema("marketing")
+}
+
+model CupomMarketing {
+  id            String             @id @default(uuid()) @db.Uuid
+  tenantId      String             @db.Uuid
+  produtorId    String             @db.Uuid
+  /// ID do evento no schema eventos (escalar sem @relation cross-schema)
+  eventoId      String             @db.Uuid
+  campanhaId    String?            @db.Uuid
+  campanha      CampanhaMarketing? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
+  codigo        String             // ex: "DESCONTO10"
+  tipoDesconto  String             // percentual | valor_fixo
+  descontoValor Decimal            @db.Decimal(14, 2)
+  limiteUso     Int?
+  usosAtuais    Int                @default(0)
+  validoAte     DateTime?
+  ativo         Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  conversoes    ConversaoMarketing[]
+
+  @@unique([tenantId, eventoId, codigo])
+  @@map("cupons_marketing")
+  @@schema("marketing")
+}
+
+model UtmLink {
+  id             String             @id @default(uuid()) @db.Uuid
+  tenantId       String             @db.Uuid
+  produtorId     String             @db.Uuid
+  /// ID do evento no schema eventos (escalar sem @relation cross-schema)
+  eventoId       String             @db.Uuid
+  campanhaId     String?            @db.Uuid
+  campanha       CampanhaMarketing? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
+  canal          String             // meta | google | tiktok | spotify | whatsapp | email | afiliado | link_direto
+  urlDestino     String
+  utmSource      String
+  utmMedium      String
+  utmCampaign    String
+  utmContent     String?
+  utmTerm        String?
+  qrCodeDataUrl  String?
+  cliques        Int                @default(0)
+  createdAt      DateTime           @default(now())
+  conversoes     ConversaoMarketing[]
+
+  @@index([tenantId, eventoId, utmSource, utmCampaign])
+  @@map("utm_links")
+  @@schema("marketing")
+}
+
+model ConversaoMarketing {
+  id               String             @id @default(uuid()) @db.Uuid
+  tenantId         String             @db.Uuid
+  produtorId       String             @db.Uuid
+  eventoId         String             @db.Uuid
+  /// ID do pedido no schema pedidos/pagamentos (escalar sem @relation cross-schema)
+  pedidoId         String             @db.Uuid
+  campanhaId       String?            @db.Uuid
+  campanha         CampanhaMarketing? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
+  utmLinkId        String?            @db.Uuid
+  utmLink          UtmLink?           @relation(fields: [utmLinkId], references: [id], onDelete: SetNull)
+  cupomId          String?            @db.Uuid
+  cupom            CupomMarketing?    @relation(fields: [cupomId], references: [id], onDelete: SetNull)
+  canal            String?
+  modeloAtribuicao String             @default("last_click") // last_click | first_click | linear | cupom_direto
+  valorTotal       Decimal            @db.Decimal(14, 2)
+  receitaAtribuida Decimal            @db.Decimal(14, 2)
+  atribuidaEm      DateTime           @default(now())
+
+  @@index([tenantId, eventoId, campanhaId])
+  @@index([pedidoId])
+  @@map("conversoes_marketing")
+  @@schema("marketing")
+}
+
+model AlertaMarketing {
+  id          String             @id @default(uuid()) @db.Uuid
+  tenantId    String             @db.Uuid
+  produtorId  String             @db.Uuid
+  campanhaId  String?            @db.Uuid
+  campanha    CampanhaMarketing? @relation(fields: [campanhaId], references: [id], onDelete: Cascade)
+  eventoId    String?            @db.Uuid
+  tipo        String             // pixel_sem_eventos | orcamento_esgotado | aumento_cpa | integracao_degradada
+  severidade  String             @default("aviso") // aviso | erro | critico
+  mensagem    String
+  resolvido   Boolean            @default(false)
+  resolvidoEm DateTime?
+  createdAt   DateTime           @default(now())
+
+  @@index([tenantId, resolvido])
+  @@map("alertas_marketing")
+  @@schema("marketing")
+}
+
 
 
