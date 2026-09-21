@@ -1,0 +1,474 @@
+// ============================================================================
+//  Ticketing ERP — schema Prisma
+//  REGRA: um schema Postgres por módulo. Relação CROSS-SCHEMA é PROIBIDA.
+//  Se o módulo A precisa de dado do módulo B, ele guarda o ID como escalar
+//  (sem @relation) e se atualiza consumindo eventos de domínio.
+// ============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro"]
+}
+
+// ============================================================================
+//  PLATFORM — infraestrutura do modulith (módulo Developer)
+// ============================================================================
+
+/// Transactional Outbox. Gravado na MESMA transação do dado de negócio.
+/// Um worker publica no RabbitMQ e marca publishedAt. Garante zero evento perdido.
+model OutboxMessage {
+  id            String    @id @default(uuid()) @db.Uuid
+  eventName     String
+  source        String
+  tenantId      String    @db.Uuid
+  correlationId String    @db.Uuid
+  causationId   String?   @db.Uuid
+  actorType     String
+  actorId       String?
+  payload       Json
+  occurredAt    DateTime  @default(now())
+  publishedAt   DateTime?
+  attempts      Int       @default(0)
+  lastError     String?
+
+  @@index([publishedAt, occurredAt])
+  @@index([correlationId])
+  @@map("outbox_messages")
+  @@schema("platform")
+}
+
+/// Idempotência dos consumers. Antes de processar, INSERT aqui; violação de
+/// unique = evento já processado, descarte silenciosamente.
+model ProcessedEvent {
+  eventId     String   @db.Uuid
+  consumer    String
+  processedAt DateTime @default(now())
+
+  @@id([eventId, consumer])
+  @@map("processed_events")
+  @@schema("platform")
+}
+
+/// Audit log imutável. Obrigatório para financeiro, contabilidade e estorno.
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  module     String
+  entity     String
+  entityId   String
+  action     String
+  actorId    String?
+  actorIp    String?
+  before     Json?
+  after      Json?
+  traceId    String?
+  createdAt  DateTime @default(now())
+
+  @@index([module, entity, entityId])
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+  @@schema("platform")
+}
+
+model FeatureFlag {
+  key         String   @id
+  enabled     Boolean  @default(false)
+  description String?
+  /// Rollout percentual 0-100 ou lista de tenants.
+  rules       Json?
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flags")
+  @@schema("platform")
+}
+
+/// Observabilidade de IA: custo e qualidade por prompt. (módulo Developer)
+model LlmCall {
+  id            String   @id @default(uuid()) @db.Uuid
+  module        String
+  promptKey     String
+  model         String
+  inputTokens   Int
+  outputTokens  Int
+  costCents     Int
+  latencyMs     Int
+  success       Boolean
+  traceId       String?
+  createdAt     DateTime @default(now())
+
+  @@index([module, promptKey, createdAt])
+  @@map("llm_calls")
+  @@schema("platform")
+}
+
+model Tenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  nome      String
+  cnpj      String   @unique
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("tenants")
+  @@schema("platform")
+}
+
+// ============================================================================
+//  EVENTOS — catálogo de eventos, sessões, setores e lotes
+// ============================================================================
+
+enum StatusEvento {
+  rascunho
+  publicado
+  esgotado
+  adiado
+  cancelado
+  encerrado
+
+  @@schema("eventos")
+}
+
+model Produtor {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  nome          String
+  documento     String   @unique
+  email         String
+  /// % de taxa da plataforma sobre o valor de face (ex.: 10.00)
+  taxaPlataforma Decimal @db.Decimal(5, 2)
+  /// Dias entre o evento e o repasse final.
+  prazoRepasseDias Int    @default(30)
+  ativo         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  eventos       Evento[]
+
+  @@index([tenantId])
+  @@map("produtores")
+  @@schema("eventos")
+}
+
+model Local {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  nome      String
+  endereco  String
+  cidade    String
+  uf        String    @db.Char(2)
+  cep       String
+  capacidade Int
+  /// Mapa de assentos em SVG/JSON. Null = local sem marcação.
+  mapaJson  Json?
+  sessoes   Sessao[]
+
+  @@map("locais")
+  @@schema("eventos")
+}
+
+model Evento {
+  id                 String       @id @default(uuid()) @db.Uuid
+  tenantId           String       @db.Uuid
+  produtorId         String       @db.Uuid
+  produtor           Produtor     @relation(fields: [produtorId], references: [id])
+  nome               String
+  slug               String       @unique
+  descricao          String?
+  categoria          String
+  classificacaoEtaria Int         @default(0)
+  imagemUrl          String?
+  status             StatusEvento @default(rascunho)
+  publicadoEm        DateTime?
+  canceladoEm        DateTime?
+  motivoCancelamento String?
+  /// Política de estorno específica deste evento (sobrepõe a padrão).
+  politicaEstorno    Json?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  sessoes            Sessao[]
+
+  @@index([tenantId, status])
+  @@index([produtorId])
+  @@map("eventos")
+  @@schema("eventos")
+}
+
+model Sessao {
+  id              String   @id @default(uuid()) @db.Uuid
+  eventoId        String   @db.Uuid
+  evento          Evento   @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  localId         String   @db.Uuid
+  local           Local    @relation(fields: [localId], references: [id])
+  inicioEm        DateTime
+  fimEm           DateTime?
+  /// Antes desta data não é possível comprar.
+  vendaAbreEm     DateTime
+  vendaFechaEm    DateTime
+  capacidadeTotal Int
+  adiadaDe        DateTime?
+  setores         Setor[]
+  lotes           Lote[]
+
+  @@index([eventoId, inicioEm])
+  @@map("sessoes")
+  @@schema("eventos")
+}
+
+model Setor {
+  id          String  @id @default(uuid()) @db.Uuid
+  sessaoId    String  @db.Uuid
+  sessao      Sessao  @relation(fields: [sessaoId], references: [id], onDelete: Cascade)
+  nome        String          // "Pista", "Camarote A"
+  /// true = assento marcado; false = pista/geral.
+  marcado     Boolean @default(false)
+  capacidade  Int
+  cor         String?
+  lotes       Lote[]
+
+  @@index([sessaoId])
+  @@map("setores")
+  @@schema("eventos")
+}
+
+model Lote {
+  id               String    @id @default(uuid()) @db.Uuid
+  sessaoId         String    @db.Uuid
+  sessao           Sessao    @relation(fields: [sessaoId], references: [id], onDelete: Cascade)
+  setorId          String    @db.Uuid
+  setor            Setor     @relation(fields: [setorId], references: [id], onDelete: Cascade)
+  nome             String              // "1º Lote"
+  ordem            Int
+  precoFace        Decimal   @db.Decimal(14, 2)
+  taxaConveniencia Decimal   @db.Decimal(14, 2)
+  quantidade       Int
+  /// Espelho denormalizado alimentado por eventos do módulo Inventário.
+  /// NUNCA é a fonte da verdade da disponibilidade — serve só para dashboard.
+  vendidos         Int       @default(0)
+  abreEm           DateTime
+  fechaEm          DateTime?
+  ativo            Boolean   @default(true)
+
+  @@unique([setorId, ordem])
+  @@index([sessaoId, abreEm])
+  @@map("lotes")
+  @@schema("eventos")
+}
+
+// ============================================================================
+//  ESTORNO — máquina de estados de reembolso
+// ============================================================================
+
+enum StatusEstorno {
+  solicitado
+  em_analise
+  aprovado
+  negado
+  processando
+  concluido
+  falhou
+
+  @@schema("estorno")
+}
+
+model SolicitacaoEstorno {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @db.Uuid
+  /// IDs de outros módulos: escalares, SEM @relation (cross-schema proibido).
+  pedidoId        String        @db.Uuid
+  pagamentoId     String?       @db.Uuid
+  clienteId       String        @db.Uuid
+  chamadoId       String?       @db.Uuid
+
+  status          StatusEstorno @default(solicitado)
+  motivo          String
+  /// Array de itemIds. Vazio = estorno total.
+  itensIds        String[]      @db.Uuid
+
+  valorSolicitado Decimal       @db.Decimal(14, 2)
+  valorAprovado   Decimal?      @db.Decimal(14, 2)
+  taxaRetida      Decimal?      @db.Decimal(14, 2)
+  debitoProdutor  Decimal?      @db.Decimal(14, 2)
+
+  analisadoPor    String?
+  motivoNegativa  String?
+  tentativas      Int           @default(0)
+  erroAdquirente  String?
+
+  solicitadoEm    DateTime      @default(now())
+  decididoEm      DateTime?
+  concluidoEm     DateTime?
+  transicoes      TransicaoEstorno[]
+
+  @@index([tenantId, status])
+  @@index([pedidoId])
+  @@map("solicitacoes_estorno")
+  @@schema("estorno")
+}
+
+/// Trilha completa da máquina de estados. Append-only.
+model TransicaoEstorno {
+  id          String             @id @default(uuid()) @db.Uuid
+  estornoId   String             @db.Uuid
+  estorno     SolicitacaoEstorno @relation(fields: [estornoId], references: [id], onDelete: Cascade)
+  de          StatusEstorno?
+  para        StatusEstorno
+  atorId      String?
+  observacao  String?
+  criadoEm    DateTime           @default(now())
+
+  @@index([estornoId, criadoEm])
+  @@map("transicoes_estorno")
+  @@schema("estorno")
+}
+
+model Chargeback {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  pedidoId      String   @db.Uuid
+  valor         Decimal  @db.Decimal(14, 2)
+  codigoRazao   String
+  adquirente    String
+  prazoDefesaEm DateTime
+  defesaEnviada Boolean  @default(false)
+  evidencias    Json?
+  resultado     String?  // ganho | perdido | pendente
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId, resultado])
+  @@map("chargebacks")
+  @@schema("estorno")
+}
+
+// ============================================================================
+//  FINANCEIRO — ledger de partidas dobradas e conta gráfica do produtor
+// ============================================================================
+
+model LancamentoLedger {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @db.Uuid
+  produtorId          String   @db.Uuid
+  eventoId            String?  @db.Uuid
+  bucket              String   // disponivel | bloqueado | reservado_estorno | retido
+  tipo                String   // entrada | saida
+  valor               Decimal  @db.Decimal(14, 2)
+  origem              String   // pedido_pago | estorno | repasse | antecipacao | transferencia | fornecedor
+  referenciaId        String   // id da entidade ou evento de domínio que gerou
+  contrapartidaId     String?  @db.Uuid
+  historico           String
+  criadoEm            DateTime @default(now())
+
+  @@index([tenantId, produtorId, bucket])
+  @@index([eventoId, bucket])
+  @@unique([origem, referenciaId, bucket, tipo])
+  @@map("lancamentos_ledger")
+  @@schema("financeiro")
+}
+
+model TransferenciaInterEvento {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @db.Uuid
+  produtorId          String   @db.Uuid
+  eventoOrigemId      String   @db.Uuid
+  eventoDestinoId     String   @db.Uuid
+  valor               Decimal  @db.Decimal(14, 2)
+  justificativa       String
+  autorId             String
+  lancamentoDebitoId  String   @db.Uuid
+  lancamentoCreditoId String   @db.Uuid
+  executadaEm         DateTime @default(now())
+
+  @@index([tenantId, produtorId])
+  @@index([eventoOrigemId])
+  @@index([eventoDestinoId])
+  @@map("transferencias_inter_eventos")
+  @@schema("financeiro")
+}
+
+model SolicitacaoRepasse {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  produtorId             String    @db.Uuid
+  eventoId               String?   @db.Uuid
+  valor                  Decimal   @db.Decimal(14, 2)
+  taxaRetida             Decimal   @default(0) @db.Decimal(14, 2)
+  valorLiquido           Decimal   @db.Decimal(14, 2)
+  chavePix               String
+  status                 String    @default("solicitado") // solicitado | aprovado | agendado | liquidado | cancelado
+  aprovadoPor            String?
+  dataProgramada         DateTime
+  comprovanteId          String?
+  solicitadoEm           DateTime  @default(now())
+  liquidadoEm            DateTime?
+
+  @@index([tenantId, produtorId, status])
+  @@map("solicitacoes_repasse")
+  @@schema("financeiro")
+}
+
+model SolicitacaoAntecipacao {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  produtorId             String    @db.Uuid
+  eventoId               String    @db.Uuid
+  valorBruto             Decimal   @db.Decimal(14, 2)
+  taxaDesagioPercentual  Decimal   @db.Decimal(5, 2)
+  custoDesagio           Decimal   @db.Decimal(14, 2)
+  valorLiquido           Decimal   @db.Decimal(14, 2)
+  diasAntecipados        Int
+  status                 String    @default("solicitada") // solicitada | aprovada | liquidada | recusada
+  analisadoPor           String?
+  comprovanteId          String?
+  solicitadoEm           DateTime  @default(now())
+  liquidadoEm            DateTime?
+
+  @@index([tenantId, produtorId, status])
+  @@map("solicitacoes_antecipacao")
+  @@schema("financeiro")
+}
+
+model ContaPagar {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  produtorId          String    @db.Uuid
+  eventoId            String    @db.Uuid
+  fornecedorNome      String
+  fornecedorDocumento String
+  chavePix            String?
+  categoria           String
+  descricao           String
+  valor               Decimal   @db.Decimal(14, 2)
+  vencimentoEm        DateTime
+  status              String    @default("pendente") // pendente | aprovada | paga | cancelada
+  aprovadoPor         String?
+  pagoEm              DateTime?
+  lancamentoId        String?   @db.Uuid
+  criadoEm            DateTime  @default(now())
+
+  @@index([tenantId, eventoId, status])
+  @@map("contas_a_pagar")
+  @@schema("financeiro")
+}
+
+model DivergenciaConciliacao {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  produtorId          String    @db.Uuid
+  adquirente          String
+  transacaoId         String
+  tipo                String
+  valorEsperado       Decimal   @db.Decimal(14, 2)
+  valorRecebido       Decimal   @db.Decimal(14, 2)
+  diferenca           Decimal   @db.Decimal(14, 2)
+  resolvida           Boolean   @default(false)
+  resolvidaEm         DateTime?
+  resolvidaPor        String?
+  detectadaEm         DateTime  @default(now())
+
+  @@index([tenantId, resolvida])
+  @@map("divergencias_conciliacao")
+  @@schema("financeiro")
+}
+

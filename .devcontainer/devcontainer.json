@@ -1,0 +1,31 @@
+{
+  "name": "DiskIngressos PDT",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/diskingressos-pdt",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Google.geminicodeassist",
+        "Prisma.prisma",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "vitest.explorer",
+        "rangav.vscode-thunder-client"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "geminicodeassist.project": "diskingressos-pdt",
+        "geminicodeassist.codeGenerationPaneViewEnabled": true
+      }
+    }
+  },
+  "postCreateCommand": "corepack enable && pnpm install && pnpm db:generate",
+  "forwardPorts": [3000, 3333, 5432, 6379, 15672, 3001, 8025]
+}
