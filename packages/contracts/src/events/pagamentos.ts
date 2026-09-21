@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { defineEvent } from '../envelope';
+import { defineEvent } from '../envelope.js';
 
 export const PedidoPagoItemSchema = z.object({
   ingressoId: z.string().uuid(),

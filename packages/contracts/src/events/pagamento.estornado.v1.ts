@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DomainEventEnvelopeSchema } from '../envelope';
+import { DomainEventEnvelopeSchema } from '../envelope.js';
 
 export const PagamentoEstornadoPayloadSchema = z.object({
   estornoId: z.string().uuid(),

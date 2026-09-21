@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DomainEventEnvelopeSchema } from '../envelope';
+import { DomainEventEnvelopeSchema } from '../envelope.js';
 
 export const SlaVioladoPayloadSchema = z.object({
   ticketId: z.string().uuid(),

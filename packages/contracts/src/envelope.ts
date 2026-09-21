@@ -65,3 +65,10 @@ export function defineEvent<TName extends string, TSchema extends z.ZodTypeAny>(
     },
   };
 }
+
+export function DomainEventEnvelopeSchema<T extends z.ZodTypeAny>(payloadSchema: T) {
+  return EventMetadataSchema.extend({
+    payload: payloadSchema,
+  });
+}
+
