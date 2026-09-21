@@ -8,6 +8,7 @@ import * as Estorno from './events/estorno.js';
 import * as Sac from './events/sac.js';
 import * as Acesso from './events/acesso.js';
 import * as Financeiro from './events/financeiro.js';
+import * as Marketing from './events/marketing.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -42,6 +43,11 @@ export const EventCatalog = {
   [Financeiro.AntecipacaoSolicitada.name]: Financeiro.AntecipacaoSolicitada,
   [Financeiro.AntecipacaoLiquidada.name]: Financeiro.AntecipacaoLiquidada,
   [Financeiro.DivergenciaDetectada.name]: Financeiro.DivergenciaDetectada,
+  [Marketing.CampanhaCriada.name]: Marketing.CampanhaCriada,
+  [Marketing.CampanhaStatusAlterado.name]: Marketing.CampanhaStatusAlterado,
+  [Marketing.PixelConfigurado.name]: Marketing.PixelConfigurado,
+  [Marketing.CupomCriado.name]: Marketing.CupomCriado,
+  [Marketing.ConversaoAtribuida.name]: Marketing.ConversaoAtribuida,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;
