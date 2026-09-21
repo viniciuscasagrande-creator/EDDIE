@@ -9,6 +9,7 @@ import { OutboxModule } from './shared/outbox/outbox.module';
 import { EventosModule } from './modules/eventos/eventos.module';
 import { EstornoModule } from './modules/estorno/estorno.module';
 import { FinanceiroModule } from './modules/financeiro/financeiro.module';
+import { MarketingModule } from './modules/marketing/marketing.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
@@ -16,7 +17,7 @@ import { FinanceiroModule } from './modules/financeiro/financeiro.module';
  *
  * Roadmap de módulos ainda não implementados:
  *   inventario, pagamentos, acesso, crm,
- *   contabilidade, marketing, remarketing, sac, developer
+ *   contabilidade, remarketing, sac, developer
  */
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FinanceiroModule } from './modules/financeiro/financeiro.module';
     EventosModule,
     EstornoModule,
     FinanceiroModule,
+    MarketingModule,
   ],
 })
 export class AppModule {}

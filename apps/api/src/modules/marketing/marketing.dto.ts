@@ -79,3 +79,11 @@ export interface KpisMarketingDto {
   pixelsAtivosCount: number;
   alertasPendentesCount: number;
 }
+
+export const ValidarCupomQuerySchema = z.object({
+  eventoId: z.string().uuid(),
+  codigo: z.string().min(1),
+  subtotalCents: z.coerce.number().int().positive(),
+});
+export type ValidarCupomQueryInput = z.infer<typeof ValidarCupomQuerySchema>;
+
