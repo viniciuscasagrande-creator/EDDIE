@@ -8,13 +8,14 @@ import { OutboxModule } from './shared/outbox/outbox.module';
 
 import { EventosModule } from './modules/eventos/eventos.module';
 import { EstornoModule } from './modules/estorno/estorno.module';
+import { FinanceiroModule } from './modules/financeiro/financeiro.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
  * Ao adicionar um módulo novo, registre-o aqui e crie o GEMINI.md dele.
  *
  * Roadmap de módulos ainda não implementados:
- *   inventario, pagamentos, acesso, crm, financeiro,
+ *   inventario, pagamentos, acesso, crm,
  *   contabilidade, marketing, remarketing, sac, developer
  */
 @Module({
@@ -27,6 +28,7 @@ import { EstornoModule } from './modules/estorno/estorno.module';
 
     EventosModule,
     EstornoModule,
+    FinanceiroModule,
   ],
 })
 export class AppModule {}
