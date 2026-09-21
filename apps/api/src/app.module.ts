@@ -10,13 +10,14 @@ import { EventosModule } from './modules/eventos/eventos.module';
 import { EstornoModule } from './modules/estorno/estorno.module';
 import { FinanceiroModule } from './modules/financeiro/financeiro.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
+import { ComercialModule } from './modules/comercial/comercial.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
  * Ao adicionar um módulo novo, registre-o aqui e crie o GEMINI.md dele.
  *
  * Roadmap de módulos ainda não implementados:
- *   inventario, pagamentos, acesso, crm,
+ *   inventario, pagamentos, acesso,
  *   contabilidade, remarketing, sac, developer
  */
 @Module({
@@ -31,6 +32,7 @@ import { MarketingModule } from './modules/marketing/marketing.module';
     EstornoModule,
     FinanceiroModule,
     MarketingModule,
+    ComercialModule,
   ],
 })
 export class AppModule {}
