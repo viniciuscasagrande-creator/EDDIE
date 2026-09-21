@@ -5,9 +5,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { FinanceiroEvents } from '@ticketing/contracts';
+import type { Prisma } from '@prisma/client';
+import type { z } from 'zod';
+import {
+  FinanceiroEvents,
+  PedidosEvents,
+  EstornoEvents,
+} from '@ticketing/contracts';
 import { PrismaService } from '../../shared/prisma.module';
 import { OutboxService } from '../../shared/outbox/outbox.service';
+
+export type PedidoPagoPayload = z.infer<typeof PedidosEvents.PedidoPago.payload>;
+export type PagamentoEstornadoPayload = z.infer<
+  typeof EstornoEvents.PagamentoEstornado.payload
+>;
 import type {
   SolicitarTransferenciaInterEventoInput,
   SolicitarRepasseInput,
@@ -41,7 +52,9 @@ export class FinanceiroService {
     tenantId: string,
     produtorId: string,
     eventoId?: string | null,
+    prismaClient?: Prisma.TransactionClient | PrismaService,
   ): Promise<SaldosContaGraficaDto> {
+    const client = prismaClient ?? this.prisma;
     const whereClause: {
       tenantId: string;
       produtorId: string;
@@ -52,7 +65,7 @@ export class FinanceiroService {
       whereClause.eventoId = eventoId;
     }
 
-    const lancamentos = await this.prisma.lancamentoLedger.findMany({
+    const lancamentos = await client.lancamentoLedger.findMany({
       where: whereClause,
       select: {
         bucket: true,
@@ -447,6 +460,187 @@ export class FinanceiroService {
       });
 
       return contaAtualizada;
+    });
+  }
+
+  /**
+   * Processa evento pedido.pago.v1: credita o split do produtor no bucket 'retido'.
+   * O valor fica em custódia até a realização do evento ou janela de liquidação.
+   */
+  async processarPedidoPago(
+    tenantId: string,
+    payload: PedidoPagoPayload,
+    eventoId?: string | null,
+  ) {
+    if (payload.repasseProdutor <= 0) {
+      this.logger.log(
+        `Pedido ${payload.pedidoId} não possui repasse a creditar para produtor ${payload.produtorId}.`,
+      );
+      return;
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // Idempotência no nível de registro do ledger
+      const lancamentoExistente = await tx.lancamentoLedger.findUnique({
+        where: {
+          origem_referenciaId_bucket_tipo: {
+            origem: 'pedido_pago',
+            referenciaId: payload.pedidoId,
+            bucket: 'retido',
+            tipo: 'entrada',
+          },
+        },
+      });
+
+      if (lancamentoExistente) {
+        this.logger.warn(
+          `Lançamento de crédito do pedido ${payload.pedidoId} já processado anteriormente no ledger.`,
+        );
+        return lancamentoExistente;
+      }
+
+      const lancamentoId = randomUUID();
+      const valorDecimal = centsToDecimal(payload.repasseProdutor);
+
+      const lancamento = await tx.lancamentoLedger.create({
+        data: {
+          id: lancamentoId,
+          tenantId,
+          produtorId: payload.produtorId,
+          eventoId: eventoId ?? null,
+          bucket: 'retido',
+          tipo: 'entrada',
+          valor: valorDecimal,
+          origem: 'pedido_pago',
+          referenciaId: payload.pedidoId,
+          contrapartidaId: null,
+          historico: `Crédito em custódia (retido) de repasse de venda — Pedido ${payload.pedidoId}`,
+        },
+      });
+
+      const saldos = await this.obterSaldosContaGrafica(
+        tenantId,
+        payload.produtorId,
+        eventoId,
+        tx,
+      );
+
+      await this.outbox.emit(tx, {
+        eventName: FinanceiroEvents.LancamentoLedgerCriado.name,
+        source: SOURCE,
+        tenantId,
+        payload: {
+          lancamentoId,
+          produtorId: payload.produtorId,
+          eventoId: eventoId ?? null,
+          bucket: 'retido',
+          tipo: 'entrada',
+          origem: 'pedido_pago',
+          valor: payload.repasseProdutor,
+          saldoDerivadoBucket: saldos.retidoCents,
+          referenciaId: payload.pedidoId,
+          contrapartidaId: null,
+          historico: lancamento.historico,
+          criadoEm: lancamento.criadoEm.toISOString(),
+        },
+      });
+
+      this.logger.log(
+        `Crédito de R$ ${valorDecimal} registrado no bucket retido para produtor ${payload.produtorId} (Pedido: ${payload.pedidoId})`,
+      );
+
+      return lancamento;
+    });
+  }
+
+  /**
+   * Processa evento pagamento.estornado.v1: debita o valor do estorno no bucket 'reservado_estorno'.
+   */
+  async processarPagamentoEstornado(
+    tenantId: string,
+    payload: PagamentoEstornadoPayload,
+    eventoId?: string | null,
+  ) {
+    const debitoProdutorCents = Math.max(0, payload.valorEstornado - payload.taxaRetida);
+
+    if (debitoProdutorCents <= 0) {
+      this.logger.log(
+        `Estorno ${payload.estornoId} sem débito a lançar para o produtor ${payload.produtorId}.`,
+      );
+      return;
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // Idempotência no nível de registro do ledger
+      const lancamentoExistente = await tx.lancamentoLedger.findUnique({
+        where: {
+          origem_referenciaId_bucket_tipo: {
+            origem: 'estorno_pedido',
+            referenciaId: payload.estornoId,
+            bucket: 'reservado_estorno',
+            tipo: 'saida',
+          },
+        },
+      });
+
+      if (lancamentoExistente) {
+        this.logger.warn(
+          `Lançamento de estorno ${payload.estornoId} já processado anteriormente no ledger.`,
+        );
+        return lancamentoExistente;
+      }
+
+      const lancamentoId = randomUUID();
+      const valorDecimal = centsToDecimal(debitoProdutorCents);
+
+      const lancamento = await tx.lancamentoLedger.create({
+        data: {
+          id: lancamentoId,
+          tenantId,
+          produtorId: payload.produtorId,
+          eventoId: eventoId ?? null,
+          bucket: 'reservado_estorno',
+          tipo: 'saida',
+          valor: valorDecimal,
+          origem: 'estorno_pedido',
+          referenciaId: payload.estornoId,
+          contrapartidaId: null,
+          historico: `Débito por estorno de pagamento (${payload.motivo}) ref pedido ${payload.pedidoId}`,
+        },
+      });
+
+      const saldos = await this.obterSaldosContaGrafica(
+        tenantId,
+        payload.produtorId,
+        eventoId,
+        tx,
+      );
+
+      await this.outbox.emit(tx, {
+        eventName: FinanceiroEvents.LancamentoLedgerCriado.name,
+        source: SOURCE,
+        tenantId,
+        payload: {
+          lancamentoId,
+          produtorId: payload.produtorId,
+          eventoId: eventoId ?? null,
+          bucket: 'reservado_estorno',
+          tipo: 'saida',
+          origem: 'estorno_pedido',
+          valor: debitoProdutorCents,
+          saldoDerivadoBucket: saldos.reservadoEstornoCents,
+          referenciaId: payload.estornoId,
+          contrapartidaId: null,
+          historico: lancamento.historico,
+          criadoEm: lancamento.criadoEm.toISOString(),
+        },
+      });
+
+      this.logger.log(
+        `Débito de estorno de R$ ${valorDecimal} registrado no bucket reservado_estorno para produtor ${payload.produtorId} (Estorno: ${payload.estornoId})`,
+      );
+
+      return lancamento;
     });
   }
 }
