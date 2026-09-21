@@ -13,8 +13,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm", "marketing"]
+  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm", "marketing", "contabilidade"]
 }
+
 
 // ============================================================================
 //  PLATFORM — infraestrutura do modulith (módulo Developer)
@@ -740,6 +741,118 @@ model AlertaMarketing {
   @@index([tenantId, resolvido])
   @@map("alertas_marketing")
   @@schema("marketing")
+}
+
+// ============================================================================
+//  CONTABILIDADE — Plano de Contas, Escrituração em Partidas Dobradas,
+//  Razão, Diário, Balancete, DRE e Fechamento de Competência.
+//  Regra: Segregação estrita entre recursos de terceiros (produtor) e receita própria.
+// ============================================================================
+
+model ContaContabil {
+  id                    String                @id @default(uuid()) @db.Uuid
+  tenantId              String                @db.Uuid
+  codigo                String                // ex: "1.1.1.01", "2.1.2.01", "3.1.1.01"
+  nome                  String                // ex: "Disponibilidades em Bancos", "Valores a Repassar a Produtores"
+  tipo                  String                // ativo | passivo | patrimonio_liquido | receita | despesa
+  natureza              String                // devedora | credora
+  nivel                 Int                   // 1 a 5
+  analitica             Boolean               @default(true) // true = aceita lançamentos; false = totalizadora
+  contaPaiId            String?               @db.Uuid
+  contaPai              ContaContabil?        @relation("HierarquiaContas", fields: [contaPaiId], references: [id], onDelete: Restrict)
+  contasFilhas          ContaContabil[]       @relation("HierarquiaContas")
+  ativa                 Boolean               @default(true)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  partidas              PartidaContabil[]
+  conciliacoes          ConciliacaoContabil[]
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, tipo, analitica])
+  @@map("contas_contabeis")
+  @@schema("contabilidade")
+}
+
+model LancamentoContabil {
+  id                    String                @id @default(uuid()) @db.Uuid
+  tenantId              String                @db.Uuid
+  numeroLancamento      Int                   @default(autoincrement())
+  data                  DateTime
+  competencia           String                // "AAAA-MM", ex: "2026-09"
+  total                 Decimal               @db.Decimal(14, 2)
+  historico             String
+  origemTipo            String                // pedido_pago | repasse_produtor | estorno | manual | ajuste
+  origemReferenciaId    String
+  /// ID escalar do evento no schema eventos (sem @relation cross-schema)
+  eventoId              String?               @db.Uuid
+  /// ID escalar do produtor no schema crm/eventos (sem @relation cross-schema)
+  produtorId            String?               @db.Uuid
+  status                String                @default("confirmado") // rascunho | confirmado | estornado
+  estornoDeId           String?               @db.Uuid
+  criadoPor             String
+  createdAt             DateTime              @default(now())
+  partidas              PartidaContabil[]
+
+  @@index([tenantId, competencia, status])
+  @@index([tenantId, origemTipo, origemReferenciaId])
+  @@index([eventoId])
+  @@map("lancamentos_contabeis")
+  @@schema("contabilidade")
+}
+
+model PartidaContabil {
+  id                    String                @id @default(uuid()) @db.Uuid
+  tenantId              String                @db.Uuid
+  lancamentoId          String                @db.Uuid
+  lancamento            LancamentoContabil    @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
+  contaId               String                @db.Uuid
+  conta                 ContaContabil         @relation(fields: [contaId], references: [id], onDelete: Restrict)
+  tipo                  String                // D (Débito) | C (Crédito)
+  valor                 Decimal               @db.Decimal(14, 2)
+  historicoComplementar String?
+
+  @@index([tenantId, contaId])
+  @@index([lancamentoId])
+  @@map("partidas_contabeis")
+  @@schema("contabilidade")
+}
+
+model FechamentoContabil {
+  id                    String                @id @default(uuid()) @db.Uuid
+  tenantId              String                @db.Uuid
+  competencia           String                // "AAAA-MM", ex: "2026-09"
+  status                String                @default("fechado") // fechado | reaberto
+  totalDebitos          Decimal               @db.Decimal(14, 2)
+  totalCreditos         Decimal               @db.Decimal(14, 2)
+  resultadoExercicio    Decimal               @db.Decimal(14, 2)
+  fechadoPor            String                @db.Uuid
+  fechadoEm             DateTime              @default(now())
+  reabertoPor           String?               @db.Uuid
+  reabertoEm            DateTime?
+  motivoReabertura      String?
+
+  @@unique([tenantId, competencia])
+  @@map("fechamentos_contabeis")
+  @@schema("contabilidade")
+}
+
+model ConciliacaoContabil {
+  id                    String                @id @default(uuid()) @db.Uuid
+  tenantId              String                @db.Uuid
+  contaId               String                @db.Uuid
+  conta                 ContaContabil         @relation(fields: [contaId], references: [id], onDelete: Restrict)
+  competencia           String                // "AAAA-MM"
+  saldoContabil         Decimal               @db.Decimal(14, 2)
+  saldoExtrato          Decimal               @db.Decimal(14, 2)
+  diferenca             Decimal               @db.Decimal(14, 2)
+  status                String                // conciliado | divergente
+  observacoes           String?
+  conciliadoPor         String                @db.Uuid
+  conciliadoEm          DateTime              @default(now())
+
+  @@unique([tenantId, contaId, competencia])
+  @@map("conciliacoes_contabeis")
+  @@schema("contabilidade")
 }
 
 

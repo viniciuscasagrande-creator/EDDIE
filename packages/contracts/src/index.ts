@@ -10,6 +10,7 @@ import * as Acesso from './events/acesso.js';
 import * as Financeiro from './events/financeiro.js';
 import * as Marketing from './events/marketing.js';
 import * as Comercial from './events/comercial.js';
+import * as Contabilidade from './events/contabilidade.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -54,6 +55,10 @@ export const EventCatalog = {
   [Comercial.EtapaPipelineAlterada.name]: Comercial.EtapaPipelineAlterada,
   [Comercial.CondicaoComercialAprovada.name]: Comercial.CondicaoComercialAprovada,
   [Comercial.AtividadeComercialRegistrada.name]: Comercial.AtividadeComercialRegistrada,
+  [Contabilidade.LancamentoContabilCriado.name]: Contabilidade.LancamentoContabilCriado,
+  [Contabilidade.PeriodoContabilFechado.name]: Contabilidade.PeriodoContabilFechado,
+  [Contabilidade.PeriodoContabilReaberto.name]: Contabilidade.PeriodoContabilReaberto,
+  [Contabilidade.ConciliacaoContabilFinalizada.name]: Contabilidade.ConciliacaoContabilFinalizada,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

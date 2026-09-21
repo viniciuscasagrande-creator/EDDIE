@@ -11,6 +11,7 @@ import { EstornoModule } from './modules/estorno/estorno.module';
 import { FinanceiroModule } from './modules/financeiro/financeiro.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
 import { ComercialModule } from './modules/comercial/comercial.module';
+import { ContabilidadeModule } from './modules/contabilidade/contabilidade.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
@@ -18,7 +19,7 @@ import { ComercialModule } from './modules/comercial/comercial.module';
  *
  * Roadmap de módulos ainda não implementados:
  *   inventario, pagamentos, acesso,
- *   contabilidade, remarketing, sac, developer
+ *   remarketing, sac, developer
  */
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ComercialModule } from './modules/comercial/comercial.module';
     FinanceiroModule,
     MarketingModule,
     ComercialModule,
+    ContabilidadeModule,
   ],
 })
 export class AppModule {}
