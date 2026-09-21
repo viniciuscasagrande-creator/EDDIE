@@ -27,6 +27,7 @@ import type {
   CriarContaPagarInput,
   SaldosContaGraficaDto,
   SimulacaoAntecipacaoDto,
+  ExtratoQueryInput,
 } from './financeiro.dto';
 
 const SOURCE = 'financeiro';
@@ -642,5 +643,109 @@ export class FinanceiroService {
 
       return lancamento;
     });
+  }
+
+  /**
+   * Extrato do Ledger imutável com paginação e filtros.
+   */
+  async listarExtratoLedger(
+    tenantId: string,
+    produtorId: string,
+    query?: ExtratoQueryInput,
+  ) {
+    const where: Prisma.LancamentoLedgerWhereInput = {
+      tenantId,
+      produtorId,
+    };
+
+    if (query?.eventoId) {
+      where.eventoId = query.eventoId;
+    }
+    if (query?.bucket) {
+      where.bucket = query.bucket;
+    }
+
+    const [total, lancamentos] = await Promise.all([
+      this.prisma.lancamentoLedger.count({ where }),
+      this.prisma.lancamentoLedger.findMany({
+        where,
+        orderBy: { criadoEm: 'desc' },
+        take: query?.limit ?? 50,
+        skip: query?.offset ?? 0,
+      }),
+    ]);
+
+    return {
+      total,
+      limit: query?.limit ?? 50,
+      offset: query?.offset ?? 0,
+      lancamentos: lancamentos.map((l) => ({
+        id: l.id,
+        produtorId: l.produtorId,
+        eventoId: l.eventoId,
+        bucket: l.bucket,
+        tipo: l.tipo,
+        valorCents: decimalToCents(l.valor),
+        origem: l.origem,
+        referenciaId: l.referenciaId,
+        contrapartidaId: l.contrapartidaId,
+        historico: l.historico,
+        criadoEm: l.criadoEm.toISOString(),
+      })),
+    };
+  }
+
+  /**
+   * Lista contas a pagar do produtor/evento.
+   */
+  async listarContasPagar(tenantId: string, eventoId?: string) {
+    const where: Prisma.ContaPagarWhereInput = { tenantId };
+    if (eventoId) {
+      where.eventoId = eventoId;
+    }
+    const contas = await this.prisma.contaPagar.findMany({
+      where,
+      orderBy: { vencimentoEm: 'asc' },
+    });
+    return contas.map((c) => ({
+      id: c.id,
+      produtorId: c.produtorId,
+      eventoId: c.eventoId,
+      fornecedorNome: c.fornecedorNome,
+      fornecedorDocumento: c.fornecedorDocumento,
+      chavePix: c.chavePix,
+      categoria: c.categoria,
+      descricao: c.descricao,
+      valorCents: decimalToCents(c.valor),
+      vencimentoEm: c.vencimentoEm.toISOString(),
+      status: c.status,
+      aprovadoPor: c.aprovadoPor,
+      pagoEm: c.pagoEm?.toISOString() ?? null,
+      lancamentoId: c.lancamentoId,
+      criadoEm: c.criadoEm.toISOString(),
+    }));
+  }
+
+  /**
+   * Lista solicitações de repasse do produtor.
+   */
+  async listarRepasses(tenantId: string, produtorId: string) {
+    const repasses = await this.prisma.solicitacaoRepasse.findMany({
+      where: { tenantId, produtorId },
+      orderBy: { solicitadoEm: 'desc' },
+    });
+    return repasses.map((r) => ({
+      id: r.id,
+      produtorId: r.produtorId,
+      eventoId: r.eventoId,
+      valorCents: decimalToCents(r.valor),
+      valorLiquidoCents: decimalToCents(r.valorLiquido),
+      taxaRetidaCents: decimalToCents(r.taxaRetida),
+      chavePix: r.chavePix,
+      status: r.status,
+      dataProgramada: r.dataProgramada.toISOString(),
+      solicitadoEm: r.solicitadoEm.toISOString(),
+      liquidadoEm: r.liquidadoEm?.toISOString() ?? null,
+    }));
   }
 }

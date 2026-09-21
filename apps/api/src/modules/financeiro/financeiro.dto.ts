@@ -69,3 +69,17 @@ export interface SimulacaoAntecipacaoDto {
   valorLiquidoDisponibilizadoCents: number;
   diasAntecipados: number;
 }
+
+export const ExtratoQuerySchema = z.object({
+  eventoId: z.string().uuid().optional(),
+  bucket: BucketEnum.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+export type ExtratoQueryInput = z.infer<typeof ExtratoQuerySchema>;
+
+export const PagarContaSchema = z.object({
+  aprovadoPor: z.string().min(1),
+});
+export type PagarContaInput = z.infer<typeof PagarContaSchema>;
+
