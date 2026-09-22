@@ -157,7 +157,7 @@ export default function MarketingPage() {
     }
     setLoading(true);
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
+    const timer = setTimeout(() => controller.abort(), 2500);
 
     try {
       const evQuery = eventoId ? `&eventoId=${eventoId}` : '';

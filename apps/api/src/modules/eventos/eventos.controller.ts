@@ -1,68 +1,24 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { EventosService } from './eventos.service';
-import {
-  CriarEventoDto, CriarSessaoDto, CriarSetorDto, CriarLoteDto, CancelarEventoDto,
-} from './eventos.dto';
-
-// TODO: substituir por decorators reais de auth (@CurrentTenant, @CurrentUser)
-const TENANT = (req?: unknown) => '00000000-0000-0000-0000-000000000001';
-const ATOR = (req?: unknown) => '00000000-0000-0000-0000-000000000002';
-
-@ApiTags('eventos')
-@Controller('eventos')
+import { CriarEventoDto, CriarSessaoDto, CriarSetorDto, CriarLoteDto, CancelarEventoDto } from './eventos.dto';
+const DEFAULT_TENANT='00000000-0000-0000-0000-000000000001';
+const DEFAULT_ATOR='00000000-0000-0000-0000-000000000002';
+@ApiTags('eventos') @Controller('eventos')
 export class EventosController {
   constructor(private readonly service: EventosService) {}
-
-  @Get('locais')
-  @ApiOperation({ summary: 'Lista os locais disponíveis para cadastro de sessões' })
-  listarLocais() {
-    return this.service.listarLocais(TENANT());
-  }
-
-  @Get('produtor/:produtorId')
-  @ApiOperation({ summary: 'Lista os eventos pertencentes ao produtor para seleção de contexto no PDT' })
-  listarPorProdutor(@Param('produtorId') produtorId: string) {
-    return this.service.listarPorProdutor(TENANT(), produtorId);
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtém detalhes do evento com sessões, setores e lotes' })
-  buscar(@Param('id') id: string) {
-    return this.service.buscarDetalhado(TENANT(), id);
-  }
-
-  @Post()
-  @ApiOperation({ summary: 'Cria um evento em rascunho' })
-  criar(@Body() dto: CriarEventoDto) {
-    return this.service.criar(TENANT(), dto, ATOR());
-  }
-
-  @Post(':id/sessoes')
-  adicionarSessao(@Param('id') id: string, @Body() dto: CriarSessaoDto) {
-    return this.service.adicionarSessao(TENANT(), id, dto);
-  }
-
-  @Post('sessoes/:sessaoId/setores')
-  @ApiOperation({ summary: 'Adiciona um setor a uma sessão' })
-  adicionarSetor(@Param('sessaoId') sessaoId: string, @Body() dto: CriarSetorDto) {
-    return this.service.adicionarSetor(TENANT(), sessaoId, dto);
-  }
-
-  @Post('sessoes/:sessaoId/lotes')
-  adicionarLote(@Param('sessaoId') sessaoId: string, @Body() dto: CriarLoteDto) {
-    return this.service.adicionarLote(TENANT(), sessaoId, dto);
-  }
-
-  @Post(':id/publicar')
-  @ApiOperation({ summary: 'Publica o evento e libera a venda' })
-  publicar(@Param('id') id: string) {
-    return this.service.publicar(TENANT(), id, ATOR());
-  }
-
-  @Post(':id/cancelar')
-  @ApiOperation({ summary: 'Cancela o evento e dispara estorno em cascata' })
-  cancelar(@Param('id') id: string, @Body() dto: CancelarEventoDto) {
-    return this.service.cancelar(TENANT(), id, dto, ATOR());
-  }
+  private tenant(v?:string){return v||DEFAULT_TENANT} private ator(v?:string){return v||DEFAULT_ATOR}
+  @Get('locais') listarLocais(@Headers('x-tenant-id') t?:string){return this.service.listarLocais(this.tenant(t))}
+  @Get('produtor/:produtorId') listarPorProdutor(@Param('produtorId') p:string,@Headers('x-tenant-id') t?:string){return this.service.listarPorProdutor(this.tenant(t),p)}
+  @Get(':id') buscar(@Param('id') id:string,@Headers('x-tenant-id') t?:string){return this.service.buscarDetalhado(this.tenant(t),id)}
+  @Post() criar(@Body() dto:CriarEventoDto,@Headers('x-tenant-id') t?:string,@Headers('x-user-id') u?:string){return this.service.criar(this.tenant(t),dto,this.ator(u))}
+  @Patch(':id') @ApiOperation({summary:'Atualiza dados cadastrais do evento'}) atualizar(@Param('id') id:string,@Body() body:any,@Headers('x-tenant-id') t?:string){return this.service.atualizarEvento(this.tenant(t),id,body)}
+  @Post(':id/sessoes') adicionarSessao(@Param('id') id:string,@Body() dto:CriarSessaoDto,@Headers('x-tenant-id') t?:string){return this.service.adicionarSessao(this.tenant(t),id,dto)}
+  @Patch('sessoes/:id') atualizarSessao(@Param('id') id:string,@Body() body:any,@Headers('x-tenant-id') t?:string){return this.service.atualizarSessao(this.tenant(t),id,body)}
+  @Post('sessoes/:sessaoId/setores') adicionarSetor(@Param('sessaoId') id:string,@Body() dto:CriarSetorDto,@Headers('x-tenant-id') t?:string){return this.service.adicionarSetor(this.tenant(t),id,dto)}
+  @Patch('setores/:id') atualizarSetor(@Param('id') id:string,@Body() body:any,@Headers('x-tenant-id') t?:string){return this.service.atualizarSetor(this.tenant(t),id,body)}
+  @Post('sessoes/:sessaoId/lotes') adicionarLote(@Param('sessaoId') id:string,@Body() dto:CriarLoteDto,@Headers('x-tenant-id') t?:string){return this.service.adicionarLote(this.tenant(t),id,dto)}
+  @Patch('lotes/:id') atualizarLote(@Param('id') id:string,@Body() body:any,@Headers('x-tenant-id') t?:string){return this.service.atualizarLote(this.tenant(t),id,body)}
+  @Post(':id/publicar') publicar(@Param('id') id:string,@Headers('x-tenant-id') t?:string,@Headers('x-user-id') u?:string){return this.service.publicar(this.tenant(t),id,this.ator(u))}
+  @Post(':id/cancelar') cancelar(@Param('id') id:string,@Body() dto:CancelarEventoDto,@Headers('x-tenant-id') t?:string,@Headers('x-user-id') u?:string){return this.service.cancelar(this.tenant(t),id,dto,this.ator(u))}
 }

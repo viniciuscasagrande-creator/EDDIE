@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   ShieldCheck,
   ChevronRight,
+  FileBarChart,
 } from 'lucide-react';
 
 const menuItems = [
@@ -59,6 +60,12 @@ const menuItems = [
     href: '/marketing',
     icon: Megaphone,
     badge: 'Atribuição',
+  },
+  {
+    label: 'Central de Relatórios',
+    href: '/relatorios',
+    icon: FileBarChart,
+    badge: 'BI',
   },
   {
     label: 'Atendimento SAC',

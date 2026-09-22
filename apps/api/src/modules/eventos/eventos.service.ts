@@ -297,4 +297,36 @@ export class EventosService {
     if (!evento) throw new NotFoundException('Evento não encontrado');
     return evento;
   }
+
+  async atualizarEvento(tenantId: string, id: string, body: any) {
+    await this.buscarDetalhado(tenantId, id);
+    const permitidos = ['nome','descricao','categoria','classificacaoEtaria','imagemUrl','slug'];
+    const data: any = {}; for (const k of permitidos) if (body[k] !== undefined) data[k] = body[k];
+    return this.prisma.evento.update({ where: { id }, data });
+  }
+
+  async atualizarSessao(tenantId: string, id: string, body: any) {
+    const atual = await this.prisma.sessao.findFirst({ where: { id, evento: { tenantId } } });
+    if (!atual) throw new NotFoundException('Sessão não encontrada');
+    const data: any = {};
+    for (const k of ['localId','capacidadeTotal']) if (body[k] !== undefined) data[k]=body[k];
+    for (const k of ['inicioEm','fimEm','vendaAbreEm','vendaFechaEm']) if (body[k] !== undefined) data[k]=body[k] ? new Date(body[k]) : null;
+    return this.prisma.sessao.update({ where:{id}, data });
+  }
+
+  async atualizarSetor(tenantId: string, id: string, body: any) {
+    const atual = await this.prisma.setor.findFirst({ where: { id, sessao: { evento: { tenantId } } } });
+    if (!atual) throw new NotFoundException('Setor não encontrado');
+    const data:any={}; for(const k of ['nome','marcado','capacidade']) if(body[k]!==undefined)data[k]=body[k];
+    return this.prisma.setor.update({where:{id},data});
+  }
+
+  async atualizarLote(tenantId: string, id: string, body: any) {
+    const atual = await this.prisma.lote.findFirst({ where: { id, sessao: { evento: { tenantId } } } });
+    if (!atual) throw new NotFoundException('Lote não encontrado');
+    const data:any={}; for(const k of ['setorId','nome','ordem','precoFace','taxaConveniencia','quantidade','ativo']) if(body[k]!==undefined)data[k]=body[k];
+    for(const k of ['abreEm','fechaEm']) if(body[k]!==undefined)data[k]=body[k]?new Date(body[k]):null;
+    return this.prisma.lote.update({where:{id},data});
+  }
+
 }

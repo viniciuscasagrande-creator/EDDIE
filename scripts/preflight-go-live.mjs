@@ -4,7 +4,9 @@ const required = [
   'apps/pdt/src/app/eventos/page.tsx','apps/pdt/src/app/comercial/page.tsx',
   'apps/pdt/src/app/marketing/page.tsx','apps/pdt/src/app/sac/page.tsx',
   'apps/pdt/src/app/suporte-eventos/page.tsx','apps/pdt/src/app/estorno/page.tsx',
+  'apps/pdt/src/app/relatorios/page.tsx',
   'apps/api/src/modules/sac/sac.module.ts','apps/api/src/modules/suporte/suporte.module.ts',
+  'apps/api/src/modules/relatorios/relatorios.module.ts',
   'apps/api/prisma/schema.prisma'
 ];
 let failed=false;

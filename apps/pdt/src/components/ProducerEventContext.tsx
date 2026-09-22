@@ -45,7 +45,7 @@ export function ProducerEventProvider({ children }: { children: React.ReactNode 
     setError('');
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
+    const timer = setTimeout(() => controller.abort(), 2500);
 
     try {
       const r = await fetch(`${api}/eventos/produtor/${produtorId}`, {

@@ -86,7 +86,7 @@ export default function EstornoPage() {
     setError('');
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
+    const timer = setTimeout(() => controller.abort(), 2500);
 
     try {
       const res = await fetch(`${api}/estornos`, { signal: controller.signal });

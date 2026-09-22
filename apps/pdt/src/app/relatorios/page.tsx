@@ -1,0 +1,22 @@
+'use client';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BarChart3, FileText, RefreshCcw, Download, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useProducerEvent } from '../../components/ProducerEventContext';
+
+type Catalogo = { id:string; nome:string; modulo:string; endpoint:string };
+export default function RelatoriosPage(){
+  const { api, produtorId, eventoId } = useProducerEvent();
+  const [catalogo,setCatalogo]=useState<Catalogo[]>([]); const [ativo,setAtivo]=useState('executivo');
+  const [dados,setDados]=useState<any>(null); const [loading,setLoading]=useState(false); const [erro,setErro]=useState('');
+  useEffect(()=>{ if(!api)return; fetch(`${api}/relatorios/catalogo`).then(r=>r.ok?r.json():Promise.reject(new Error(`HTTP ${r.status}`))).then(setCatalogo).catch(e=>setErro(e.message)); },[api]);
+  const query=useMemo(()=>{const q=new URLSearchParams(); if(produtorId)q.set('produtorId',produtorId); if(eventoId)q.set('eventoId',eventoId); return q.toString()},[produtorId,eventoId]);
+  async function gerar(id=ativo){ if(!api)return; setLoading(true); setErro(''); try{const r=await fetch(`${api}/relatorios/${id}${query?`?${query}`:''}`,{cache:'no-store'}); if(!r.ok)throw new Error(`Falha ao gerar relatório (HTTP ${r.status})`); setDados(await r.json()); setAtivo(id);}catch(e:any){setErro(e.message||'Falha ao gerar relatório.')}finally{setLoading(false)} }
+  function baixar(){ if(!dados)return; const blob=new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}); const u=URL.createObjectURL(blob); const a=document.createElement('a');a.href=u;a.download=`eddie-relatorio-${ativo}.json`;a.click();URL.revokeObjectURL(u); }
+  const resumo = dados && typeof dados==='object' ? Object.entries(dados).filter(([k])=>!['geradoEm','filtros'].includes(k)).map(([k,v])=>({k,v:Array.isArray(v)?v.length:typeof v==='number'?v:'—'})) : [];
+  return <div className="p-6 lg:p-8 space-y-6 text-slate-100">
+    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4"><div><div className="text-xs uppercase tracking-[.22em] text-emerald-400 font-bold">EDDIE • Dados reais</div><h1 className="text-2xl lg:text-3xl font-bold mt-1">Central de Relatórios</h1><p className="text-slate-400 mt-2">Relatórios consolidados por produtor e evento, consumindo exclusivamente a API oficial.</p></div><div className="flex gap-2"><button onClick={()=>gerar()} className="px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold flex gap-2 items-center"><RefreshCcw size={16}/>Gerar</button><button disabled={!dados} onClick={baixar} className="px-4 py-2 rounded-lg border border-slate-700 disabled:opacity-40 flex gap-2 items-center"><Download size={16}/>Exportar JSON</button></div></div>
+    <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">{catalogo.map(r=><button key={r.id} onClick={()=>gerar(r.id)} className={`text-left p-4 rounded-xl border transition ${ativo===r.id?'border-emerald-500/50 bg-emerald-500/10':'border-slate-800 bg-slate-900/50 hover:border-slate-700'}`}><div className="flex items-center gap-3"><FileText className="text-emerald-400" size={18}/><div><div className="font-semibold">{r.nome}</div><div className="text-xs text-slate-500">{r.modulo}</div></div></div></button>)}</div>
+    {erro&&<div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 flex gap-2"><AlertCircle size={18}/>{erro}</div>}
+    {loading?<div className="p-10 text-center text-slate-400">Gerando relatório com dados reais...</div>:dados?<><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">{resumo.slice(0,8).map(x=><div key={x.k} className="p-4 rounded-xl border border-slate-800 bg-slate-900/60"><div className="text-xs uppercase text-slate-500">{x.k}</div><div className="text-2xl font-bold mt-2">{String(x.v)}</div></div>)}</div><div className="rounded-xl border border-slate-800 bg-slate-950/50 overflow-hidden"><div className="px-4 py-3 border-b border-slate-800 flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-400"/><span className="font-semibold">Resultado do relatório</span></div><pre className="p-4 text-xs text-slate-300 overflow-auto max-h-[520px]">{JSON.stringify(dados,null,2)}</pre></div></>:<div className="p-12 rounded-xl border border-dashed border-slate-700 text-center"><BarChart3 className="mx-auto text-slate-500"/><p className="mt-3 text-slate-400">Selecione um relatório e clique em Gerar.</p></div>}
+  </div>
+}

@@ -14,6 +14,7 @@ import { ComercialModule } from './modules/comercial/comercial.module';
 import { ContabilidadeModule } from './modules/contabilidade/contabilidade.module';
 import { SacModule } from './modules/sac/sac.module';
 import { SuporteModule } from './modules/suporte/suporte.module';
+import { RelatoriosModule } from './modules/relatorios/relatorios.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
@@ -35,6 +36,7 @@ import { SuporteModule } from './modules/suporte/suporte.module';
     ContabilidadeModule,
     SacModule,
     SuporteModule,
+    RelatoriosModule,
   ],
 })
 export class AppModule {}

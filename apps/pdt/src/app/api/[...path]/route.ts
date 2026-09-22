@@ -24,7 +24,7 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
   headers.delete("host");
   headers.delete("content-length");
   const abortCtrl = new AbortController();
-  const abortTimer = setTimeout(() => abortCtrl.abort(), 5000);
+  const abortTimer = setTimeout(() => abortCtrl.abort(), 2500);
   try {
     const init: RequestInit = { method: req.method, headers, cache: "no-store", signal: abortCtrl.signal };
     if (!["GET", "HEAD"].includes(req.method)) init.body = await req.arrayBuffer();
