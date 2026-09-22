@@ -142,6 +142,61 @@ export function Sidebar() {
                   </span>
                 )}
               </Link>
+              {item.href === '/marketing' && isActive && (
+                <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-slate-800 pl-2">
+                  {[
+                    ['Painel de Marketing', '/marketing/painel'],
+                    ['Campanhas Multicanal', '/marketing/campanhas-multicanal'],
+                    ['WhatsApp Marketing', '/marketing/whatsapp'],
+                    ['E-mail Marketing', '/marketing/email'],
+                    ['Status das Campanhas', '/marketing/status-real'],
+                    ['Google Analytics 4', '/marketing/ga4'],
+                    ['TikTok Ads', '/marketing/tiktok'],
+                    ['Spotify Ads', '/marketing/spotify'],
+                    ['UTMs & Conversões', '/marketing/utm-conversoes'],
+                    ['Atribuição Multicanal', '/marketing/atribuicao'],
+                    ['Ranking de Campanhas', '/marketing/ranking'],
+                  ].map(([label, href]) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      className={`block px-2 py-1 rounded text-xs transition ${
+                        pathname === href
+                          ? 'text-sky-400 font-semibold bg-sky-500/10'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {item.href === '/remarketing' && isActive && (
+                <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-slate-800 pl-2">
+                  {[
+                    ['Painel de Remarketing', '/remarketing/painel'],
+                    ['Carrinhos Abandonados', '/remarketing/carrinhos'],
+                    ['Recuperação de PIX/Pagamentos', '/remarketing/pix-pagamentos'],
+                    ['Fluxos de Recuperação', '/remarketing/regua-fluxos'],
+                    ['WhatsApp Remarketing', '/remarketing/whatsapp'],
+                    ['E-mail Remarketing', '/remarketing/email'],
+                    ['Clientes Inativos', '/remarketing/clientes-inativos'],
+                    ['Relatórios de Recuperação', '/remarketing/relatorios'],
+                  ].map(([label, href]) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      className={`block px-2 py-1 rounded text-xs transition ${
+                        pathname === href
+                          ? 'text-orange-400 font-semibold bg-orange-500/10'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              )}
               {item.href === '/relatorios' && isActive && (
                 <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-slate-800 pl-2">
                   {[

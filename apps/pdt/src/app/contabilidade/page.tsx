@@ -27,6 +27,7 @@ import {
 import { useProducerEvent } from '../../components/ProducerEventContext';
 import OperationalPanel from '../../components/OperationalPanel';
 import AccountingEnterprisePanel from '../../components/AccountingEnterprisePanel';
+import AccountingDashboardCharts from '../../components/AccountingDashboardCharts';
 
 type TabView = 'centro_eventos' | 'dre' | 'balancete' | 'lancamentos' | 'conciliacao' | 'plano_contas' | 'fechamento' | 'demonstrativos' | 'auditoria' | 'painel_enterprise' | 'patrimonio' | 'fiscal' | 'recontabilizacao';
 
@@ -462,7 +463,7 @@ export default function ContabilidadePage() {
       ) : (
         <>
           {/* TAB: CENTRO DE CONTROLE DE EVENTOS */}
-          {tab === 'painel_enterprise' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="painel" />}
+          {tab === 'painel_enterprise' && <div className="space-y-5"><AccountingDashboardCharts centro={centroControle} balancete={balancete} dashboard={dashboard} onNavigate={setTab} /><AccountingEnterprisePanel api={api} competencia={competencia} kind="painel" /></div>}
           {tab === 'patrimonio' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="patrimonio" />}
           {tab === 'recontabilizacao' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="recontabilizacao" />}
           {tab === 'fiscal' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="fiscal" />}

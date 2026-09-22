@@ -17,6 +17,7 @@ import {
   Zap,
   Loader2,
   RefreshCcw,
+  FileBarChart,
 } from 'lucide-react';
 import { useProducerEvent } from '../components/ProducerEventContext';
 
@@ -351,10 +352,52 @@ export default function DashboardPage() {
             </div>
             <div>
               <h3 className="font-bold text-white text-base group-hover:text-sky-400 transition">
-                Marketing & Pixels
+                Marketing
               </h3>
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">
-                Campanhas em 1 clique, multi-pixel CAPI, links UTM com QR e cupons.
+                Campanhas multicanal, WhatsApp, e-mail, GA4, TikTok, Spotify e atribuição.
+              </p>
+            </div>
+          </Link>
+
+          {/* Remarketing */}
+          <Link
+            href="/remarketing"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-orange-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
+                <RotateCcw size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-orange-400 transition" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base group-hover:text-orange-400 transition">
+                Remarketing & Resgate
+              </h3>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Hub de recuperação de carrinhos abandonados, Pix pendentes e clientes inativos.
+              </p>
+            </div>
+          </Link>
+
+          {/* Central de Relatórios */}
+          <Link
+            href="/relatorios"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-emerald-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <FileBarChart size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-emerald-400 transition" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base group-hover:text-emerald-400 transition">
+                Central de Relatórios
+              </h3>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Mais de 50 modelos operacionais: Financeiro, Eventos, Contábil, Mkt, SAC e Estornos.
               </p>
             </div>
           </Link>

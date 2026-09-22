@@ -30,6 +30,7 @@ import {
   Filter,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
+import { BarChartCard, DonutCard, LineChartCard } from '../../components/ExecutiveCharts';
 
 type View =
   | 'dashboard'
@@ -401,6 +402,10 @@ export default function FinanceiroPage() {
           )}
 
           {view === 'dashboard' && (
+            <FinanceExecutiveDashboard saldos={saldos} extrato={extrato} gestao={gestaoSaldos} contas={contas} repasses={repasses} setView={setView} />
+          )}
+
+          {view === 'dashboard' && (
             <DashboardView
               extrato={extrato}
               contas={contas}
@@ -500,6 +505,16 @@ export default function FinanceiroPage() {
       )}
     </div>
   );
+}
+
+
+function FinanceExecutiveDashboard({saldos,extrato,gestao,contas,repasses,setView}:{saldos:Saldos;extrato:Lancamento[];gestao:GestaoSaldos|null;contas:Conta[];repasses:Repasse[];setView:(v:View)=>void}){
+  const porDia=new Map<string,number>(); for(const l of extrato){const d=String(l.criadoEm||'').slice(5,10); if(d)porDia.set(d,(porDia.get(d)||0)+(l.tipo==='debito'?-1:1)*centsOf(l));}
+  const fluxo=[...porDia].sort(([a],[b])=>a.localeCompare(b)).map(([label,value])=>({label,value:value/100}));
+  const eventos=(gestao?.eventos||[]).map(e=>({label:e.nome,value:e.disponivelCents/100})).sort((a,b)=>b.value-a.value);
+  const composicao=[{label:'Disponível',value:saldos.disponivelCents/100},{label:'Retido',value:saldos.retidoCents/100},{label:'Bloqueado',value:saldos.bloqueadoCents/100},{label:'Reserva de estorno',value:saldos.reservadoEstornoCents/100}];
+  const pendentes=contas.filter(x=>!['pago','cancelado'].includes(x.status)).length; const repAbertos=repasses.filter(x=>!['liquidado','cancelado'].includes(x.status)).length;
+  return <div className="space-y-4"><div className="grid gap-4 xl:grid-cols-3"><div className="xl:col-span-2"><LineChartCard title="Movimentação financeira" subtitle="Créditos e débitos registrados no Ledger" points={fluxo} valueFormatter={v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)}/></div><div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5"><h3 className="mb-3 font-semibold text-white">Atalhos financeiros</h3><div className="space-y-2">{([['Transferir entre eventos','transferencias'],[`Contas pendentes (${pendentes})`,'compromissos'],[`Repasses abertos (${repAbertos})`,'repasses'],['Conciliação financeira','conciliacao']] as [string,View][]).map(([label,v])=><button key={v} onClick={()=>setView(v)} className="flex w-full items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-left text-sm font-semibold text-slate-200 hover:border-emerald-700"><span>{label}</span><span className="text-emerald-400">→</span></button>)}</div></div></div><div className="grid gap-4 lg:grid-cols-2"><BarChartCard title="Saldo disponível por evento" subtitle="Comparativo do produtor" points={eventos} valueFormatter={v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)}/><DonutCard title="Composição do patrimônio" subtitle="Posição financeira atual" points={composicao} valueFormatter={v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)}/></div></div>
 }
 
 // ============================================================================
