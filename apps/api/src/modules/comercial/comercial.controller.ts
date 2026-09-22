@@ -174,4 +174,57 @@ export class ComercialController {
     const tenantId = resolveTenant(tenantIdHeader);
     return this.comercialService.obterResumoPipeline(tenantId, executivoId);
   }
+
+  // ==========================================================================
+  //  OPORTUNIDADES & ATIVIDADES LISTAGENS OPERACIONAIS
+  // ==========================================================================
+
+  @Get('oportunidades')
+  @ApiOperation({ summary: 'Lista oportunidades do funil comercial com filtros' })
+  async listarOportunidades(
+    @Query('etapa') etapa?: string,
+    @Query('produtorId') produtorId?: string,
+    @Query('executivoId') executivoId?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.comercialService.listarOportunidades(tenantId, { etapa, produtorId, executivoId });
+  }
+
+  @Get('atividades')
+  @ApiOperation({ summary: 'Lista atividades comerciais (reuniões, follow-ups)' })
+  async listarAtividades(
+    @Query('produtorId') produtorId?: string,
+    @Query('executivoId') executivoId?: string,
+    @Query('realizada') realizada?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.comercialService.listarAtividades(tenantId, {
+      produtorId,
+      executivoId,
+      realizada: realizada !== undefined ? realizada === 'true' : undefined,
+    });
+  }
+
+  @Patch('atividades/:id/concluir')
+  @ApiOperation({ summary: 'Marca atividade comercial como realizada' })
+  async concluirAtividade(
+    @Param('id') atividadeId: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.comercialService.concluirAtividade(tenantId, atividadeId);
+  }
+
+  @Get('condicoes')
+  @ApiOperation({ summary: 'Lista condições comerciais cadastradas ou em aprovação' })
+  async listarCondicoes(
+    @Query('produtorId') produtorId?: string,
+    @Query('status') status?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.comercialService.listarCondicoes(tenantId, { produtorId, status });
+  }
 }

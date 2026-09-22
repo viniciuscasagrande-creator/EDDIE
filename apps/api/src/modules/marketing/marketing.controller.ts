@@ -238,4 +238,40 @@ export class MarketingController {
       eventoId,
     );
   }
+
+  // ==========================================================================
+  //  PIXELS MULTICANAL & ATIVAÇÃO RÁPIDA
+  // ==========================================================================
+
+  @Get('pixels/todos')
+  @ApiOperation({ summary: 'Lista todos os pixels de conversão CAPI configurados para o produtor/evento' })
+  async listarTodosPixels(
+    @Query('produtorId') produtorId?: string,
+    @Query('eventoId') eventoId?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.marketingService.listarTodosPixels(tenantId, produtorId, eventoId);
+  }
+
+  @Post('cupons/:id/toggle')
+  @ApiOperation({ summary: 'Ativa ou desativa cupom de desconto' })
+  async toggleCupom(
+    @Param('id') cupomId: string,
+    @Body() body: { ativo: boolean },
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.marketingService.toggleCupom(tenantId, cupomId, body.ativo);
+  }
+
+  @Post('campanhas/ativar-template')
+  @ApiOperation({ summary: 'Cria e ativa campanha instantânea a partir de template oficial' })
+  async ativarTemplate(
+    @Body() body: { produtorId: string; eventoId: string; templateId: string; orcamentoTotalCents?: number },
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.marketingService.ativarTemplateCampanha(tenantId, body);
+  }
 }

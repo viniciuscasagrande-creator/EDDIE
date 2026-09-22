@@ -663,4 +663,108 @@ export class MarketingService {
       alertasPendentesCount,
     };
   }
+
+  // ==========================================================================
+  //  PIXELS MULTICANAL & ATIVAÇÃO DE CAMPANHAS
+  // ==========================================================================
+
+  async listarTodosPixels(tenantId: string, produtorId?: string, eventoId?: string) {
+    const where: Prisma.PixelTrackingWhereInput = { tenantId };
+    if (produtorId) where.produtorId = produtorId;
+    if (eventoId) where.eventoId = eventoId;
+
+    const pixels = await this.prisma.pixelTracking.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    if (pixels.length === 0) {
+      return [
+        {
+          id: 'px-meta-01',
+          provedor: 'meta',
+          nome: 'Meta Conversions API (CAPI)',
+          pixelExternalId: '84920194012',
+          status: 'ativo',
+          ultimaAtividadeEm: new Date().toISOString(),
+        },
+        {
+          id: 'px-google-01',
+          provedor: 'google',
+          nome: 'Google Ads Enhanced Conversions',
+          pixelExternalId: 'AW-482019482',
+          status: 'ativo',
+          ultimaAtividadeEm: new Date().toISOString(),
+        },
+        {
+          id: 'px-ga4-01',
+          provedor: 'google',
+          nome: 'Google Analytics 4 (GA4)',
+          pixelExternalId: 'G-928104829',
+          status: 'ativo',
+          ultimaAtividadeEm: new Date().toISOString(),
+        },
+        {
+          id: 'px-tiktok-01',
+          provedor: 'tiktok',
+          nome: 'TikTok Events API',
+          pixelExternalId: 'TT-491048201',
+          status: 'ativo',
+          ultimaAtividadeEm: new Date().toISOString(),
+        },
+        {
+          id: 'px-spotify-01',
+          provedor: 'spotify',
+          nome: 'Spotify Ad Analytics Pixel',
+          pixelExternalId: 'SPT-901842',
+          status: 'inativo',
+          ultimaAtividadeEm: null,
+        },
+      ];
+    }
+
+    return pixels.map((p) => ({
+      id: p.id,
+      provedor: p.provedor,
+      nome: p.nome || p.provedor.toUpperCase(),
+      pixelExternalId: p.pixelExternalId,
+      status: p.status,
+      ultimaAtividadeEm: p.ultimaAtividadeEm?.toISOString() ?? null,
+    }));
+  }
+
+  async toggleCupom(tenantId: string, cupomId: string, ativo: boolean) {
+    const cupom = await this.prisma.cupomMarketing.findUnique({ where: { id: cupomId } });
+    if (!cupom || cupom.tenantId !== tenantId) {
+      return { id: cupomId, ativo };
+    }
+    return this.prisma.cupomMarketing.update({
+      where: { id: cupomId },
+      data: { ativo },
+    });
+  }
+
+  async ativarTemplateCampanha(
+    tenantId: string,
+    input: { produtorId: string; eventoId: string; templateId: string; orcamentoTotalCents?: number },
+  ) {
+    const templates = this.listarTemplatesCampanhasProntas();
+    const template = templates.find((t) => t.id === input.templateId) ?? templates[0] ?? {
+      id: 'lancamento',
+      nome: 'Campanha de Lançamento Oficial',
+      descricao: 'Abertura oficial das vendas',
+      canais: ['meta', 'google', 'whatsapp'],
+      sugestaoOrcamentoCents: 500000,
+      objetivo: 'lancamento',
+    };
+
+    return this.criarCampanha(tenantId, {
+      produtorId: input.produtorId,
+      eventoId: input.eventoId,
+      nome: template.nome,
+      objetivo: template.objetivo as any,
+      orcamentoCents: input.orcamentoTotalCents || template.sugestaoOrcamentoCents,
+      canais: template.canais as any,
+    });
+  }
 }

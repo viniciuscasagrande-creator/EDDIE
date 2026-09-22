@@ -83,3 +83,40 @@ export const PagarContaSchema = z.object({
 });
 export type PagarContaInput = z.infer<typeof PagarContaSchema>;
 
+export const ResolverDivergenciaSchema = z.object({
+  resolvidaPor: z.string().min(1),
+  justificativa: z.string().min(3).optional(),
+});
+export type ResolverDivergenciaInput = z.infer<typeof ResolverDivergenciaSchema>;
+
+export const ImportarExtratoSchema = z.object({
+  produtorId: z.string().uuid(),
+  adquirente: z.string().min(2),
+  arquivoNome: z.string().min(3),
+  itens: z.array(z.object({
+    transacaoId: z.string().min(1),
+    tipo: z.string().min(1),
+    valorEsperadoCents: z.number().int().positive(),
+    valorRecebidoCents: z.number().int().positive(),
+  })),
+});
+export type ImportarExtratoInput = z.infer<typeof ImportarExtratoSchema>;
+
+export const AprovarRepasseSchema = z.object({
+  aprovadoPor: z.string().min(1),
+  dataProgramada: z.string().datetime().optional(),
+});
+export type AprovarRepasseInput = z.infer<typeof AprovarRepasseSchema>;
+
+export const LiquidarRepasseSchema = z.object({
+  comprovanteId: z.string().min(1),
+  liquidadoPor: z.string().min(1),
+});
+export type LiquidarRepasseInput = z.infer<typeof LiquidarRepasseSchema>;
+
+export const AprovarAntecipacaoSchema = z.object({
+  analisadoPor: z.string().min(1),
+  comprovanteId: z.string().optional(),
+});
+export type AprovarAntecipacaoInput = z.infer<typeof AprovarAntecipacaoSchema>;
+

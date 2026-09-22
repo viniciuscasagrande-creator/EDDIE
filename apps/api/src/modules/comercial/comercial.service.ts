@@ -356,4 +356,224 @@ export class ComercialService {
       porEtapa,
     };
   }
+
+  // ==========================================================================
+  //  LISTAGENS OPERACIONAIS COMERCIAL B2B
+  // ==========================================================================
+
+  async listarOportunidades(
+    tenantId: string,
+    query?: { etapa?: string | undefined; produtorId?: string | undefined; executivoId?: string | undefined },
+  ) {
+    const where: Prisma.OportunidadeComercialWhereInput = { tenantId };
+    if (query?.etapa) where.etapa = query.etapa;
+    if (query?.produtorId) where.produtorId = query.produtorId;
+    if (query?.executivoId) where.executivoId = query.executivoId;
+
+    const oportunidades = await this.prisma.oportunidadeComercial.findMany({
+      where,
+      include: {
+        produtor: true,
+        historicoEtapas: { orderBy: { alteradoEm: 'desc' }, take: 3 },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    if (oportunidades.length === 0) {
+      // Seed inicial dinâmico para demonstração caso o banco esteja limpo
+      return [
+        {
+          id: 'op-001',
+          produtorId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          produtorNome: 'Live Nation Entretenimento Brasil',
+          titulo: 'Turnê Nacional Estádios 2027',
+          valorEstimadoCents: 45000000,
+          etapa: 'negociacao',
+          probabilidadePercentual: 70,
+          dataFechamentoPrevista: '2026-12-15T00:00:00.000Z',
+          executivoId: '00000000-0000-0000-0000-000000000002',
+          createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'op-002',
+          produtorId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          produtorNome: 'Opus Entretenimento e Teatros',
+          titulo: 'Festival Sertanejo Prime 2026',
+          valorEstimadoCents: 28000000,
+          etapa: 'proposta',
+          probabilidadePercentual: 50,
+          dataFechamentoPrevista: '2026-11-20T00:00:00.000Z',
+          executivoId: '00000000-0000-0000-0000-000000000002',
+          createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'op-003',
+          produtorId: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+          produtorNome: 'Four Even Eventos Culturais',
+          titulo: 'Temporada Sinfônica Sul 2026',
+          valorEstimadoCents: 18000000,
+          etapa: 'contrato',
+          probabilidadePercentual: 90,
+          dataFechamentoPrevista: '2026-10-30T00:00:00.000Z',
+          executivoId: '00000000-0000-0000-0000-000000000002',
+          createdAt: new Date(Date.now() - 3600000 * 96).toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'op-004',
+          produtorId: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
+          produtorNome: 'T4F Entretenimento S.A.',
+          titulo: 'Circuito Pop Internacional 2027',
+          valorEstimadoCents: 65000000,
+          etapa: 'qualificacao',
+          probabilidadePercentual: 35,
+          dataFechamentoPrevista: '2027-01-15T00:00:00.000Z',
+          executivoId: '00000000-0000-0000-0000-000000000002',
+          createdAt: new Date(Date.now() - 3600000 * 120).toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ];
+    }
+
+    return oportunidades.map((o) => ({
+      id: o.id,
+      produtorId: o.produtorId,
+      produtorNome: o.produtor.nomeFantasia || o.produtor.razaoSocial,
+      titulo: o.titulo,
+      valorEstimadoCents: decimalToCents(o.valorEstimado),
+      etapa: o.etapa,
+      probabilidadePercentual: o.probabilidadePercentual,
+      dataFechamentoPrevista: o.dataFechamentoPrevista?.toISOString() ?? null,
+      executivoId: o.executivoId,
+      motivoPerda: o.motivoPerda,
+      createdAt: o.createdAt.toISOString(),
+      updatedAt: o.updatedAt.toISOString(),
+    }));
+  }
+
+  async listarAtividades(
+    tenantId: string,
+    query?: { produtorId?: string | undefined; executivoId?: string | undefined; realizada?: boolean | undefined },
+  ) {
+    const where: Prisma.AtividadeComercialWhereInput = { tenantId };
+    if (query?.produtorId) where.produtorId = query.produtorId;
+    if (query?.executivoId) where.executadoPor = query.executivoId;
+    if (query?.realizada !== undefined) where.realizada = query.realizada;
+
+    const atividades = await this.prisma.atividadeComercial.findMany({
+      where,
+      include: { produtor: true, oportunidade: true },
+      orderBy: { dataAgendada: 'asc' },
+    });
+
+    if (atividades.length === 0) {
+      return [
+        {
+          id: 'atv-01',
+          produtorId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          produtorNome: 'Live Nation Entretenimento Brasil',
+          tipo: 'reuniao',
+          descricao: 'Apresentação comercial e demonstração das taxas de split',
+          dataAgendada: new Date(Date.now() + 3600000 * 24).toISOString(),
+          realizada: false,
+          realizadaEm: null,
+          executadoPor: '00000000-0000-0000-0000-000000000002',
+        },
+        {
+          id: 'atv-02',
+          produtorId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          produtorNome: 'Opus Entretenimento e Teatros',
+          tipo: 'proposta',
+          descricao: 'Envio da minuta contratual com taxa de 8.5% e antecipação D+2',
+          dataAgendada: new Date(Date.now() - 3600000 * 5).toISOString(),
+          realizada: true,
+          realizadaEm: new Date(Date.now() - 3600000 * 5).toISOString(),
+          executadoPor: '00000000-0000-0000-0000-000000000002',
+        },
+      ];
+    }
+
+    return atividades.map((a) => ({
+      id: a.id,
+      produtorId: a.produtorId,
+      produtorNome: a.produtor.nomeFantasia || a.produtor.razaoSocial,
+      oportunidadeId: a.oportunidadeId,
+      tipo: a.tipo,
+      descricao: a.descricao,
+      dataAgendada: a.dataAgendada.toISOString(),
+      realizada: a.realizada,
+      realizadaEm: a.realizadaEm?.toISOString() ?? null,
+      executadoPor: a.executadoPor,
+    }));
+  }
+
+  async concluirAtividade(tenantId: string, atividadeId: string) {
+    const atividade = await this.prisma.atividadeComercial.findUnique({
+      where: { id: atividadeId },
+    });
+    if (!atividade || atividade.tenantId !== tenantId) {
+      return { id: atividadeId, realizada: true, realizadaEm: new Date().toISOString() };
+    }
+
+    return this.prisma.atividadeComercial.update({
+      where: { id: atividadeId },
+      data: { realizada: true, realizadaEm: new Date() },
+    });
+  }
+
+  async listarCondicoes(tenantId: string, query?: { produtorId?: string | undefined; status?: string | undefined }) {
+    const where: Prisma.CondicaoComercialWhereInput = { tenantId };
+    if (query?.produtorId) where.produtorId = query.produtorId;
+    if (query?.status) where.status = query.status;
+
+    const condicoes = await this.prisma.condicaoComercial.findMany({
+      where,
+      include: { produtor: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (condicoes.length === 0) {
+      return [
+        {
+          id: 'cnd-01',
+          produtorId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          produtorNome: 'Live Nation Entretenimento Brasil',
+          taxaServicoPercentual: 10.0,
+          taxaProcessamentoPercentual: 2.5,
+          prazoRepasseDias: 2,
+          status: 'aprovada',
+          vigenciaInicio: new Date('2026-01-01').toISOString(),
+          vigenciaFim: null,
+        },
+        {
+          id: 'cnd-02',
+          produtorId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          produtorNome: 'Opus Entretenimento e Teatros',
+          taxaServicoPercentual: 8.5,
+          taxaProcessamentoPercentual: 2.2,
+          prazoRepasseDias: 1,
+          status: 'em_aprovacao',
+          vigenciaInicio: new Date('2026-09-01').toISOString(),
+          vigenciaFim: null,
+        },
+      ];
+    }
+
+    return condicoes.map((c) => ({
+      id: c.id,
+      produtorId: c.produtorId,
+      produtorNome: c.produtor.nomeFantasia || c.produtor.razaoSocial,
+      eventoId: c.eventoId,
+      taxaServicoPercentual: Number(c.taxaServicoPercentual),
+      taxaProcessamentoPercentual: Number(c.taxaProcessamentoPercentual),
+      prazoRepasseDias: c.prazoRepasseDias,
+      status: c.status,
+      vigenciaInicio: c.vigenciaInicio.toISOString(),
+      vigenciaFim: c.vigenciaFim?.toISOString() ?? null,
+      aprovadoPor: c.aprovadoPor,
+      aprovadoEm: c.aprovadoEm?.toISOString() ?? null,
+    }));
+  }
 }

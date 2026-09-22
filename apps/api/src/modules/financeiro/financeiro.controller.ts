@@ -22,6 +22,11 @@ import {
   CriarContaPagarSchema,
   ExtratoQuerySchema,
   PagarContaSchema,
+  ResolverDivergenciaSchema,
+  ImportarExtratoSchema,
+  AprovarRepasseSchema,
+  LiquidarRepasseSchema,
+  AprovarAntecipacaoSchema,
   type SolicitarTransferenciaInterEventoInput,
   type SolicitarRepasseInput,
   type SimularAntecipacaoInput,
@@ -29,6 +34,11 @@ import {
   type CriarContaPagarInput,
   type ExtratoQueryInput,
   type PagarContaInput,
+  type ResolverDivergenciaInput,
+  type ImportarExtratoInput,
+  type AprovarRepasseInput,
+  type LiquidarRepasseInput,
+  type AprovarAntecipacaoInput,
 } from './financeiro.dto';
 
 class ZodValidationPipe implements PipeTransform {
@@ -243,5 +253,135 @@ export class FinanceiroController {
       produtorId,
       eventoId,
     );
+  }
+
+  // ==========================================================================
+  //  OPERAÇÃO DE REPASSES (Aprovação, Liquidação e Cancelamento)
+  // ==========================================================================
+
+  @Post('repasses/:id/aprovar')
+  @ApiOperation({ summary: 'Aprova solicitação de repasse Pix e agenda a liquidação bancária' })
+  @UsePipes(new ZodValidationPipe(AprovarRepasseSchema))
+  async aprovarRepasse(
+    @Param('id') repasseId: string,
+    @Body() input: AprovarRepasseInput,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.aprovarRepasse(
+      tenantId,
+      repasseId,
+      input.aprovadoPor,
+      input.dataProgramada,
+    );
+  }
+
+  @Post('repasses/:id/liquidar')
+  @ApiOperation({ summary: 'Efetua liquidação bancária do repasse Pix com comprovante e baixa no Ledger' })
+  @UsePipes(new ZodValidationPipe(LiquidarRepasseSchema))
+  async liquidarRepasse(
+    @Param('id') repasseId: string,
+    @Body() input: LiquidarRepasseInput,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.liquidarRepasse(
+      tenantId,
+      repasseId,
+      input.comprovanteId,
+      input.liquidadoPor,
+    );
+  }
+
+  @Post('repasses/:id/cancelar')
+  @ApiOperation({ summary: 'Cancela solicitação de repasse e devolve saldo cautelarmente retido ao disponível' })
+  async cancelarRepasse(
+    @Param('id') repasseId: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.cancelarRepasse(tenantId, repasseId);
+  }
+
+  // ==========================================================================
+  //  OPERAÇÃO DE ANTECIPAÇÕES
+  // ==========================================================================
+
+  @Get('antecipacoes/:produtorId')
+  @ApiOperation({ summary: 'Lista solicitações de antecipação do produtor' })
+  async listarAntecipacoes(
+    @Param('produtorId') produtorId: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.listarAntecipacoes(tenantId, produtorId);
+  }
+
+  @Post('antecipacoes/:id/aprovar')
+  @ApiOperation({ summary: 'Aprova e liquida antecipação com lançamento no saldo disponível' })
+  @UsePipes(new ZodValidationPipe(AprovarAntecipacaoSchema))
+  async aprovarAntecipacao(
+    @Param('id') antecipacaoId: string,
+    @Body() input: AprovarAntecipacaoInput,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.aprovarAntecipacao(
+      tenantId,
+      antecipacaoId,
+      input.analisadoPor,
+      input.comprovanteId,
+    );
+  }
+
+  // ==========================================================================
+  //  CONCILIAÇÃO FINANCEIRA & DIVERGÊNCIAS
+  // ==========================================================================
+
+  @Get('conciliacao/divergencias')
+  @ApiOperation({ summary: 'Lista divergências de conciliação financeira entre adquirentes e ledger' })
+  async listarDivergenciasConciliacao(
+    @Query('produtorId') produtorId?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.listarDivergenciasConciliacao(tenantId, produtorId);
+  }
+
+  @Post('conciliacao/divergencias/:id/resolver')
+  @ApiOperation({ summary: 'Resolve divergência de conciliação com auditoria e justificativa' })
+  @UsePipes(new ZodValidationPipe(ResolverDivergenciaSchema))
+  async resolverDivergencia(
+    @Param('id') id: string,
+    @Body() input: ResolverDivergenciaInput,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.resolverDivergencia(tenantId, id, input);
+  }
+
+  @Post('conciliacao/importar-extrato')
+  @ApiOperation({ summary: 'Importa lote de conciliação adquirente gerando batimento com ledger' })
+  @UsePipes(new ZodValidationPipe(ImportarExtratoSchema))
+  async importarExtrato(
+    @Body() input: ImportarExtratoInput,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.importarExtratoConciliacao(tenantId, input);
+  }
+
+  // ==========================================================================
+  //  CONTAS FINANCEIRAS & BANCOS
+  // ==========================================================================
+
+  @Get('contas-financeiras')
+  @ApiOperation({ summary: 'Lista contas bancárias e adquirentes homologadas com saldos operacionais' })
+  async listarContasFinanceiras(
+    @Query('produtorId') produtorId?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.listarContasFinanceiras(tenantId, produtorId);
   }
 }

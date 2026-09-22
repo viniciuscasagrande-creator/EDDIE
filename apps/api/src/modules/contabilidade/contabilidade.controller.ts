@@ -164,4 +164,48 @@ export class ContabilidadeController {
     const tenantId = resolveTenant(tenantIdHeader);
     return this.contabilidadeService.obterDashboard(tenantId, competencia);
   }
+
+  // ==========================================================================
+  //  CENTRO DE CONTROLE DE EVENTOS & LANÇAMENTOS
+  // ==========================================================================
+
+  @Get('centro-controle-eventos')
+  @ApiOperation({ summary: 'Painel matricial relacionando cada evento à competência, conciliação e fechamento' })
+  async obterCentroControleEventos(
+    @Query('competencia') competencia: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.contabilidadeService.obterCentroControleEventos(tenantId, competencia || '2026-09');
+  }
+
+  @Get('lancamentos')
+  @ApiOperation({ summary: 'Lista os lançamentos contábeis em partidas dobradas (Livro Diário / Razão)' })
+  async listarLancamentos(
+    @Query('competencia') competencia?: string,
+    @Query('eventoId') eventoId?: string,
+    @Query('origemTipo') origemTipo?: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.contabilidadeService.listarLancamentos(tenantId, {
+      competencia,
+      eventoId,
+      origemTipo,
+      limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
+    });
+  }
+
+  @Get('conciliacoes')
+  @ApiOperation({ summary: 'Lista conciliações contábeis realizadas na competência' })
+  async listarConciliacoes(
+    @Query('competencia') competencia: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.contabilidadeService.listarConciliacoes(tenantId, competencia || '2026-09');
+  }
 }
