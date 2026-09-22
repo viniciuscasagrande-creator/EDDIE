@@ -16,6 +16,14 @@ export class EventosService {
     private readonly outbox: OutboxService,
   ) {}
 
+  async listarPorProdutor(tenantId: string, produtorId: string) {
+    return this.prisma.evento.findMany({
+      where: { tenantId, produtorId },
+      select: { id: true, nome: true, slug: true, status: true, imagemUrl: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async criar(tenantId: string, dto: CriarEventoDto, atorId: string) {
     return this.prisma.evento.create({
       data: { ...dto, tenantId, status: 'rascunho' },

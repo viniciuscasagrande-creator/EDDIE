@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
+import { ProducerEventProvider } from '../components/ProducerEventContext';
 
 export const metadata: Metadata = {
   title: 'DiskIngressos PDT • Painel do Produtor',
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="bg-[#0B0F19] text-slate-100 flex min-h-screen">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <Header />
-          <main className="flex-1 p-8 overflow-y-auto">{children}</main>
-        </div>
+        <ProducerEventProvider>
+          <Sidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <Header />
+            <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+          </div>
+        </ProducerEventProvider>
       </body>
     </html>
   );

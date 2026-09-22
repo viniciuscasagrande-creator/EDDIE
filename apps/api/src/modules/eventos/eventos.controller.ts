@@ -14,6 +14,12 @@ const ATOR = (req?: unknown) => '00000000-0000-0000-0000-000000000002';
 export class EventosController {
   constructor(private readonly service: EventosService) {}
 
+  @Get('produtor/:produtorId')
+  @ApiOperation({ summary: 'Lista os eventos pertencentes ao produtor para seleção de contexto no PDT' })
+  listarPorProdutor(@Param('produtorId') produtorId: string) {
+    return this.service.listarPorProdutor(TENANT(), produtorId);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Cria um evento em rascunho' })
   criar(@Body() dto: CriarEventoDto) {
