@@ -224,121 +224,185 @@ function inicializarStore(): StoreState {
     divergencias: [
       {
         id: 'div-1',
-        data: '2026-09-18',
-        descricao: 'Tarifa de Liquidação Pix Não Conciliada no Extrato Itaú',
-        valorExtratoCents: 380,
-        valorLedgerCents: 0,
+        produtorId: DEFAULT_PRODUTOR_ID,
+        adquirente: 'Banco Itaú S.A. (341)',
+        transacaoId: 'TX-PIX-8492019',
+        tipo: 'tarifa_nao_lancada',
+        valorEsperadoCents: 0,
+        valorRecebidoCents: 380,
         diferencaCents: 380,
-        tipo: 'TARIFA_NAO_LANCADA',
-        status: 'pendente',
+        resolvida: false,
+        detectadaEm: new Date(Date.now() - 86400000 * 3).toISOString(),
+        descricao: 'Tarifa de Liquidação Pix Não Conciliada no Extrato Itaú',
       },
     ],
     contasFinanceiras: [
       {
         id: 'cf-itau',
         banco: 'Banco Itaú S.A. (341)',
-        tipo: 'bancaria',
+        instituicao: 'Banco Itaú S.A. (341)',
+        apelido: 'Conta Movimento Principal',
+        tipo: 'banco',
         agencia: '0450',
         conta: '98402-1',
+        chavePix: 'financeiro@diskingressos.com.br',
         titular: 'DiskIngressos Serviços de Bilheteria Ltda',
         saldoDisponivelCents: 9540000,
+        saldoEstimadoCents: 9540000,
         saldoBloqueadoCents: 500000,
         status: 'ativa',
+        homologada: true,
         principal: true,
+        ultimaConciliacaoEm: new Date().toISOString(),
       },
       {
         id: 'cf-cora',
         banco: 'Banco Cora SCD (403)',
-        tipo: 'bancaria',
+        instituicao: 'Banco Cora SCD (403)',
+        apelido: 'Liquidação Pix Instantâneo',
+        tipo: 'banco',
         agencia: '0001',
         conta: '148209-3',
+        chavePix: 'pix@diskingressos.com.br',
         titular: 'DiskIngressos Arrecadação Pix',
         saldoDisponivelCents: 3210000,
+        saldoEstimadoCents: 3210000,
         saldoBloqueadoCents: 0,
         status: 'ativa',
+        homologada: true,
         principal: false,
+        ultimaConciliacaoEm: new Date().toISOString(),
       },
       {
         id: 'cf-pagarme',
         banco: 'Pagar.me Gateway de Pagamento',
-        tipo: 'gateway',
+        instituicao: 'Pagar.me V5 (Stone Co.)',
+        apelido: 'Gateway Cartão de Crédito & Débito',
+        tipo: 'adquirente',
+        agencia: '-',
+        conta: 'MID-849201',
+        chavePix: '-',
         titular: 'Conta Custódia Cartão de Crédito',
         saldoDisponivelCents: 15400000,
+        saldoEstimadoCents: 15400000,
         saldoBloqueadoCents: 1200000,
         status: 'ativa',
+        homologada: true,
+        splitAutomatico: true,
+        taxaMediaPercentual: 2.8,
         principal: false,
+        ultimaConciliacaoEm: new Date().toISOString(),
       },
     ],
     oportunidades: [
       {
         id: 'op-1',
+        produtorId: DEFAULT_PRODUTOR_ID,
+        produtorNome: 'Live Nation Brasil Produções',
         titulo: 'Festival Gastronômico da Serra 2027',
         empresa: 'Serra Eventos & Turismo',
         contatoNome: 'Roberto Mendes',
         contatoEmail: 'roberto@serraeventos.com.br',
         valorEstimado: 350000,
+        valorEstimadoCents: 35000000,
         etapa: 'proposta',
         probabilidade: 70,
+        probabilidadePercentual: 70,
         fechamentoPrevisto: '2026-11-30',
+        dataFechamentoPrevista: '2026-11-30',
+        executivoId: '00000000-0000-0000-0000-000000000002',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 'op-2',
+        produtorId: DEFAULT_PRODUTOR_ID,
+        produtorNome: 'Girasol Produções Artísticas',
         titulo: 'Turnê Acústica MPB - 12 Cidades',
         empresa: 'Girasol Produções Artísticas',
         contatoNome: 'Luciana Ferreira',
         contatoEmail: 'luciana@girasol.com.br',
         valorEstimado: 620000,
+        valorEstimadoCents: 62000000,
         etapa: 'negociacao',
         probabilidade: 85,
+        probabilidadePercentual: 85,
         fechamentoPrevisto: '2026-10-15',
+        dataFechamentoPrevista: '2026-10-15',
+        executivoId: '00000000-0000-0000-0000-000000000002',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 'op-3',
+        produtorId: DEFAULT_PRODUTOR_ID,
+        produtorNome: 'SportLife Brasil Eventos Esportivos',
         titulo: 'Circuito Corrida Noturna 10K',
         empresa: 'SportLife Brasil',
         contatoNome: 'Carlos Eduardo',
         contatoEmail: 'carlos@sportlife.com.br',
         valorEstimado: 180000,
-        etapa: 'fechado_ganho',
+        valorEstimadoCents: 18000000,
+        etapa: 'ganho',
         probabilidade: 100,
+        probabilidadePercentual: 100,
         fechamentoPrevisto: '2026-09-10',
+        dataFechamentoPrevista: '2026-09-10',
+        executivoId: '00000000-0000-0000-0000-000000000002',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     ],
     produtoresB2B: [
       {
         id: DEFAULT_PRODUTOR_ID,
-        razaoSocial: 'DiskIngressos Produtora Master Oficial',
+        razaoSocial: 'DiskIngressos Produtora Master Oficial Ltda',
         nomeFantasia: 'Produtor Master DiskIngressos',
         cnpj: '12.345.678/0001-90',
+        documento: '12.345.678/0001-90',
+        email: 'produtor@diskingressos.com.br',
         emailCorporativo: 'produtor@diskingressos.com.br',
         telefone: '(41) 3315-0808',
         cidade: 'Curitiba',
         estado: 'PR',
         taxaConvenienciaPadrao: 10,
         status: 'ativo',
+        executivoResponsavelId: '00000000-0000-0000-0000-000000000002',
+        createdAt: '2026-01-01T00:00:00.000Z',
       },
     ],
     condicoes: [
       {
         id: 'cond-1',
         produtorId: DEFAULT_PRODUTOR_ID,
+        produtorNome: 'DiskIngressos Produtora Master Oficial Ltda',
+        taxaServicoPercentual: 10,
+        taxaProcessamentoPercentual: 2.5,
+        prazoRepasseDias: 2,
         taxaConvenienciaPercentual: 10,
         splitConvenienciaPercentual: 100,
         taxaFixaPorIngressoCents: 0,
         diasParaRepasse: 2,
         retencaoEstornoPercentual: 5,
         status: 'vigente',
+        vigenciaInicio: '2026-01-01',
         aprovadoEm: '2026-01-10T10:00:00.000Z',
+        aprovadoPor: 'Diretoria Comercial',
       },
     ],
     atividades: [
       {
         id: 'atv-1',
+        produtorId: DEFAULT_PRODUTOR_ID,
+        produtorNome: 'Live Nation Brasil Produções',
         oportunidadeId: 'op-2',
         titulo: 'Alinhar minuta de split de conveniência com o jurídico do produtor',
+        descricao: 'Alinhar minuta de split de conveniência com o jurídico do produtor',
         tipo: 'reuniao',
+        dataAgendada: '2026-09-24T14:30:00.000Z',
         dataHora: '2026-09-24T14:30:00.000Z',
-        concluida: false,
+        realizada: false,
+        executadoPor: 'Executivo Comercial',
       },
     ],
     campanhas: [
@@ -555,6 +619,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
   const { searchParams } = new URL(req.url);
 
   // 1. EVENTOS
+  if (fullPath === 'eventos/locais') {
+    return NextResponse.json([
+      { id: 'loc-1', nome: 'Pedreira Paulo Leminski', cidade: 'Curitiba', uf: 'PR', capacidadeTotal: 25000 },
+      { id: 'loc-2', nome: 'Allianz Parque', cidade: 'São Paulo', uf: 'SP', capacidadeTotal: 45000 },
+      { id: 'loc-3', nome: 'Teatro Positivo', cidade: 'Curitiba', uf: 'PR', capacidadeTotal: 2400 },
+    ]);
+  }
   if (fullPath.startsWith('eventos/produtor/')) {
     return NextResponse.json(store.eventos);
   }
@@ -712,11 +783,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
   }
   if (fullPath === 'comercial/pipeline/resumo') {
     const totalOps = store.oportunidades.length;
-    const totalCents = store.oportunidades.reduce((a, b) => a + (b.valorEstimado || 0) * 100, 0);
+    const totalCents = store.oportunidades.reduce((a, b) => a + (b.valorEstimadoCents || (b.valorEstimado || 0) * 100), 0);
+    const porEtapa: Record<string, { quantidade: number; valorTotalCents: number }> = {};
+    for (const op of store.oportunidades) {
+      const etapa = op.etapa || 'prospeccao';
+      const c = op.valorEstimadoCents || (op.valorEstimado || 0) * 100;
+      if (!porEtapa[etapa]) {
+        porEtapa[etapa] = { quantidade: 0, valorTotalCents: 0 };
+      }
+      porEtapa[etapa].quantidade += 1;
+      porEtapa[etapa].valorTotalCents += c;
+    }
     return NextResponse.json({
       totalOportunidades: totalOps,
       valorTotalEstimadoCents: totalCents,
-      porEtapa: {},
+      porEtapa,
     });
   }
   if (fullPath === 'comercial/produtores') {
@@ -897,6 +978,50 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
     }
   }
 
+  if (fullPath.startsWith('eventos/sessoes/') && fullPath.endsWith('/setores')) {
+    const sessaoId = pathParts[2];
+    for (const ev of store.eventos) {
+      const sess = ev.sessoes?.find((s: any) => s.id === sessaoId);
+      if (sess) {
+        const setor = {
+          id: `set-${Date.now()}`,
+          nome: body.nome || 'Pista',
+          marcado: Boolean(body.marcado),
+          capacidade: Number(body.capacidade || 1000),
+        };
+        sess.setores = sess.setores || [];
+        sess.setores.push(setor);
+        return NextResponse.json(setor, { status: 201 });
+      }
+    }
+  }
+
+  if (fullPath.startsWith('eventos/sessoes/') && fullPath.endsWith('/lotes')) {
+    const sessaoId = pathParts[2];
+    for (const ev of store.eventos) {
+      const sess = ev.sessoes?.find((s: any) => s.id === sessaoId);
+      if (sess) {
+        const lote = {
+          id: `lot-${Date.now()}`,
+          setorId: body.setorId,
+          nome: body.nome || '1º Lote',
+          ordem: Number(body.ordem || 1),
+          precoFace: Number(body.precoFace || 0),
+          precoFaceCents: Number(body.precoFace || 0) * 100,
+          taxaConveniencia: Number(body.taxaConveniencia || 10),
+          taxaConvenienciaPercentual: Number(body.taxaConveniencia || 10),
+          quantidadeTotal: Number(body.quantidade || 100),
+          quantidadeDisponivel: Number(body.quantidade || 100),
+          status: 'aberto',
+          abreEm: body.abreEm || new Date().toISOString(),
+        };
+        sess.lotes = sess.lotes || [];
+        sess.lotes.push(lote);
+        return NextResponse.json(lote, { status: 201 });
+      }
+    }
+  }
+
   // 2. FINANCEIRO
   if (fullPath === 'financeiro/transferencias/inter-eventos') {
     const { eventoOrigemId, eventoDestinoId, valorCents, justificativa } = body;
@@ -1041,21 +1166,192 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
     return NextResponse.json(item, { status: 201 });
   }
 
+  if (fullPath === 'financeiro/conciliacao/importar-extrato') {
+    let divergenciasDetectadas = 0;
+    const itens = Array.isArray(body.itens) ? body.itens : [];
+    for (const item of itens) {
+      const diferenca = Number(item.valorEsperadoCents || 0) - Number(item.valorRecebidoCents || 0);
+      if (diferenca !== 0) {
+        divergenciasDetectadas++;
+        store.divergencias.unshift({
+          id: `div-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          data: new Date().toISOString().slice(0, 10),
+          descricao: `Divergência detectada no lote ${body.arquivoNome || 'OFX'} - Transação ${item.transacaoId}`,
+          valorExtratoCents: Number(item.valorRecebidoCents || 0),
+          valorLedgerCents: Number(item.valorEsperadoCents || 0),
+          diferencaCents: diferenca,
+          tipo: item.tipo || 'divergencia_extrato',
+          status: 'pendente',
+          adquirente: body.adquirente || 'Pagar.me V5',
+          transacaoId: item.transacaoId || `tx-${Date.now()}`,
+          detectadaEm: new Date().toISOString(),
+          resolvida: false,
+          valorEsperadoCents: Number(item.valorEsperadoCents || 0),
+          valorRecebidoCents: Number(item.valorRecebidoCents || 0),
+        });
+      }
+    }
+    return NextResponse.json({
+      arquivo: body.arquivoNome,
+      adquirente: body.adquirente,
+      totalProcessadas: itens.length,
+      divergenciasDetectadas,
+      status: divergenciasDetectadas === 0 ? 'conciliado_perfeito' : 'divergencias_encontradas',
+      processadoEm: new Date().toISOString(),
+    });
+  }
+
+  if (fullPath.startsWith('financeiro/conciliacao/divergencias/') && fullPath.endsWith('/resolver')) {
+    const id = pathParts[3];
+    const div = store.divergencias.find((d: any) => d.id === id);
+    if (div) {
+      div.resolvida = true;
+      div.status = 'resolvida';
+      div.resolvidaEm = new Date().toISOString();
+      div.resolvidaPor = body.resolvidaPor || 'Auditoria Financeira';
+    }
+    return NextResponse.json({ ok: true, divergencia: div });
+  }
+
+  // 2.5 CONTABILIDADE
+  if (fullPath === 'contabilidade/fechamento') {
+    return NextResponse.json({
+      ok: true,
+      competencia: body.competencia || '2026-09',
+      fechadoPor: body.fechadoPor || '00000000-0000-0000-0000-000000000002',
+      fechadoEm: new Date().toISOString(),
+      hashIntegridade: `sha256-${Date.now().toString(16)}`,
+    });
+  }
+
+  if (fullPath === 'contabilidade/reabertura') {
+    return NextResponse.json({
+      ok: true,
+      competencia: body.competencia || '2026-09',
+      reabertoPor: body.reabertoPor,
+      motivo: body.motivo,
+      reabertoEm: new Date().toISOString(),
+    });
+  }
+
+  if (fullPath === 'contabilidade/lancamentos') {
+    const debitos = (body.partidas || []).filter((p: any) => p.tipo === 'D').reduce((a: number, b: any) => a + Number(b.valorCents || 0), 0);
+    const creditos = (body.partidas || []).filter((p: any) => p.tipo === 'C').reduce((a: number, b: any) => a + Number(b.valorCents || 0), 0);
+    const novo = {
+      id: `ld-${Date.now()}`,
+      numeroLancamento: 100 + Math.floor(Math.random() * 900),
+      data: body.data || new Date().toISOString().slice(0, 10),
+      competencia: body.competencia || '2026-09',
+      historico: body.historico || 'Lançamento Contábil Manual',
+      debitosCents: debitos || Number(body.totalCents || 0),
+      creditosCents: creditos || Number(body.totalCents || 0),
+      partidas: body.partidas || [],
+      status: 'efetivado',
+    };
+    return NextResponse.json(novo, { status: 201 });
+  }
+
+  if (fullPath.startsWith('contabilidade/conciliacoes/') && fullPath.endsWith('/conciliar')) {
+    return NextResponse.json({ ok: true, conciliadoEm: new Date().toISOString() });
+  }
+
   // 3. COMERCIAL
   if (fullPath === 'comercial/oportunidades') {
+    const valor = Number(body.valorEstimado || 0);
+    const valorCents = body.valorEstimadoCents ? Number(body.valorEstimadoCents) : valor * 100;
     const op = {
       id: `op-${Date.now()}`,
+      produtorId: body.produtorId || DEFAULT_PRODUTOR_ID,
+      produtorNome: body.empresa || 'Produtor Homologado',
       titulo: body.titulo,
       empresa: body.empresa,
       contatoNome: body.contatoNome,
       contatoEmail: body.contatoEmail,
-      valorEstimado: Number(body.valorEstimado || 0),
+      valorEstimado: valor || valorCents / 100,
+      valorEstimadoCents: valorCents,
       etapa: body.etapa || 'qualificacao',
       probabilidade: 50,
+      probabilidadePercentual: 50,
       fechamentoPrevisto: body.fechamentoPrevisto || '2026-12-31',
+      dataFechamentoPrevista: body.fechamentoPrevisto || '2026-12-31',
+      executivoId: '00000000-0000-0000-0000-000000000002',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     store.oportunidades.unshift(op);
     return NextResponse.json(op, { status: 201 });
+  }
+
+  if (fullPath === 'comercial/produtores') {
+    const produtor = {
+      id: `prod-${Date.now()}`,
+      razaoSocial: body.razaoSocial,
+      nomeFantasia: body.nomeFantasia || body.razaoSocial,
+      documento: body.documento,
+      cnpj: body.documento,
+      email: body.email,
+      emailCorporativo: body.email,
+      telefone: body.telefone || '(41) 99999-9999',
+      cidade: 'Curitiba',
+      estado: 'PR',
+      taxaConvenienciaPadrao: 10,
+      status: 'ativo',
+      executivoResponsavelId: body.executivoResponsavelId || '00000000-0000-0000-0000-000000000002',
+      createdAt: new Date().toISOString(),
+    };
+    store.produtoresB2B.unshift(produtor);
+    return NextResponse.json(produtor, { status: 201 });
+  }
+
+  if (fullPath === 'comercial/condicoes') {
+    const cond = {
+      id: `cnd-${Date.now()}`,
+      produtorId: body.produtorId || DEFAULT_PRODUTOR_ID,
+      produtorNome: body.produtorNome || 'DiskIngressos Produtora Master Oficial Ltda',
+      eventoId: body.eventoId || null,
+      taxaServicoPercentual: Number(body.taxaServicoPercentual || 10),
+      taxaProcessamentoPercentual: Number(body.taxaProcessamentoPercentual || 2.5),
+      prazoRepasseDias: Number(body.prazoRepasseDias || 2),
+      taxaConvenienciaPercentual: Number(body.taxaServicoPercentual || 10),
+      splitConvenienciaPercentual: 100,
+      taxaFixaPorIngressoCents: 0,
+      diasParaRepasse: Number(body.prazoRepasseDias || 2),
+      retencaoEstornoPercentual: 5,
+      status: 'em_aprovacao',
+      vigenciaInicio: body.vigenciaInicio || new Date().toISOString().slice(0, 10),
+      createdAt: new Date().toISOString(),
+    };
+    store.condicoes.unshift(cond);
+    return NextResponse.json(cond, { status: 201 });
+  }
+
+  if (fullPath.startsWith('comercial/condicoes/') && fullPath.endsWith('/aprovar')) {
+    const id = pathParts[2];
+    const c = store.condicoes.find((x: any) => x.id === id);
+    if (c) {
+      c.status = 'vigente';
+      c.aprovadoEm = new Date().toISOString();
+      c.aprovadoPor = body.aprovadoPor || 'Diretoria Comercial';
+    }
+    return NextResponse.json({ ok: true, condicao: c });
+  }
+
+  if (fullPath === 'comercial/atividades') {
+    const atv = {
+      id: `atv-${Date.now()}`,
+      produtorId: body.produtorId || DEFAULT_PRODUTOR_ID,
+      produtorNome: body.produtorNome || 'Produtor',
+      oportunidadeId: body.oportunidadeId || null,
+      tipo: body.tipo || 'contato',
+      titulo: body.descricao || body.titulo || 'Follow-up comercial',
+      descricao: body.descricao || body.titulo || 'Follow-up comercial',
+      dataAgendada: body.dataAgendada || new Date().toISOString(),
+      dataHora: body.dataAgendada || new Date().toISOString(),
+      realizada: false,
+      executadoPor: 'Executivo Comercial',
+    };
+    store.atividades.unshift(atv);
+    return NextResponse.json(atv, { status: 201 });
   }
 
   // 4. MARKETING
@@ -1075,7 +1371,38 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
     return NextResponse.json(template, { status: 201 });
   }
 
-  if (fullPath === 'marketing/utms') {
+  if (fullPath === 'marketing/campanhas') {
+    const item = {
+      id: `camp-${Date.now()}`,
+      eventoId: body.eventoId || store.eventos[0]?.id,
+      nome: body.nome,
+      tipo: body.objetivo || 'conversao',
+      status: 'ativa',
+      orcamentoDiarioCents: Number(body.orcamentoCents || 100000),
+      cliques: 0,
+      conversoes: 0,
+      receitaAtribuidaCents: 0,
+    };
+    store.campanhas.unshift(item);
+    return NextResponse.json(item, { status: 201 });
+  }
+
+  if (fullPath === 'marketing/pixels') {
+    const item = {
+      id: `pix-${Date.now()}`,
+      eventoId: body.eventoId,
+      provedor: body.provedor || 'meta',
+      plataforma: body.provedor || 'meta',
+      pixelExternalId: body.pixelExternalId,
+      pixelId: body.pixelExternalId,
+      ativo: true,
+      createdAt: new Date().toISOString(),
+    };
+    store.pixels.unshift(item);
+    return NextResponse.json(item, { status: 201 });
+  }
+
+  if (fullPath === 'marketing/links' || fullPath === 'marketing/utms') {
     const item = {
       id: `utm-${Date.now()}`,
       eventoId: body.eventoId,
@@ -1242,9 +1569,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ pa
     const id = pathParts[2];
     const op = store.oportunidades.find((o) => o.id === id);
     if (op) {
-      op.etapa = body.etapa;
+      op.etapa = body.etapaNova || body.etapa || op.etapa;
     }
     return NextResponse.json({ ok: true, oportunidade: op });
+  }
+
+  // 1.5 MARKETING: Atualizar status da campanha
+  if (fullPath.startsWith('marketing/campanhas/') && fullPath.endsWith('/status')) {
+    const id = pathParts[2];
+    const camp = store.campanhas.find((c: any) => c.id === id);
+    if (camp) {
+      camp.status = body.status;
+    }
+    return NextResponse.json({ ok: true, campanha: camp });
   }
 
   // 2. SAC: Atualizar status do chamado

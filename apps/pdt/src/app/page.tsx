@@ -68,7 +68,7 @@ export default function DashboardPage() {
         const cliques = lista.reduce((acc: number, c: any) => acc + (c.cliques || 0), 0);
         const conversoes = lista.reduce((acc: number, c: any) => acc + (c.conversoes || 0), 0);
         const gasto = lista.reduce((acc: number, c: any) => acc + (c.orcamentoDiarioCents || 0), 0);
-        const roasCalc = gasto > 0 ? (receita / gasto).toFixed(1) + 'x' : receita > 0 ? '4.2x' : '—';
+        const roasCalc = gasto > 0 ? (receita / gasto).toFixed(1) + 'x' : '—';
 
         setMarketing({
           receitaAtribuidaCents: receita,

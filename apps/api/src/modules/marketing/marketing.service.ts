@@ -302,7 +302,7 @@ export class MarketingService {
   // ==========================================================================
 
   /**
-   * Constrói link rastreado com parâmetros UTM e placeholder QR Code.
+   * Constrói link rastreado com parâmetros UTM e renderização de QR Code.
    */
   async gerarLinkUtm(tenantId: string, input: GerarLinkUtmInput) {
     const url = new URL(input.urlDestino);

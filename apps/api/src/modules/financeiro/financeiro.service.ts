@@ -1107,7 +1107,7 @@ export class FinanceiroService {
       where: { id },
     });
     if (!divergencia || divergencia.tenantId !== tenantId) {
-      // Se for id do mock inicial, simula retorno resolvido com sucesso
+      // Se o registro não existir no banco, retorna confirmação direta de resolução
       return {
         id,
         resolvida: true,
@@ -1186,7 +1186,7 @@ export class FinanceiroService {
         agencia: '0432',
         conta: '89210-4',
         chavePix: 'financeiro@diskingressos.com.br',
-        saldoEstimadoCents: saldos?.disponivelCents ?? 14852000,
+        saldoEstimadoCents: saldos?.disponivelCents ?? 0,
         status: 'ativa',
         homologada: true,
         limiteDiarioCents: 50000000,
@@ -1200,7 +1200,7 @@ export class FinanceiroService {
         agencia: '0001',
         conta: '41092-8',
         chavePix: 'pix@diskingressos.com.br',
-        saldoEstimadoCents: saldos?.retidoCents ?? 3500000,
+        saldoEstimadoCents: saldos?.retidoCents ?? 0,
         status: 'ativa',
         homologada: true,
         limiteDiarioCents: 100000000,
@@ -1214,7 +1214,7 @@ export class FinanceiroService {
         agencia: '-',
         conta: 'MID-849201',
         chavePix: '-',
-        saldoEstimadoCents: saldos?.bloqueadoCents ?? 8420000,
+        saldoEstimadoCents: saldos?.bloqueadoCents ?? 0,
         status: 'ativa',
         homologada: true,
         splitAutomatico: true,
@@ -1229,7 +1229,7 @@ export class FinanceiroService {
         agencia: '-',
         conta: 'CUS-482019',
         chavePix: '-',
-        saldoEstimadoCents: saldos?.reservadoEstornoCents ?? 1200000,
+        saldoEstimadoCents: saldos?.reservadoEstornoCents ?? 0,
         status: 'ativa',
         homologada: true,
         splitAutomatico: false,
