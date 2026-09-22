@@ -873,6 +873,7 @@ model ChamadoSac {
   eventoId      String?   @db.Uuid
   assunto       String
   descricao     String
+  categoria     String?
   canal         String
   prioridade    String    @default("normal")
   status        String    @default("aberto")
@@ -882,10 +883,27 @@ model ChamadoSac {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  mensagens     MensagemSac[]
+
   @@index([tenantId, status])
   @@index([tenantId, cpf])
   @@index([tenantId, telefone])
   @@map("chamados")
+  @@schema("sac")
+}
+
+model MensagemSac {
+  id            String      @id @default(uuid()) @db.Uuid
+  tenantId      String      @db.Uuid
+  chamadoId     String      @db.Uuid
+  chamado       ChamadoSac  @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  autorTipo     String      // 'agente' | 'cliente' | 'sistema'
+  autorNome     String
+  conteudo      String
+  createdAt     DateTime    @default(now())
+
+  @@index([tenantId, chamadoId])
+  @@map("mensagens_sac")
   @@schema("sac")
 }
 
@@ -904,6 +922,7 @@ model OcorrenciaEvento {
   prioridade    String    @default("normal")
   status        String    @default("aberto")
   responsavelId String?
+  solucao       String?
   resolvidoEm   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
