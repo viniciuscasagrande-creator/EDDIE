@@ -379,63 +379,6 @@ export class ComercialService {
       orderBy: { updatedAt: 'desc' },
     });
 
-    if (oportunidades.length === 0) {
-      // Seed inicial dinâmico para demonstração caso o banco esteja limpo
-      return [
-        {
-          id: 'op-001',
-          produtorId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-          produtorNome: 'Live Nation Entretenimento Brasil',
-          titulo: 'Turnê Nacional Estádios 2027',
-          valorEstimadoCents: 45000000,
-          etapa: 'negociacao',
-          probabilidadePercentual: 70,
-          dataFechamentoPrevista: '2026-12-15T00:00:00.000Z',
-          executivoId: '00000000-0000-0000-0000-000000000002',
-          createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'op-002',
-          produtorId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-          produtorNome: 'Opus Entretenimento e Teatros',
-          titulo: 'Festival Sertanejo Prime 2026',
-          valorEstimadoCents: 28000000,
-          etapa: 'proposta',
-          probabilidadePercentual: 50,
-          dataFechamentoPrevista: '2026-11-20T00:00:00.000Z',
-          executivoId: '00000000-0000-0000-0000-000000000002',
-          createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'op-003',
-          produtorId: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
-          produtorNome: 'Four Even Eventos Culturais',
-          titulo: 'Temporada Sinfônica Sul 2026',
-          valorEstimadoCents: 18000000,
-          etapa: 'contrato',
-          probabilidadePercentual: 90,
-          dataFechamentoPrevista: '2026-10-30T00:00:00.000Z',
-          executivoId: '00000000-0000-0000-0000-000000000002',
-          createdAt: new Date(Date.now() - 3600000 * 96).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'op-004',
-          produtorId: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
-          produtorNome: 'T4F Entretenimento S.A.',
-          titulo: 'Circuito Pop Internacional 2027',
-          valorEstimadoCents: 65000000,
-          etapa: 'qualificacao',
-          probabilidadePercentual: 35,
-          dataFechamentoPrevista: '2027-01-15T00:00:00.000Z',
-          executivoId: '00000000-0000-0000-0000-000000000002',
-          createdAt: new Date(Date.now() - 3600000 * 120).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
-    }
 
     return oportunidades.map((o) => ({
       id: o.id,
@@ -468,32 +411,6 @@ export class ComercialService {
       orderBy: { dataAgendada: 'asc' },
     });
 
-    if (atividades.length === 0) {
-      return [
-        {
-          id: 'atv-01',
-          produtorId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-          produtorNome: 'Live Nation Entretenimento Brasil',
-          tipo: 'reuniao',
-          descricao: 'Apresentação comercial e demonstração das taxas de split',
-          dataAgendada: new Date(Date.now() + 3600000 * 24).toISOString(),
-          realizada: false,
-          realizadaEm: null,
-          executadoPor: '00000000-0000-0000-0000-000000000002',
-        },
-        {
-          id: 'atv-02',
-          produtorId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-          produtorNome: 'Opus Entretenimento e Teatros',
-          tipo: 'proposta',
-          descricao: 'Envio da minuta contratual com taxa de 8.5% e antecipação D+2',
-          dataAgendada: new Date(Date.now() - 3600000 * 5).toISOString(),
-          realizada: true,
-          realizadaEm: new Date(Date.now() - 3600000 * 5).toISOString(),
-          executadoPor: '00000000-0000-0000-0000-000000000002',
-        },
-      ];
-    }
 
     return atividades.map((a) => ({
       id: a.id,
@@ -514,7 +431,7 @@ export class ComercialService {
       where: { id: atividadeId },
     });
     if (!atividade || atividade.tenantId !== tenantId) {
-      return { id: atividadeId, realizada: true, realizadaEm: new Date().toISOString() };
+      throw new NotFoundException('Atividade comercial não encontrada.');
     }
 
     return this.prisma.atividadeComercial.update({
@@ -534,32 +451,6 @@ export class ComercialService {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (condicoes.length === 0) {
-      return [
-        {
-          id: 'cnd-01',
-          produtorId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-          produtorNome: 'Live Nation Entretenimento Brasil',
-          taxaServicoPercentual: 10.0,
-          taxaProcessamentoPercentual: 2.5,
-          prazoRepasseDias: 2,
-          status: 'aprovada',
-          vigenciaInicio: new Date('2026-01-01').toISOString(),
-          vigenciaFim: null,
-        },
-        {
-          id: 'cnd-02',
-          produtorId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-          produtorNome: 'Opus Entretenimento e Teatros',
-          taxaServicoPercentual: 8.5,
-          taxaProcessamentoPercentual: 2.2,
-          prazoRepasseDias: 1,
-          status: 'em_aprovacao',
-          vigenciaInicio: new Date('2026-09-01').toISOString(),
-          vigenciaFim: null,
-        },
-      ];
-    }
 
     return condicoes.map((c) => ({
       id: c.id,

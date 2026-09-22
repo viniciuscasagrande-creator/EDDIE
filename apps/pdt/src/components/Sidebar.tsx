@@ -64,7 +64,7 @@ const menuItems = [
     label: 'Atendimento SAC',
     href: '/sac',
     icon: Headphones,
-    badge: '360°',
+    badge: 'SLA',
   },
   {
     label: 'Suporte Operacional',

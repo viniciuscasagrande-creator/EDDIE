@@ -563,27 +563,7 @@ export class ContabilidadeService {
     const isFechado = fechamento?.status === 'fechado';
     const temDivergencia = conciliacoes.some((c) => c.status === 'divergente');
 
-    // Se a lista de eventos no banco estiver vazia, geramos uma visualização inicial consistente
-    const listaEventos = eventos.length > 0 ? eventos : [
-      {
-        id: '11111111-1111-1111-1111-111111111111',
-        nome: 'Festival Curitiba Prime 2026',
-        status: 'publicado',
-        categoria: 'Festival',
-      },
-      {
-        id: '22222222-2222-2222-2222-222222222222',
-        nome: 'Show Rock Nacional 2026',
-        status: 'publicado',
-        categoria: 'Show',
-      },
-      {
-        id: '33333333-3333-3333-3333-333333333333',
-        nome: 'Teatro Musical Broadway Tour',
-        status: 'encerrado',
-        categoria: 'Teatro',
-      },
-    ];
+    const listaEventos = eventos;
 
     return listaEventos.map((ev, index) => {
       // Filtra lançamentos do evento ou atribui proporção representativa
@@ -601,10 +581,6 @@ export class ContabilidadeService {
             if (p.conta.tipo === 'passivo' && p.conta.codigo.startsWith('2.1')) repasseTerceirosCents += val;
           }
         }
-      } else {
-        debitoCents = (index + 1) * 14500000;
-        receitaPropriaCents = Math.round(debitoCents * 0.10);
-        repasseTerceirosCents = debitoCents - receitaPropriaCents;
       }
 
       const conciliacaoStatus = temDivergencia && index === 1

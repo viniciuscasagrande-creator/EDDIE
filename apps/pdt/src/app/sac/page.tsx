@@ -228,7 +228,7 @@ export default function SacPage() {
           </div>
           <h1 className="text-2xl font-bold text-white mt-2">Central Operacional SAC</h1>
           <p className="text-slate-400 text-sm mt-1">
-            Pesquisa 360° do comprador por CPF, pedido, telefone ou nome, gestão de tickets ITIL com SLA e triagem de estornos.
+            Consulta Completa do comprador por CPF, pedido, telefone ou nome, gestão de tickets ITIL com SLA e triagem de estornos.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -280,7 +280,7 @@ export default function SacPage() {
           </form>
         </div>
 
-        {/* Resultado da Consulta 360° */}
+        {/* Resultado da Consulta Completa */}
         {resultadoConsulta && (
           <div className="mt-6 pt-6 border-t border-slate-800/80 animate-fadeIn">
             {resultadoConsulta.encontrado ? (

@@ -1045,39 +1045,6 @@ export class FinanceiroService {
       orderBy: { detectadaEm: 'desc' },
     });
 
-    if (divergencias.length === 0) {
-      // Seed inicial dinâmico para demonstração e conciliação caso banco esteja limpo
-      return [
-        {
-          id: 'div-001',
-          produtorId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-          adquirente: 'Pagar.me V5',
-          transacaoId: 'tid_894129841',
-          tipo: 'split_inconsistente',
-          valorEsperadoCents: 45000,
-          valorRecebidoCents: 42000,
-          diferencaCents: 3000,
-          resolvida: false,
-          resolvidaEm: null,
-          resolvidaPor: null,
-          detectadaEm: new Date(Date.now() - 3600000 * 4).toISOString(),
-        },
-        {
-          id: 'div-002',
-          produtorId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-          adquirente: 'Asaas Pix',
-          transacaoId: 'pix_921049102',
-          tipo: 'tarifa_nao_prevista',
-          valorEsperadoCents: 120000,
-          valorRecebidoCents: 119850,
-          diferencaCents: 150,
-          resolvida: true,
-          resolvidaEm: new Date(Date.now() - 3600000 * 2).toISOString(),
-          resolvidaPor: 'auditoria@diskingressos.com.br',
-          detectadaEm: new Date(Date.now() - 3600000 * 24).toISOString(),
-        },
-      ];
-    }
 
     return divergencias.map((d) => ({
       id: d.id,

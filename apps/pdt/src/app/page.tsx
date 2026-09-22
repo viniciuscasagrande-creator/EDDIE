@@ -375,7 +375,7 @@ export default function DashboardPage() {
                 Atendimento SAC
               </h3>
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">
-                Busca 360° por CPF/pedido, fila de tickets ITIL e SLA de atendimento.
+                Consulta completa por CPF/pedido, fila de tickets ITIL e SLA de atendimento.
               </p>
             </div>
           </Link>

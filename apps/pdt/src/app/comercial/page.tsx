@@ -400,7 +400,7 @@ export default function ComercialPage() {
             <span>Taxa Média Pactuada</span>
             <Percent size={16} className="text-sky-400" />
           </div>
-          <div className="text-xl font-black text-white mt-2">9.5%</div>
+          <div className="text-xl font-black text-white mt-2">{condicoes.length ? `${(condicoes.reduce((s, c) => s + Number(c.taxaServicoPercentual || 0), 0) / condicoes.length).toFixed(2)}%` : "—"}</div>
           <div className="text-[10px] text-slate-500 mt-1">Conveniência média DiskIngressos</div>
         </div>
 
