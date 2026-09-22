@@ -56,10 +56,16 @@ const menuItems = [
     badge: 'CRM',
   },
   {
-    label: 'Marketing & Pixels',
+    label: 'Marketing',
     href: '/marketing',
     icon: Megaphone,
     badge: 'Atribuição',
+  },
+  {
+    label: 'Remarketing',
+    href: '/remarketing',
+    icon: RotateCcw,
+    badge: 'Resgate',
   },
   {
     label: 'Relatórios',

@@ -1,0 +1,2 @@
+import { notFound } from 'next/navigation'; import MarketingVideoScreen from '../../../components/MarketingVideoScreen'; import { findVideoScreen } from '../../../lib/marketingVideoCatalog';
+export default async function Page({params}:{params:Promise<{slug:string}>}){const {slug}=await params; const c=findVideoScreen('marketing',slug); if(!c)notFound(); return <MarketingVideoScreen config={c}/>;}

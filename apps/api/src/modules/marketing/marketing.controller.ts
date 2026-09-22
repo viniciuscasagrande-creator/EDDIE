@@ -15,6 +15,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { MarketingService } from './marketing.service';
 import { MarketingPublicService } from './marketing.public-service';
+import { MarketingVideoService } from './marketing-video.service';
 import {
   CriarCampanhaSchema,
   AlterarStatusCampanhaSchema,
@@ -54,7 +55,23 @@ export class MarketingController {
   constructor(
     private readonly marketingService: MarketingService,
     private readonly marketingPublicService: MarketingPublicService,
+    private readonly marketingVideoService: MarketingVideoService,
   ) {}
+
+
+  @Get('video/:grupo/:screen')
+  @ApiOperation({ summary: 'Dados reais para as telas Marketing e Remarketing recuperadas do vídeo operacional' })
+  async obterTelaVideo(
+    @Param('grupo') grupo: string,
+    @Param('screen') screen: string,
+    @Query('produtorId') produtorId: string,
+    @Query('eventoId') eventoId?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    if (!produtorId) throw new BadRequestException('produtorId é obrigatório');
+    if (!['marketing', 'remarketing'].includes(grupo)) throw new BadRequestException('grupo inválido');
+    return this.marketingVideoService.screen(resolveTenant(tenantIdHeader), grupo, screen, produtorId, eventoId);
+  }
 
   // ==========================================================================
   //  CAMPANHAS PRONTAS & MULTICANAIS
