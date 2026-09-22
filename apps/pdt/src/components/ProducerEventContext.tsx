@@ -12,6 +12,7 @@ export type ContextValue = {
 };
 const Ctx=createContext<ContextValue|null>(null);
 const STORAGE_KEY='diskingressos.eventoSelecionado';
+// EDDIE 11.2: unifica fetch('/api/context') com /api/bootstrap
 
 export function ProducerEventProvider({children}:{children:React.ReactNode}){
   const rawApi=process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/,'')||'';
@@ -26,35 +27,21 @@ export function ProducerEventProvider({children}:{children:React.ReactNode}){
 
   const recarregarEventos=useCallback(async()=>{
     const request=++requestRef.current; setLoading(true); setError(''); setStatus('inicializando');
-    const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),8000);
+    const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),10000);
     try{
-      let pid=produtorId; let tid=tenantId; let preferred='';
-      const contextResponse=await fetch('/api/context',{cache:'no-store',signal:controller.signal});
-      const context=await contextResponse.json().catch(()=>({}));
-      if(context.produtorId){pid=context.produtorId; setProdutorId(pid)}
-      if(context.tenantId){tid=context.tenantId; setTenantId(tid)}
-      if(context.eventoId) preferred=context.eventoId;
-      if(!pid) throw new Error(context.message||'Produtor não configurado no contexto operacional.');
-      if(!contextResponse.ok && context.code!=='EVENTOS_INDISPONIVEIS') throw new Error(context.message||'Contexto operacional indisponível.');
-
-      const headers:Record<string,string>={}; if(tid) headers['x-tenant-id']=tid;
-      const r=await fetch(`${api}/eventos/produtor/${pid}`,{cache:'no-store',signal:controller.signal,headers});
-      const payload=await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(payload?.message||`Falha HTTP ${r.status} ao carregar eventos.`);
-      if(request!==requestRef.current) return;
-      const lista:EventoContexto[]=Array.isArray(payload)?payload:(payload.items||[]); setEventos(lista);
+      const response=await fetch('/api/bootstrap',{cache:'no-store',signal:controller.signal});
+      const data=await response.json().catch(()=>({}));
+      if(request!==requestRef.current)return;
+      if(data.produtorId)setProdutorId(data.produtorId); if(data.tenantId)setTenantId(data.tenantId);
+      if(!response.ok||!data.ok)throw new Error(data.message||`Bootstrap operacional falhou (HTTP ${response.status}).`);
+      const lista:EventoContexto[]=Array.isArray(data.eventos)?data.eventos:[]; setEventos(lista);
       const salvo=typeof window!=='undefined'?localStorage.getItem(STORAGE_KEY)||'':'';
-      const candidato=[salvo,preferred,eventoId,lista[0]?.id].find(id=>id&&lista.some(e=>e.id===id))||'';
-      setEventoId(candidato);
-      if(candidato&&typeof window!=='undefined') localStorage.setItem(STORAGE_KEY,candidato);
-      if(!lista.length){setStatus('vazio'); setError('Nenhum evento disponível para este produtor no tenant configurado.');}
-      else setStatus('online');
-    }catch(e:any){
-      if(request!==requestRef.current)return; setEventos([]); setEventoId(''); setStatus('erro');
-      setError(e?.name==='AbortError'?'Tempo limite ao resolver Produtor → Tenant → Eventos. Verifique /diagnostico.':e?.message||'Falha ao resolver o contexto operacional.');
-    }finally{clearTimeout(timer); if(request===requestRef.current)setLoading(false)}
-  },[api, produtorId, tenantId, eventoId]);
-
+      const candidato=[salvo,data.eventoId,eventoId,lista[0]?.id].find(id=>id&&lista.some(e=>e.id===id))||'';
+      setEventoId(candidato); if(candidato&&typeof window!=='undefined')localStorage.setItem(STORAGE_KEY,candidato);
+      if(!lista.length){setStatus('vazio');setError('Nenhum evento disponível para este produtor.');}else setStatus('online');
+    }catch(e:any){if(request!==requestRef.current)return;setEventos([]);setEventoId('');setStatus('erro');setError(e?.name==='AbortError'?'Tempo limite no bootstrap operacional. Abra Diagnóstico & Status.':e?.message||'Falha no bootstrap operacional.');}
+    finally{clearTimeout(timer);if(request===requestRef.current)setLoading(false)}
+  },[eventoId]);
   useEffect(()=>{void recarregarEventos()},[]); // bootstrap único; evita loops por mudança do contexto resolvido
   const selecionarEvento=useCallback((id:string)=>{setEventoId(id); if(typeof window!=='undefined')localStorage.setItem(STORAGE_KEY,id)},[]);
   const evento=useMemo(()=>eventos.find(e=>e.id===eventoId)||null,[eventos,eventoId]);

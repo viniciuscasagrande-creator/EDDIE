@@ -9,6 +9,7 @@ export class EventosController {
   constructor(private readonly service: EventosService) {}
   private tenant(v?:string){return v||DEFAULT_TENANT} private ator(v?:string){return v||DEFAULT_ATOR}
   @Get('locais') listarLocais(@Headers('x-tenant-id') t?:string){return this.service.listarLocais(this.tenant(t))}
+  @Get('produtor/:produtorId/contexto') resolverContexto(@Param('produtorId') p:string){return this.service.resolverContextoProdutor(p)}
   @Get('produtor/:produtorId') listarPorProdutor(@Param('produtorId') p:string,@Headers('x-tenant-id') t?:string){return this.service.listarPorProdutor(this.tenant(t),p)}
   @Get(':id') buscar(@Param('id') id:string,@Headers('x-tenant-id') t?:string){return this.service.buscarDetalhado(this.tenant(t),id)}
   @Post() criar(@Body() dto:CriarEventoDto,@Headers('x-tenant-id') t?:string,@Headers('x-user-id') u?:string){return this.service.criar(this.tenant(t),dto,this.ator(u))}

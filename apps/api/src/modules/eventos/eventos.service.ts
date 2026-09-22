@@ -16,6 +16,16 @@ export class EventosService {
     private readonly outbox: OutboxService,
   ) {}
 
+  async resolverContextoProdutor(produtorId: string) {
+    const produtor = await this.prisma.produtor.findUnique({
+      where: { id: produtorId },
+      select: { id: true, tenantId: true, nome: true, ativo: true },
+    });
+    if (!produtor) throw new NotFoundException('Produtor não encontrado');
+    const totalEventos = await this.prisma.evento.count({ where: { produtorId, tenantId: produtor.tenantId } });
+    return { produtorId: produtor.id, tenantId: produtor.tenantId, produtorNome: produtor.nome, produtorAtivo: produtor.ativo, totalEventos };
+  }
+
   async listarPorProdutor(tenantId: string, produtorId: string) {
     return this.prisma.evento.findMany({
       where: { tenantId, produtorId },
