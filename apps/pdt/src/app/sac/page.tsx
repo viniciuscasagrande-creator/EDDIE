@@ -85,8 +85,12 @@ export default function SacPage() {
     }
     setLoading(true);
     setError('');
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
-      const res = await fetch(`${api}/sac/chamados`);
+      const res = await fetch(`${api}/sac/chamados`, { signal: controller.signal });
       if (!res.ok) throw new Error('Não foi possível carregar os chamados.');
       const data = await res.json();
       const lista: Chamado[] = Array.isArray(data) ? data : (data.items || []);
@@ -94,9 +98,12 @@ export default function SacPage() {
       if (lista.length > 0 && !chamadoAtivo) {
         setChamadoAtivo(lista[0] ?? null);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha na comunicação.');
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        setError(err instanceof Error ? err.message : 'Falha na comunicação.');
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [api, chamadoAtivo]);

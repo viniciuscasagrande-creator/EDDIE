@@ -61,15 +61,22 @@ export default function SuportePage() {
     }
     setLoading(true);
     setError('');
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
       const qs = eventoId ? `?eventoId=${eventoId}` : produtorId ? `?produtorId=${produtorId}` : '';
-      const res = await fetch(`${api}/suporte/ocorrencias${qs}`);
+      const res = await fetch(`${api}/suporte/ocorrencias${qs}`, { signal: controller.signal });
       if (!res.ok) throw new Error('Não foi possível carregar as ocorrências.');
       const data = await res.json();
       setOcorrencias(Array.isArray(data) ? data : (data.items || []));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha na comunicação.');
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        setError(err instanceof Error ? err.message : 'Falha na comunicação.');
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [api, eventoId, produtorId]);

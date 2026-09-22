@@ -124,8 +124,14 @@ export default function EventosPage() {
       return;
     }
     setLoading(true);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
-      const res = await fetch(`${api}/eventos/produtor/${produtorId}`, { cache: 'no-store' });
+      const res = await fetch(`${api}/eventos/produtor/${produtorId}`, {
+        cache: 'no-store',
+        signal: controller.signal,
+      });
       if (res.ok) {
         const data = await res.json();
         const lista = Array.isArray(data) ? data : (data.items || []);
@@ -136,15 +142,18 @@ export default function EventosPage() {
           setSelectedSessaoId(sel.sessoes[0].id);
         }
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error('Falha ao carregar eventos:', e);
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [api, produtorId, eventoId]);
 
   useEffect(() => {
-    carregarEventos();
+    void carregarEventos();
   }, [carregarEventos]);
 
   const handlePublicar = async (id: string) => {

@@ -202,58 +202,67 @@ export default function FinanceiroPage() {
     }
     setLoading(true);
     setFeedback(null);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
       const qs = EVENTO ? `?eventoId=${EVENTO}` : '';
-      const [s, e, c, r, g, a, d, cf] = await Promise.all([
-        fetch(`${API}/financeiro/saldos/produtor/${PRODUTOR}${qs}`),
-        fetch(`${API}/financeiro/extrato/${PRODUTOR}${qs}`),
-        fetch(`${API}/financeiro/contas-pagar${EVENTO ? `?eventoId=${EVENTO}` : ''}`),
-        fetch(`${API}/financeiro/repasses/${PRODUTOR}`),
-        fetch(`${API}/financeiro/saldos/produtor/${PRODUTOR}/eventos`),
-        fetch(`${API}/financeiro/antecipacoes/${PRODUTOR}`),
-        fetch(`${API}/financeiro/conciliacao/divergencias?produtorId=${PRODUTOR}`),
-        fetch(`${API}/financeiro/contas-financeiras?produtorId=${PRODUTOR}`),
+      const results = await Promise.allSettled([
+        fetch(`${API}/financeiro/saldos/produtor/${PRODUTOR}${qs}`, { signal: controller.signal }),
+        fetch(`${API}/financeiro/extrato/${PRODUTOR}${qs}`, { signal: controller.signal }),
+        fetch(`${API}/financeiro/contas-pagar${EVENTO ? `?eventoId=${EVENTO}` : ''}`, { signal: controller.signal }),
+        fetch(`${API}/financeiro/repasses/${PRODUTOR}`, { signal: controller.signal }),
+        fetch(`${API}/financeiro/saldos/produtor/${PRODUTOR}/eventos`, { signal: controller.signal }),
+        fetch(`${API}/financeiro/antecipacoes/${PRODUTOR}`, { signal: controller.signal }),
+        fetch(`${API}/financeiro/conciliacao/divergencias?produtorId=${PRODUTOR}`, { signal: controller.signal }),
+        fetch(`${API}/financeiro/contas-financeiras?produtorId=${PRODUTOR}`, { signal: controller.signal }),
       ]);
 
-      if (s.ok) setSaldos(await s.json());
-      if (e.ok) {
-        const ed = await e.json();
+      const [s, e, c, r, g, a, d, cf] = results;
+
+      if (s.status === 'fulfilled' && s.value.ok) setSaldos(await s.value.json());
+      if (e.status === 'fulfilled' && e.value.ok) {
+        const ed = await e.value.json();
         setExtrato(Array.isArray(ed) ? ed : ed.lancamentos || ed.items || []);
       }
-      if (c.ok) {
-        const cd = await c.json();
+      if (c.status === 'fulfilled' && c.value.ok) {
+        const cd = await c.value.json();
         setContas(Array.isArray(cd) ? cd : cd.items || []);
       }
-      if (r.ok) {
-        const rd = await r.json();
+      if (r.status === 'fulfilled' && r.value.ok) {
+        const rd = await r.value.json();
         setRepasses(Array.isArray(rd) ? rd : rd.items || []);
       }
-      if (g.ok) setGestaoSaldos(await g.json());
-      if (a.ok) {
-        const ad = await a.json();
+      if (g.status === 'fulfilled' && g.value.ok) setGestaoSaldos(await g.value.json());
+      if (a.status === 'fulfilled' && a.value.ok) {
+        const ad = await a.value.json();
         setAntecipacoes(Array.isArray(ad) ? ad : ad.items || []);
       }
-      if (d.ok) {
-        const dd = await d.json();
+      if (d.status === 'fulfilled' && d.value.ok) {
+        const dd = await d.value.json();
         setDivergencias(Array.isArray(dd) ? dd : dd.items || []);
       }
-      if (cf.ok) {
-        const cfd = await cf.json();
+      if (cf.status === 'fulfilled' && cf.value.ok) {
+        const cfd = await cf.value.json();
         setContasFinanceiras(Array.isArray(cfd) ? cfd : []);
       }
-    } catch (err) {
-      setFeedback({
-        tipo: 'error',
-        texto: err instanceof Error ? err.message : 'Erro ao conectar com a API Financeira.',
-      });
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        setFeedback({
+          tipo: 'error',
+          texto: err instanceof Error ? err.message : 'Erro ao conectar com a API Financeira.',
+        });
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [API, PRODUTOR, EVENTO]);
 
   useEffect(() => {
-    if (!contextLoading) void carregar();
-  }, [carregar, contextLoading]);
+    void carregar();
+  }, [carregar]);
 
   const contasPendentes = useMemo(
     () => contas.filter((c) => !['paga', 'cancelada'].includes(c.status)).reduce((a, c) => a + centsOf(c), 0),

@@ -165,37 +165,47 @@ export default function ContabilidadePage() {
       return;
     }
     setLoading(true);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
-      const [rDre, rBal, rDash, rCc, rLanc, rConc] = await Promise.all([
-        fetch(`${api}/contabilidade/dre?competencia=${competencia}`),
-        fetch(`${api}/contabilidade/balancete?competencia=${competencia}`),
-        fetch(`${api}/contabilidade/dashboard?competencia=${competencia}`),
-        fetch(`${api}/contabilidade/centro-controle-eventos?competencia=${competencia}`),
-        fetch(`${api}/contabilidade/lancamentos?competencia=${competencia}`),
-        fetch(`${api}/contabilidade/conciliacoes?competencia=${competencia}`),
+      const results = await Promise.allSettled([
+        fetch(`${api}/contabilidade/dre?competencia=${competencia}`, { signal: controller.signal }),
+        fetch(`${api}/contabilidade/balancete?competencia=${competencia}`, { signal: controller.signal }),
+        fetch(`${api}/contabilidade/dashboard?competencia=${competencia}`, { signal: controller.signal }),
+        fetch(`${api}/contabilidade/centro-controle-eventos?competencia=${competencia}`, { signal: controller.signal }),
+        fetch(`${api}/contabilidade/lancamentos?competencia=${competencia}`, { signal: controller.signal }),
+        fetch(`${api}/contabilidade/conciliacoes?competencia=${competencia}`, { signal: controller.signal }),
       ]);
 
-      if (rDre.ok) setDre(await rDre.json());
-      if (rBal.ok) {
-        const b = await rBal.json();
+      const [rDre, rBal, rDash, rCc, rLanc, rConc] = results;
+
+      if (rDre.status === 'fulfilled' && rDre.value.ok) setDre(await rDre.value.json());
+      if (rBal.status === 'fulfilled' && rBal.value.ok) {
+        const b = await rBal.value.json();
         if (Array.isArray(b)) setBalancete(b);
+        else if (Array.isArray(b.contas)) setBalancete(b.contas);
       }
-      if (rDash.ok) setDashboard(await rDash.json());
-      if (rCc.ok) {
-        const cc = await rCc.json();
+      if (rDash.status === 'fulfilled' && rDash.value.ok) setDashboard(await rDash.value.json());
+      if (rCc.status === 'fulfilled' && rCc.value.ok) {
+        const cc = await rCc.value.json();
         if (Array.isArray(cc)) setCentroControle(cc);
+        else if (Array.isArray(cc.matriz)) setCentroControle(cc.matriz);
+        else if (Array.isArray(cc.items)) setCentroControle(cc.items);
       }
-      if (rLanc.ok) {
-        const ld = await rLanc.json();
+      if (rLanc.status === 'fulfilled' && rLanc.value.ok) {
+        const ld = await rLanc.value.json();
         setLancamentos(Array.isArray(ld) ? ld : ld.lancamentos || []);
       }
-      if (rConc.ok) {
-        const cd = await rConc.json();
+      if (rConc.status === 'fulfilled' && rConc.value.ok) {
+        const cd = await rConc.value.json();
         if (Array.isArray(cd)) setConciliacoes(cd);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [api, competencia]);

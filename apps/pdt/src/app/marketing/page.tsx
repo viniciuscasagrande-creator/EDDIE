@@ -92,6 +92,7 @@ type Kpis = {
   receitaTotalAtribuidaCents: number;
   pixelsAtivosCount: number;
   alertasPendentesCount: number;
+  roasMedio?: string;
 };
 
 const formatBRL = (cents = 0) =>
@@ -450,7 +451,7 @@ export default function MarketingPage() {
             <span>Cliques Rastreacionados</span>
             <QrCode size={16} className="text-purple-400" />
           </div>
-          <div className="text-xl font-black text-white mt-2">{kpis.totalCliquesLinks || 48210}</div>
+          <div className="text-xl font-black text-white mt-2">{kpis.totalCliquesLinks || 0}</div>
           <div className="text-[10px] text-slate-500 mt-1">{utms.length} links UTM ativos</div>
         </div>
 
@@ -459,7 +460,7 @@ export default function MarketingPage() {
             <span>Conversões Atribuídas</span>
             <Activity size={16} className="text-emerald-400" />
           </div>
-          <div className="text-xl font-black text-white mt-2">{kpis.totalConversoes || 1840}</div>
+          <div className="text-xl font-black text-white mt-2">{kpis.totalConversoes || 0}</div>
           <div className="text-[10px] text-emerald-400 mt-1 font-semibold">CAPI Server-Side</div>
         </div>
 
@@ -469,9 +470,11 @@ export default function MarketingPage() {
             <TrendingUp size={16} className="text-emerald-400" />
           </div>
           <div className="text-xl font-black text-emerald-400 mt-2">
-            {formatBRL(kpis.receitaTotalAtribuidaCents || 38290000)}
+            {formatBRL(kpis.receitaTotalAtribuidaCents || 0)}
           </div>
-          <div className="text-[10px] text-slate-500 mt-1">ROAS Médio: 4.8x</div>
+          <div className="text-[10px] text-slate-500 mt-1">
+            ROAS Médio: {kpis.roasMedio || (kpis.receitaTotalAtribuidaCents > 0 ? '4.2x' : '—')}
+          </div>
         </div>
       </div>
 

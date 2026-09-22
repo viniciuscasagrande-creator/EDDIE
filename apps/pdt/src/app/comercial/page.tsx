@@ -151,37 +151,44 @@ export default function ComercialPage() {
       return;
     }
     setLoading(true);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
-      const [rOp, rProd, rCnd, rAtv, rRes] = await Promise.all([
-        fetch(`${api}/comercial/oportunidades`),
-        fetch(`${api}/comercial/produtores`),
-        fetch(`${api}/comercial/condicoes`),
-        fetch(`${api}/comercial/atividades`),
-        fetch(`${api}/comercial/pipeline/resumo`),
+      const results = await Promise.allSettled([
+        fetch(`${api}/comercial/oportunidades`, { signal: controller.signal }),
+        fetch(`${api}/comercial/produtores`, { signal: controller.signal }),
+        fetch(`${api}/comercial/condicoes`, { signal: controller.signal }),
+        fetch(`${api}/comercial/atividades`, { signal: controller.signal }),
+        fetch(`${api}/comercial/pipeline/resumo`, { signal: controller.signal }),
       ]);
 
-      if (rOp.ok) {
-        const opData = await rOp.json();
+      const [rOp, rProd, rCnd, rAtv, rRes] = results;
+
+      if (rOp.status === 'fulfilled' && rOp.value.ok) {
+        const opData = await rOp.value.json();
         setOportunidades(Array.isArray(opData) ? opData : []);
       }
-      if (rProd.ok) {
-        const prodData = await rProd.json();
+      if (rProd.status === 'fulfilled' && rProd.value.ok) {
+        const prodData = await rProd.value.json();
         setProdutores(Array.isArray(prodData) ? prodData : []);
       }
-      if (rCnd.ok) {
-        const cndData = await rCnd.json();
+      if (rCnd.status === 'fulfilled' && rCnd.value.ok) {
+        const cndData = await rCnd.value.json();
         setCondicoes(Array.isArray(cndData) ? cndData : []);
       }
-      if (rAtv.ok) {
-        const atvData = await rAtv.json();
+      if (rAtv.status === 'fulfilled' && rAtv.value.ok) {
+        const atvData = await rAtv.value.json();
         setAtividades(Array.isArray(atvData) ? atvData : []);
       }
-      if (rRes.ok) {
-        setResumo(await rRes.json());
+      if (rRes.status === 'fulfilled' && rRes.value.ok) {
+        setResumo(await rRes.value.json());
       }
     } catch (err) {
       console.error(err);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [api]);

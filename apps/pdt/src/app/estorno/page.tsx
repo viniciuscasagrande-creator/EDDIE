@@ -83,14 +83,21 @@ export default function EstornoPage() {
     }
     setLoading(true);
     setError('');
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
-      const res = await fetch(`${api}/estornos`);
+      const res = await fetch(`${api}/estornos`, { signal: controller.signal });
       if (!res.ok) throw new Error('Não foi possível carregar as solicitações de estorno.');
       const data = await res.json();
       setEstornos(Array.isArray(data) ? data : (data.items || []));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha na comunicação com a API.');
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        setError(err instanceof Error ? err.message : 'Falha na comunicação com a API.');
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [api]);
