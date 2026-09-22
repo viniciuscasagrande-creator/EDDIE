@@ -3,15 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { Activity, CheckCircle2, RefreshCcw, Server, XCircle } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 
-type Status = { status?: string; proxy?: string; backendConfigured?: boolean; backendReachable?: boolean; backendStatus?: number; message?: string; backend?: any };
+type Status = { status?: string; proxy?: string; backendConfigured?: boolean; contextConfigured?: boolean; backendReachable?: boolean; backendStatus?: number; message?: string; backend?: any };
+type Operational = { configured?:boolean; produtorId?:string; tenantId?:string; eventoId?:string; backendReachable?:boolean; eventsReachable?:boolean; totalEventos?:number; code?:string; message?:string };
 
 export default function DiagnosticoPage() {
   const ctx = useProducerEvent();
   const [status, setStatus] = useState<Status>({});
   const [loading, setLoading] = useState(true);
+  const [operational, setOperational] = useState<Operational>({});
   const carregar = async () => {
     setLoading(true);
-    try { const r = await fetch('/api/status', { cache: 'no-store' }); setStatus(await r.json()); }
+    try { const [r,c] = await Promise.all([fetch('/api/status', { cache: 'no-store' }), fetch('/api/context', { cache: 'no-store' })]); setStatus(await r.json()); setOperational(await c.json()); }
     catch { setStatus({ status: 'offline', message: 'Falha ao consultar diagnóstico.' }); }
     finally { setLoading(false); }
   };
@@ -25,8 +27,8 @@ export default function DiagnosticoPage() {
       <Card title="Backend" value={status.backendReachable ? 'Online' : status.backendConfigured ? 'Indisponível' : 'Não configurado'} ok={Boolean(status.backendReachable)} />
       <Card title="Banco de dados" value={status.backend?.database || 'Não validado'} ok={status.backend?.database === 'online'} />
     </section>
-    <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 space-y-3"><h2 className="font-bold flex items-center gap-2"><Server size={18}/>Contexto operacional</h2><div className="grid md:grid-cols-3 gap-3 text-sm"><Info label="Produtor" value={ctx.produtorId || 'Não configurado'} /><Info label="Eventos carregados" value={String(ctx.eventos.length)} /><Info label="Evento selecionado" value={ctx.evento?.nome || 'Nenhum'} /></div>{ctx.error && <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 p-3 text-sm">{ctx.error}</div>}{status.message && <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 p-3 text-sm">{status.message}</div>}</section>
-    <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5"><h2 className="font-bold mb-3">Configuração obrigatória na Vercel</h2><div className="font-mono text-xs text-slate-300 space-y-2"><div>API_INTERNAL_URL=https://SEU-BACKEND</div><div>NEXT_PUBLIC_API_URL=/api</div><div>NEXT_PUBLIC_PRODUTOR_ID=UUID_REAL_DO_PRODUTOR</div></div><p className="text-xs text-slate-500 mt-3">API_INTERNAL_URL pode terminar com /api ou apenas com o domínio; o proxy normaliza automaticamente.</p></section>
+    <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 space-y-3"><h2 className="font-bold flex items-center gap-2"><Server size={18}/>Contexto operacional</h2><div className="grid md:grid-cols-4 gap-3 text-sm"><Info label="Produtor" value={ctx.produtorId || operational.produtorId || 'Não configurado'} /><Info label="Tenant" value={ctx.tenantId || operational.tenantId || 'Não configurado'} /><Info label="Eventos carregados" value={String(ctx.eventos.length)} /><Info label="Evento selecionado" value={ctx.evento?.nome || 'Nenhum'} /></div>{operational.message && <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 text-cyan-200 p-3 text-sm">Contexto: {operational.message}{operational.code ? ` · ${operational.code}` : ''}</div>}{ctx.error && <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 p-3 text-sm">{ctx.error}</div>}{status.message && <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 p-3 text-sm">{status.message}</div>}</section>
+    <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5"><h2 className="font-bold mb-3">Configuração obrigatória na Vercel</h2><div className="font-mono text-xs text-slate-300 space-y-2"><div>API_INTERNAL_URL=https://SEU-BACKEND</div><div>NEXT_PUBLIC_API_URL=/api</div><div>PRODUTOR_ID=UUID_REAL_DO_PRODUTOR</div><div>TENANT_ID=UUID_REAL_DO_TENANT</div><div>NEXT_PUBLIC_PRODUTOR_ID=UUID_REAL_DO_PRODUTOR (fallback)</div></div><p className="text-xs text-slate-500 mt-3">API_INTERNAL_URL pode terminar com /api ou apenas com o domínio; o proxy normaliza automaticamente.</p></section>
     <div className={`rounded-xl border p-4 text-sm ${ok ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-200'}`}>{ok ? 'Integração principal operacional.' : 'Existe pelo menos uma dependência de produção que precisa ser corrigida antes do Go-Live.'}</div>
   </div>;
 }
