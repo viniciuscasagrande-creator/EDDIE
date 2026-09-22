@@ -25,8 +25,9 @@ import {
   Search,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
+import OperationalPanel from '../../components/OperationalPanel';
 
-type TabView = 'centro_eventos' | 'dre' | 'balancete' | 'lancamentos' | 'conciliacao' | 'plano_contas';
+type TabView = 'centro_eventos' | 'dre' | 'balancete' | 'lancamentos' | 'conciliacao' | 'plano_contas' | 'fechamento' | 'demonstrativos' | 'auditoria';
 
 type BalanceteItem = {
   contaCodigo: string;
@@ -407,6 +408,10 @@ export default function ContabilidadePage() {
           { id: 'balancete' as TabView, label: 'Balancete de Verificação', icon: Scale },
           { id: 'lancamentos' as TabView, label: 'Livro Diário / Lançamentos', icon: BookOpen },
           { id: 'conciliacao' as TabView, label: 'Conciliação Contábil', icon: Landmark },
+          { id: 'plano_contas' as TabView, label: 'Plano de Contas', icon: Layers },
+          { id: 'fechamento' as TabView, label: 'Fechamento Mensal', icon: Lock },
+          { id: 'demonstrativos' as TabView, label: 'Demonstrativos', icon: FileSpreadsheet },
+          { id: 'auditoria' as TabView, label: 'Auditoria Contábil', icon: ShieldCheck },
         ].map((t) => {
           const active = tab === t.id;
           return (
@@ -808,6 +813,42 @@ export default function ContabilidadePage() {
                 </div>
               )}
             </div>
+          )}
+
+          {tab === 'plano_contas' && (
+            <OperationalPanel
+              title="Plano de Contas"
+              description="Estrutura contábil oficial e segregação entre recursos de terceiros e receita própria."
+              items={['Contas ativas', 'Contas sintéticas', 'Contas analíticas', 'Pendências']}
+              context={`Competência ${competencia}`}
+            />
+          )}
+
+          {tab === 'fechamento' && (
+            <OperationalPanel
+              title="Fechamento Mensal"
+              description="Controle de competência, validações e travamento do período contábil."
+              items={['Lançamentos', 'Pendências', 'Conciliações', 'Aprovações']}
+              context={`Competência ${competencia}`}
+            />
+          )}
+
+          {tab === 'demonstrativos' && (
+            <OperationalPanel
+              title="Demonstrativos Contábeis"
+              description="Central de relatórios contábeis e gerenciais por competência e evento."
+              items={['DRE', 'Balancete', 'Razão', 'Diário']}
+              context={`Competência ${competencia}`}
+            />
+          )}
+
+          {tab === 'auditoria' && (
+            <OperationalPanel
+              title="Auditoria Contábil"
+              description="Rastreabilidade de alterações, fechamentos e lançamentos."
+              items={['Eventos auditados', 'Alertas', 'Aprovações', 'Exceções']}
+              context={`Competência ${competencia}`}
+            />
           )}
         </>
       )}

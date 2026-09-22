@@ -26,8 +26,9 @@ import {
   Filter,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
+import OperationalPanel from '../../components/OperationalPanel';
 
-type TabView = 'templates' | 'campanhas' | 'pixels' | 'utms' | 'cupons';
+type TabView = 'templates' | 'campanhas' | 'pixels' | 'utms' | 'cupons' | 'automacoes' | 'whatsapp' | 'email' | 'abandonado' | 'afiliados' | 'publicos' | 'integracoes';
 
 type Campanha = {
   id: string;
@@ -506,6 +507,13 @@ export default function MarketingPage() {
           { id: 'pixels' as TabView, label: 'Multi-Pixel CAPI', icon: Activity },
           { id: 'utms' as TabView, label: 'Links UTM & QR Code', icon: QrCode },
           { id: 'cupons' as TabView, label: 'Cupons Promocionais', icon: Tag },
+          { id: 'automacoes' as TabView, label: 'Automações', icon: Activity },
+          { id: 'whatsapp' as TabView, label: 'WhatsApp', icon: Share2 },
+          { id: 'email' as TabView, label: 'E-mail Marketing', icon: Megaphone },
+          { id: 'abandonado' as TabView, label: 'Carrinho Abandonado', icon: Clock },
+          { id: 'afiliados' as TabView, label: 'Afiliados', icon: Share2 },
+          { id: 'publicos' as TabView, label: 'Públicos & Segmentação', icon: Filter },
+          { id: 'integracoes' as TabView, label: 'Integrações de Mídia', icon: ExternalLink },
         ].map((t) => {
           const active = tab === t.id;
           return (
@@ -957,6 +965,62 @@ export default function MarketingPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {tab === 'automacoes' && (
+            <OperationalPanel
+              title="Automações de Marketing"
+              description="Jornadas e gatilhos vinculados ao produtor e evento selecionado."
+              items={['Ativas', 'Pausadas', 'Execuções', 'Falhas']}
+            />
+          )}
+
+          {tab === 'whatsapp' && (
+            <OperationalPanel
+              title="WhatsApp Marketing"
+              description="Campanhas e comunicações com rastreabilidade e consentimento."
+              items={['Campanhas', 'Envios', 'Entregues', 'Conversões']}
+            />
+          )}
+
+          {tab === 'email' && (
+            <OperationalPanel
+              title="E-mail Marketing"
+              description="Campanhas de e-mail, públicos e desempenho real."
+              items={['Campanhas', 'Envios', 'Aberturas', 'Conversões']}
+            />
+          )}
+
+          {tab === 'abandonado' && (
+            <OperationalPanel
+              title="Carrinho Abandonado"
+              description="Recuperação de carrinhos somente dos eventos do produtor."
+              items={['Carrinhos', 'Elegíveis', 'Recuperados', 'Receita recuperada']}
+            />
+          )}
+
+          {tab === 'afiliados' && (
+            <OperationalPanel
+              title="Afiliados"
+              description="Gestão de parceiros, links e atribuição."
+              items={['Afiliados', 'Links', 'Conversões', 'Comissões']}
+            />
+          )}
+
+          {tab === 'publicos' && (
+            <OperationalPanel
+              title="Públicos & Segmentação"
+              description="Segmentos reutilizáveis para campanhas multicanal."
+              items={['Públicos', 'Segmentos', 'Elegíveis', 'Sincronizações']}
+            />
+          )}
+
+          {tab === 'integracoes' && (
+            <OperationalPanel
+              title="Integrações de Mídia"
+              description="Conexões Meta, Google, TikTok e Spotify com diagnóstico."
+              items={['Meta', 'Google', 'TikTok', 'Spotify']}
+            />
           )}
         </>
       )}

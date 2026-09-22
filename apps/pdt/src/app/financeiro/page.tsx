@@ -328,11 +328,13 @@ export default function FinanceiroPage() {
             className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 ${
               conectado
                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-                : 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                : feedback?.tipo === 'error'
+                ? 'border-rose-500/30 bg-rose-500/10 text-rose-400'
+                : 'border-slate-700 bg-slate-900 text-slate-400'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${conectado ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-            {conectado ? 'Ledger Conectado' : 'Aguardando API'}
+            <span className={`w-2 h-2 rounded-full ${conectado ? 'bg-emerald-400 animate-pulse' : feedback?.tipo === 'error' ? 'bg-rose-400' : 'bg-slate-500'}`} />
+            {conectado ? 'Ledger Conectado' : feedback?.tipo === 'error' ? 'API Offline (503)' : 'Sincronizado'}
           </span>
 
           <button
@@ -513,34 +515,145 @@ function KpiSummary({
   contas: number;
   repasses: number;
 }) {
+  const total = saldos.totalPatrimonioCents || 0;
+  const pctDisponivel = total > 0 ? Math.round((saldos.disponivelCents / total) * 100) : 0;
+  const pctRetido = total > 0 ? Math.round((saldos.retidoCents / total) * 100) : 0;
+  const pctBloqueado = total > 0 ? Math.round((saldos.bloqueadoCents / total) * 100) : 0;
+  const pctReserva = total > 0 ? Math.round((saldos.reservadoEstornoCents / total) * 100) : 0;
+
   const cards = [
-    { label: 'Saldo Disponível', val: saldos.disponivelCents, icon: Wallet, color: 'text-emerald-400', badge: 'Livre p/ repasse' },
-    { label: 'Saldo Retido (D+30)', val: saldos.retidoCents, icon: CalendarClock, color: 'text-sky-400', badge: 'Vendas em custódia' },
-    { label: 'Bloqueado Cautelar', val: saldos.bloqueadoCents, icon: Lock, color: 'text-amber-400', badge: 'Repasses em liquidação' },
-    { label: 'Reserva de Estorno', val: saldos.reservadoEstornoCents, icon: RefreshCcw, color: 'text-rose-400', badge: 'CDC / Chargeback' },
-    { label: 'Contas a Pagar', val: contas, icon: CircleDollarSign, color: 'text-purple-400', badge: 'Compromissos pendentes' },
-    { label: 'Repasses Solicitados', val: repasses, icon: HandCoins, color: 'text-cyan-400', badge: 'Aguardando banco' },
+    {
+      label: 'Saldo Disponível',
+      val: saldos.disponivelCents,
+      icon: Wallet,
+      color: 'text-emerald-400',
+      badge: 'Livre p/ repasse imediato',
+      pct: pctDisponivel,
+      highlight: true,
+    },
+    {
+      label: 'Saldo Retido (D+30)',
+      val: saldos.retidoCents,
+      icon: CalendarClock,
+      color: 'text-sky-400',
+      badge: 'Custódia ciclo de vendas',
+      pct: pctRetido,
+    },
+    {
+      label: 'Bloqueado Cautelar',
+      val: saldos.bloqueadoCents,
+      icon: Lock,
+      color: 'text-amber-400',
+      badge: 'Em trânsito bancário',
+      pct: pctBloqueado,
+    },
+    {
+      label: 'Reserva Técnica CDC',
+      val: saldos.reservadoEstornoCents,
+      icon: ShieldCheck,
+      color: 'text-rose-400',
+      badge: 'Garantia Art. 49 & Estornos',
+      pct: pctReserva,
+    },
+    {
+      label: 'Contas a Pagar',
+      val: contas,
+      icon: CircleDollarSign,
+      color: 'text-purple-400',
+      badge: 'Compromissos pendentes',
+    },
+    {
+      label: 'Repasses em Fila',
+      val: repasses,
+      icon: HandCoins,
+      color: 'text-cyan-400',
+      badge: 'Aguardando liquidação',
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-3">
-      {cards.map((c) => (
-        <div key={c.label} className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            <span>{c.label}</span>
-            <c.icon size={16} className={c.color} />
+    <div className="space-y-3">
+      {/* Top Banner: Patrimônio Total Consolidado & Barra de Distribuição */}
+      <div className="bg-gradient-to-r from-slate-900 via-[#111827] to-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+              <TrendingUp size={24} />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <span>Patrimônio Ledger Consolidado</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
+                  Partidas Dobradas
+                </span>
+              </div>
+              <div className="text-2xl md:text-3xl font-black text-white tracking-tight mt-0.5">
+                {money(saldos.totalPatrimonioCents)}
+              </div>
+            </div>
           </div>
-          <div className="text-xl font-black text-white mt-3">{money(c.val)}</div>
-          <div className="text-[10px] text-slate-500 mt-1 font-medium">{c.badge}</div>
+
+          {/* Distribuição Proporcional dos Buckets */}
+          <div className="flex-1 max-w-xl md:pl-6 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Disponível {pctDisponivel}%</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-sky-400" />
+                <span>Retido {pctRetido}%</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span>Bloqueado {pctBloqueado}%</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-rose-400" />
+                <span>Reserva {pctReserva}%</span>
+              </span>
+            </div>
+            {/* Visual Progress Bar */}
+            <div className="h-2.5 w-full bg-slate-950 rounded-full overflow-hidden flex border border-slate-800">
+              <div style={{ width: `${pctDisponivel}%` }} className="bg-emerald-500 transition-all duration-500" title={`Disponível: ${pctDisponivel}%`} />
+              <div style={{ width: `${pctRetido}%` }} className="bg-sky-500 transition-all duration-500" title={`Retido: ${pctRetido}%`} />
+              <div style={{ width: `${pctBloqueado}%` }} className="bg-amber-500 transition-all duration-500" title={`Bloqueado: ${pctBloqueado}%`} />
+              <div style={{ width: `${pctReserva}%` }} className="bg-rose-500 transition-all duration-500" title={`Reserva CDC: ${pctReserva}%`} />
+            </div>
+          </div>
         </div>
-      ))}
+      </div>
+
+      {/* Grid de Cards de Alta Densidade */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        {cards.map((c) => (
+          <div
+            key={c.label}
+            className={`bg-[#111827] border rounded-xl p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-md ${
+              c.highlight
+                ? 'border-emerald-500/40 shadow-emerald-500/5 hover:border-emerald-500/60'
+                : 'border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="truncate pr-1">{c.label}</span>
+              <c.icon size={16} className={`${c.color} shrink-0`} />
+            </div>
+            <div className="text-xl 2xl:text-2xl font-black text-white mt-3 tracking-tight">
+              {money(c.val)}
+            </div>
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80">
+              <span className="text-[10px] text-slate-400 font-medium truncate">{c.badge}</span>
+              {c.pct !== undefined && c.pct > 0 && (
+                <span className={`text-[10px] font-bold ${c.color}`}>{c.pct}%</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
-// ============================================================================
-//  DASHBOARD VIEW
-// ============================================================================
 
 function DashboardView({
   extrato,
@@ -556,81 +669,168 @@ function DashboardView({
   setView: (v: View) => void;
 }) {
   const operacoes = [
-    { label: 'Contas Financeiras & Carteiras', view: 'contas_financeiras' as View, icon: Building, desc: 'Bancos e adquirentes homologadas' },
-    { label: 'Contas & Fornecedores', view: 'compromissos' as View, icon: CircleDollarSign, desc: 'Cadastrar e liquidar contas a pagar' },
-    { label: 'Solicitar Repasse Pix', view: 'repasses' as View, icon: HandCoins, desc: 'Agendar transferência para conta bancária' },
-    { label: 'Simular Antecipação', view: 'antecipacoes' as View, icon: Banknote, desc: 'Adiantar recebíveis com cálculo pró-rata' },
-    { label: 'Transferência Inter-Eventos', view: 'transferencias' as View, icon: ArrowLeftRight, desc: 'Mover fundos entre eventos do mesmo produtor' },
-    { label: 'Conciliação Financeira', view: 'conciliacao' as View, icon: Landmark, desc: 'Batimento de gateways e divergências' },
+    {
+      label: 'Contas Bancárias',
+      view: 'contas_financeiras' as View,
+      icon: Building,
+      desc: 'Bancos e chaves Pix',
+      badge: 'Contas',
+    },
+    {
+      label: 'Contas & Fornecedores',
+      view: 'compromissos' as View,
+      icon: CircleDollarSign,
+      desc: 'Agendar e liquidar débitos',
+      badge: 'AP/AR',
+    },
+    {
+      label: 'Solicitar Repasse Pix',
+      view: 'repasses' as View,
+      icon: HandCoins,
+      desc: 'Transferência p/ conta corrente',
+      badge: 'Saque',
+    },
+    {
+      label: 'Simular Antecipação',
+      view: 'antecipacoes' as View,
+      icon: Banknote,
+      desc: 'Adiantamento com pró-rata',
+      badge: 'Crédito',
+    },
+    {
+      label: 'Transferência Inter-Eventos',
+      view: 'transferencias' as View,
+      icon: ArrowLeftRight,
+      desc: 'Mover fundos entre eventos',
+      badge: 'Remanejamento',
+    },
+    {
+      label: 'Conciliação Financeira',
+      view: 'conciliacao' as View,
+      icon: Landmark,
+      desc: 'Batimento adquirentes e extrato',
+      badge: 'Auditoria',
+    },
   ];
 
   const pendentesContas = contas.filter((c) => c.status === 'pendente').length;
   const pendentesRepasses = repasses.filter((r) => r.status === 'solicitado').length;
   const pendentesDivergencias = divergencias.filter((d) => !d.resolvida).length;
+  const totalAlertas = pendentesContas + pendentesRepasses + pendentesDivergencias;
 
   return (
-    <div className="grid xl:grid-cols-[1.45fr_.75fr] gap-5">
-      {/* Extrato Recente */}
-      <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <Wallet size={16} className="text-emerald-400" />
-            <span>Últimos Lançamentos no Ledger</span>
-          </h2>
-          <button
-            onClick={() => setView('saldos')}
-            className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold inline-flex items-center gap-1"
-          >
-            Ver Extrato Completo <ChevronRight size={14} />
-          </button>
+    <div className="grid xl:grid-cols-[1.5fr_.8fr] gap-5">
+      {/* Extrato Recente com Barra de Ações */}
+      <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between">
+        <div>
+          <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Wallet size={16} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-white leading-tight">Últimos Lançamentos no Ledger</h2>
+                <span className="text-[11px] text-slate-400">{extrato.length} lançamentos registrados</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setView('saldos')}
+              className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition"
+            >
+              <span>Ver Extrato Completo</span>
+              <ChevronRight size={14} />
+            </button>
+          </div>
+          <ExtratoTable items={extrato.slice(0, 8)} />
         </div>
-        <ExtratoTable items={extrato.slice(0, 7)} />
       </div>
 
       {/* Operações & Alertas */}
       <div className="space-y-4">
-        {/* Quick Operations */}
-        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-3">
-          <h2 className="text-sm font-bold text-white">Ações Rápidas de Caixa</h2>
+        {/* Ações Rápidas de Caixa */}
+        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-3.5 shadow-lg">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <Banknote size={16} className="text-emerald-400" />
+              <span>Ações Rápidas de Caixa</span>
+            </h2>
+            <span className="text-[10px] text-slate-500 font-medium">1-Click</span>
+          </div>
           <div className="grid grid-cols-2 gap-2.5">
             {operacoes.map((op) => (
               <button
                 key={op.label}
                 onClick={() => setView(op.view)}
-                className="p-3 text-left rounded-lg bg-slate-900/80 border border-slate-800 hover:border-emerald-500/40 hover:bg-slate-800/60 transition group"
+                className="p-3 text-left rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/40 hover:bg-slate-800/80 transition-all group flex flex-col justify-between"
               >
-                <op.icon size={16} className="text-emerald-400 mb-1.5 group-hover:scale-110 transition" />
-                <div className="text-xs font-bold text-slate-200">{op.label}</div>
-                <div className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{op.desc}</div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <op.icon size={16} className="text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-semibold uppercase">
+                      {op.badge}
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-emerald-300 transition-colors">
+                    {op.label}
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-500 mt-1 line-clamp-1">{op.desc}</div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Pendências */}
-        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-3">
+        {/* Pendências & Alertas Operacionais */}
+        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-3 shadow-lg">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white">Pendências & Alertas Operacionais</h2>
-            <span className="text-[11px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 font-bold">
-              {pendentesContas + pendentesRepasses + pendentesDivergencias} ativas
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <AlertTriangle size={16} className="text-amber-400" />
+              <span>Pendências & Alertas Operacionais</span>
+            </h2>
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded font-bold ${
+                totalAlertas > 0
+                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+              }`}
+            >
+              {totalAlertas > 0 ? `${totalAlertas} pendências` : 'Em dia'}
             </span>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300">Contas a pagar aguardando liquidação</span>
+            <button
+              onClick={() => setView('compromissos')}
+              className="w-full p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-purple-500/30 flex items-center justify-between transition text-left"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                <span className="text-slate-300">Contas a pagar aguardando liquidação</span>
+              </div>
               <span className="font-bold text-purple-400">{pendentesContas}</span>
-            </div>
-            <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300">Solicitações de repasse pendentes</span>
+            </button>
+            <button
+              onClick={() => setView('repasses')}
+              className="w-full p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/30 flex items-center justify-between transition text-left"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                <span className="text-slate-300">Solicitações de repasse pendentes</span>
+              </div>
               <span className="font-bold text-cyan-400">{pendentesRepasses}</span>
-            </div>
-            <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300">Divergências de conciliação adquirentes</span>
+            </button>
+            <button
+              onClick={() => setView('conciliacao')}
+              className="w-full p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-rose-500/30 flex items-center justify-between transition text-left"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                <span className="text-slate-300">Divergências na conciliação de adquirentes</span>
+              </div>
               <span className={`font-bold ${pendentesDivergencias > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
                 {pendentesDivergencias}
               </span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -667,14 +867,13 @@ function GestaoSaldosView({
     });
   }, [extrato, filtroBucket, busca]);
 
-  if (!gestao) return <NoData text="Nenhum dado consolidado retornado pelo Ledger." />;
-
-  const c = gestao.consolidado;
+  const c = gestao?.consolidado;
+  const listaEventos = gestao?.eventos || [];
 
   return (
     <div className="space-y-6">
       {/* Posição por Evento */}
-      <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-lg">
         <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-bold text-white">Posição Financeira Consolidada por Evento</h2>
@@ -682,9 +881,15 @@ function GestaoSaldosView({
               Valores calculados em tempo real pelo Ledger imutável. Clique em <b>Operar</b> para mudar o contexto ativo.
             </p>
           </div>
+          {c && (
+            <div className="text-right">
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Total Geral Ledger</span>
+              <span className="text-sm font-black text-white">{money(c.totalPatrimonioCents)}</span>
+            </div>
+          )}
         </div>
 
-        {gestao.eventos.length ? (
+        {listaEventos.length ? (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800">
@@ -700,7 +905,7 @@ function GestaoSaldosView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {gestao.eventos.map((x) => {
+                {listaEventos.map((x) => {
                   const ativo = x.id === eventoId;
                   return (
                     <tr key={x.id} className={ativo ? 'bg-emerald-500/10' : 'hover:bg-slate-800/30'}>

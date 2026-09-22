@@ -24,8 +24,9 @@ import {
   Percent,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
+import OperationalPanel from '../../components/OperationalPanel';
 
-type TabView = 'pipeline' | 'produtores' | 'condicoes' | 'atividades';
+type TabView = 'pipeline' | 'produtores' | 'condicoes' | 'atividades' | 'leads' | 'propostas' | 'contratos' | 'metas' | 'relatorios';
 
 type ProdutorB2B = {
   id: string;
@@ -437,6 +438,11 @@ export default function ComercialPage() {
           { id: 'produtores' as TabView, label: 'Carteira de Produtores B2B', icon: Users },
           { id: 'condicoes' as TabView, label: 'Condições Comerciais Vigentes', icon: FileCheck },
           { id: 'atividades' as TabView, label: 'Agenda & Atividades Comerciais', icon: Calendar },
+          { id: 'leads' as TabView, label: 'Leads B2B', icon: Users },
+          { id: 'propostas' as TabView, label: 'Propostas Comerciais', icon: FileCheck },
+          { id: 'contratos' as TabView, label: 'Contratos & Ativação', icon: FileCheck },
+          { id: 'metas' as TabView, label: 'Metas Comerciais', icon: Briefcase },
+          { id: 'relatorios' as TabView, label: 'Relatórios Comerciais', icon: Calendar },
         ].map((t) => {
           const active = tab === t.id;
           return (
@@ -743,6 +749,46 @@ export default function ComercialPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {tab === 'leads' && (
+            <OperationalPanel
+              title="Leads B2B"
+              description="Prospecção e qualificação exclusivamente de produtores."
+              items={['Novos leads', 'Qualificados', 'Em contato', 'Convertidos']}
+            />
+          )}
+
+          {tab === 'propostas' && (
+            <OperationalPanel
+              title="Propostas Comerciais"
+              description="Propostas, condições, validade e histórico de negociação."
+              items={['Em elaboração', 'Enviadas', 'Em negociação', 'Aceitas']}
+            />
+          )}
+
+          {tab === 'contratos' && (
+            <OperationalPanel
+              title="Contratos & Ativação"
+              description="Formalização do produtor e passagem para operação."
+              items={['Contratos', 'Pendências', 'Ativações', 'Renovações']}
+            />
+          )}
+
+          {tab === 'metas' && (
+            <OperationalPanel
+              title="Metas Comerciais"
+              description="Acompanhamento de metas sem dados artificiais."
+              items={['Meta mensal', 'Realizado', 'Pipeline', 'Conversão']}
+            />
+          )}
+
+          {tab === 'relatorios' && (
+            <OperationalPanel
+              title="Relatórios Comerciais"
+              description="Análises B2B de produtores, oportunidades e contratos."
+              items={['Produtores', 'Oportunidades', 'Contratos', 'Receita comercial']}
+            />
           )}
         </>
       )}
