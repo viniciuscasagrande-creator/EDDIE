@@ -20,6 +20,7 @@ import {
   Ticket,
   ChevronRight,
   Filter,
+  Loader2,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 
@@ -87,26 +88,29 @@ export default function SacPage() {
     setError('');
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const res = await fetch(`${api}/sac/chamados`, { signal: controller.signal });
-      if (!res.ok) throw new Error('Não foi possível carregar os chamados.');
+      if (!res.ok) {
+        if (res.status === 503) throw new Error('API Offline (503). Backend SAC não conectado.');
+        throw new Error('Não foi possível carregar os chamados.');
+      }
       const data = await res.json();
       const lista: Chamado[] = Array.isArray(data) ? data : (data.items || []);
       setChamados(lista);
-      if (lista.length > 0 && !chamadoAtivo) {
-        setChamadoAtivo(lista[0] ?? null);
-      }
+      setChamadoAtivo((atual) => (atual ? (lista.find((c) => c.id === atual.id) || atual) : (lista[0] ?? null)));
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
+      if (err.name === 'AbortError') {
+        setError('Tempo limite ao carregar chamados.');
+      } else {
         setError(err instanceof Error ? err.message : 'Falha na comunicação.');
       }
     } finally {
       clearTimeout(timer);
       setLoading(false);
     }
-  }, [api, chamadoAtivo]);
+  }, [api]);
 
   useEffect(() => {
     void carregarChamados();
@@ -365,7 +369,22 @@ export default function SacPage() {
 
           <div className="flex-1 overflow-y-auto divide-y divide-slate-800/80">
             {loading ? (
-              <div className="p-12 text-center text-xs text-slate-500">Carregando fila...</div>
+              <div className="p-12 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                <Loader2 size={14} className="animate-spin text-sky-400" />
+                <span>Carregando fila...</span>
+              </div>
+            ) : error ? (
+              <div className="p-8 text-center space-y-2">
+                <div className="text-xs text-rose-400">{error}</div>
+                <button
+                  type="button"
+                  onClick={() => carregarChamados()}
+                  className="px-3 py-1 bg-rose-500/20 text-rose-300 text-xs rounded border border-rose-500/30 hover:bg-rose-500/30 transition inline-flex items-center gap-1.5"
+                >
+                  <RefreshCcw size={12} />
+                  <span>Tentar novamente</span>
+                </button>
+              </div>
             ) : chamadosFiltrados.length === 0 ? (
               <div className="p-12 text-center text-xs text-slate-500">Nenhum chamado encontrado.</div>
             ) : (

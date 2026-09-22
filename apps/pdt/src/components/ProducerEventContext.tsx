@@ -45,7 +45,7 @@ export function ProducerEventProvider({ children }: { children: React.ReactNode 
     setError('');
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const r = await fetch(`${api}/eventos/produtor/${produtorId}`, {
@@ -54,6 +54,9 @@ export function ProducerEventProvider({ children }: { children: React.ReactNode 
       });
 
       if (!r.ok) {
+        if (r.status === 503) {
+          throw new Error('API de Produção Offline (503)');
+        }
         throw new Error(`Falha HTTP ${r.status} ao carregar eventos.`);
       }
 
@@ -66,7 +69,7 @@ export function ProducerEventProvider({ children }: { children: React.ReactNode 
       setEventoId((atual) => (lista.some((e) => e.id === atual) ? atual : inicial));
     } catch (e: any) {
       if (e.name === 'AbortError') {
-        setError('Tempo limite de resposta excedido.');
+        setError('Tempo limite ao conectar com a API.');
       } else {
         setError(e instanceof Error ? e.message : 'Falha ao conectar com o serviço de eventos.');
       }

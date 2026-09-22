@@ -16,6 +16,7 @@ import {
   Flame,
   Search,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 
@@ -63,16 +64,21 @@ export default function SuportePage() {
     setError('');
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const qs = eventoId ? `?eventoId=${eventoId}` : produtorId ? `?produtorId=${produtorId}` : '';
       const res = await fetch(`${api}/suporte/ocorrencias${qs}`, { signal: controller.signal });
-      if (!res.ok) throw new Error('Não foi possível carregar as ocorrências.');
+      if (!res.ok) {
+        if (res.status === 503) throw new Error('API Offline (503). Backend Suporte não conectado.');
+        throw new Error('Não foi possível carregar as ocorrências.');
+      }
       const data = await res.json();
       setOcorrencias(Array.isArray(data) ? data : (data.items || []));
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
+      if (err.name === 'AbortError') {
+        setError('Tempo limite ao carregar ocorrências.');
+      } else {
         setError(err instanceof Error ? err.message : 'Falha na comunicação.');
       }
     } finally {
@@ -278,7 +284,23 @@ export default function SuportePage() {
         </div>
 
         {loading ? (
-          <div className="p-16 text-center text-slate-500 text-sm">Carregando ocorrências...</div>
+          <div className="p-16 text-center text-slate-500 text-sm flex items-center justify-center gap-2">
+            <Loader2 size={16} className="animate-spin text-amber-500" />
+            <span>Carregando ocorrências...</span>
+          </div>
+        ) : error ? (
+          <div className="p-16 text-center space-y-3">
+            <div className="text-sm text-rose-400 font-semibold">{error}</div>
+            <p className="text-slate-500 text-xs">O serviço de suporte operacional está temporariamente indisponível.</p>
+            <button
+              type="button"
+              onClick={() => void carregar()}
+              className="px-4 py-2 bg-rose-500/20 text-rose-300 text-xs rounded-lg border border-rose-500/30 hover:bg-rose-500/30 transition font-semibold inline-flex items-center gap-2"
+            >
+              <RefreshCcw size={13} />
+              <span>Tentar novamente</span>
+            </button>
+          </div>
         ) : filtradas.length === 0 ? (
           <div className="p-16 text-center text-slate-500 text-sm">
             Nenhuma ocorrência registrada para os filtros selecionados.

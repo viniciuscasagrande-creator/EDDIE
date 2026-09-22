@@ -123,12 +123,12 @@ export default function ContabilidadePage() {
   // Dados
   const [dre, setDre] = useState<DreData>({
     competencia: '2026-09',
-    receitaBrutaServicosCents: 5420000,
-    recursosTerceirosCents: 48000000,
-    deducoesImpostosCents: 742000,
-    receitaLiquidaCents: 4678000,
+    receitaBrutaServicosCents: 0,
+    recursosTerceirosCents: 0,
+    deducoesImpostosCents: 0,
+    receitaLiquidaCents: 0,
     despesasOperacionaisCents: 0,
-    resultadoOperacionalCents: 4678000,
+    resultadoOperacionalCents: 0,
   });
 
   const [balancete, setBalancete] = useState<BalanceteItem[]>([]);
@@ -167,7 +167,7 @@ export default function ContabilidadePage() {
     setLoading(true);
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const results = await Promise.allSettled([
@@ -202,8 +202,22 @@ export default function ContabilidadePage() {
         const cd = await rConc.value.json();
         if (Array.isArray(cd)) setConciliacoes(cd);
       }
-    } catch (err) {
-      console.error(err);
+
+      const anySuccess = results.some((r) => r.status === 'fulfilled' && r.value.ok);
+      const any503 = results.some((r) => r.status === 'fulfilled' && r.value.status === 503);
+      if (!anySuccess && any503) {
+        setFeedback({
+          tipo: 'error',
+          texto: 'API de Produção Offline (503). O backend de Contabilidade não está conectado no momento.',
+        });
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setFeedback({
+          tipo: 'error',
+          texto: 'Tempo limite ao consultar o módulo de contabilidade.',
+        });
+      }
     } finally {
       clearTimeout(timer);
       setLoading(false);

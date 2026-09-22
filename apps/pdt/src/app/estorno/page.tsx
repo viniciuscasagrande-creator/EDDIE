@@ -19,6 +19,7 @@ import {
   DollarSign,
   ChevronRight,
   Info,
+  Loader2,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 
@@ -85,15 +86,20 @@ export default function EstornoPage() {
     setError('');
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const res = await fetch(`${api}/estornos`, { signal: controller.signal });
-      if (!res.ok) throw new Error('Não foi possível carregar as solicitações de estorno.');
+      if (!res.ok) {
+        if (res.status === 503) throw new Error('API Offline (503). Backend Estornos não conectado.');
+        throw new Error('Não foi possível carregar as solicitações de estorno.');
+      }
       const data = await res.json();
       setEstornos(Array.isArray(data) ? data : (data.items || []));
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
+      if (err.name === 'AbortError') {
+        setError('Tempo limite ao carregar estornos.');
+      } else {
         setError(err instanceof Error ? err.message : 'Falha na comunicação com a API.');
       }
     } finally {
@@ -317,7 +323,23 @@ export default function EstornoPage() {
         </div>
 
         {loading ? (
-          <div className="p-16 text-center text-slate-400 text-sm">Carregando solicitações de estorno...</div>
+          <div className="p-16 text-center text-slate-400 text-sm flex items-center justify-center gap-2">
+            <Loader2 size={16} className="animate-spin text-rose-500" />
+            <span>Carregando solicitações de estorno...</span>
+          </div>
+        ) : error ? (
+          <div className="p-16 text-center space-y-3">
+            <div className="text-sm text-rose-400 font-semibold">{error}</div>
+            <p className="text-slate-500 text-xs">O módulo de estorno está temporariamente sem resposta do gateway ou Ledger.</p>
+            <button
+              type="button"
+              onClick={() => void carregar()}
+              className="px-4 py-2 bg-rose-500/20 text-rose-300 text-xs rounded-lg border border-rose-500/30 hover:bg-rose-500/30 transition font-semibold inline-flex items-center gap-2"
+            >
+              <RefreshCcw size={13} />
+              <span>Tentar novamente</span>
+            </button>
+          </div>
         ) : filtrados.length === 0 ? (
           <div className="p-16 text-center text-slate-500 text-sm">
             Nenhuma solicitação de estorno encontrada para o filtro atual.

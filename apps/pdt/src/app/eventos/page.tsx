@@ -19,6 +19,7 @@ import {
   Loader2,
   DollarSign,
   Tag,
+  RefreshCcw,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 
@@ -74,6 +75,7 @@ export default function EventosPage() {
   const { api, produtorId, eventoId, selecionarEvento, recarregarEventos } = useProducerEvent();
   const [eventos, setEventos] = useState<EventoDetalhado[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [activeEvento, setActiveEvento] = useState<EventoDetalhado | null>(null);
   const [selectedSessaoId, setSelectedSessaoId] = useState<string>('');
 
@@ -124,8 +126,9 @@ export default function EventosPage() {
       return;
     }
     setLoading(true);
+    setError('');
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const res = await fetch(`${api}/eventos/produtor/${produtorId}`, {
@@ -141,10 +144,18 @@ export default function EventosPage() {
         if (sel?.sessoes?.[0]?.id) {
           setSelectedSessaoId(sel.sessoes[0].id);
         }
+      } else {
+        if (res.status === 503) {
+          setError('API de Produção Offline (503). Configure API_INTERNAL_URL.');
+        } else {
+          setError(`Erro HTTP ${res.status} ao carregar eventos.`);
+        }
       }
     } catch (e: any) {
-      if (e.name !== 'AbortError') {
-        console.error('Falha ao carregar eventos:', e);
+      if (e.name === 'AbortError') {
+        setError('Tempo limite ao carregar eventos.');
+      } else {
+        setError(e instanceof Error ? e.message : 'Falha na comunicação com o serviço de eventos.');
       }
     } finally {
       clearTimeout(timer);
@@ -375,6 +386,19 @@ export default function EventosPage() {
           <div className="flex items-center justify-center p-12 text-slate-400 gap-2">
             <Loader2 size={20} className="animate-spin text-rose-500" />
             <span className="text-xs">Carregando eventos do produtor...</span>
+          </div>
+        ) : error ? (
+          <div className="bg-[#111827] border border-rose-500/30 rounded-xl p-8 text-center space-y-3">
+            <p className="text-rose-400 text-sm font-semibold">{error}</p>
+            <p className="text-slate-500 text-xs">O serviço de eventos está inacessível ou o backend ainda não foi iniciado.</p>
+            <button
+              type="button"
+              onClick={() => void carregarEventos()}
+              className="px-4 py-2 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition inline-flex items-center gap-2"
+            >
+              <RefreshCcw size={14} />
+              <span>Tentar novamente</span>
+            </button>
           </div>
         ) : eventos.length === 0 ? (
           <div className="bg-[#111827] border border-slate-800 rounded-xl p-8 text-center space-y-3">

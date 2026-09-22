@@ -155,38 +155,58 @@ export default function MarketingPage() {
       return;
     }
     setLoading(true);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+
     try {
       const evQuery = eventoId ? `&eventoId=${eventoId}` : '';
-      const [rTpl, rCamp, rPix, rUtm, rCup, rKpi] = await Promise.all([
-        fetch(`${api}/marketing/campanhas/templates`),
-        fetch(`${api}/marketing/campanhas?produtorId=${produtorId}${evQuery}`),
-        fetch(`${api}/marketing/pixels/todos?produtorId=${produtorId}${evQuery}`),
-        fetch(`${api}/marketing/links?produtorId=${produtorId}${eventoId ? `&eventoId=${eventoId}` : ''}`),
-        fetch(`${api}/marketing/cupons?produtorId=${produtorId}${eventoId ? `&eventoId=${eventoId}` : ''}`),
-        fetch(`${api}/marketing/kpis?produtorId=${produtorId}${evQuery}`),
+      const results = await Promise.allSettled([
+        fetch(`${api}/marketing/campanhas/templates`, { signal: controller.signal }),
+        fetch(`${api}/marketing/campanhas?produtorId=${produtorId}${evQuery}`, { signal: controller.signal }),
+        fetch(`${api}/marketing/pixels/todos?produtorId=${produtorId}${evQuery}`, { signal: controller.signal }),
+        fetch(`${api}/marketing/links?produtorId=${produtorId}${eventoId ? `&eventoId=${eventoId}` : ''}`, { signal: controller.signal }),
+        fetch(`${api}/marketing/cupons?produtorId=${produtorId}${eventoId ? `&eventoId=${eventoId}` : ''}`, { signal: controller.signal }),
+        fetch(`${api}/marketing/kpis?produtorId=${produtorId}${evQuery}`, { signal: controller.signal }),
       ]);
 
-      if (rTpl.ok) setTemplates(await rTpl.json());
-      if (rCamp.ok) {
-        const cData = await rCamp.json();
+      const [rTpl, rCamp, rPix, rUtm, rCup, rKpi] = results;
+
+      if (rTpl.status === 'fulfilled' && rTpl.value.ok) setTemplates(await rTpl.value.json());
+      if (rCamp.status === 'fulfilled' && rCamp.value.ok) {
+        const cData = await rCamp.value.json();
         setCampanhas(Array.isArray(cData) ? cData : []);
       }
-      if (rPix.ok) {
-        const pData = await rPix.json();
+      if (rPix.status === 'fulfilled' && rPix.value.ok) {
+        const pData = await rPix.value.json();
         setPixels(Array.isArray(pData) ? pData : []);
       }
-      if (rUtm.ok) {
-        const uData = await rUtm.json();
+      if (rUtm.status === 'fulfilled' && rUtm.value.ok) {
+        const uData = await rUtm.value.json();
         setUtms(Array.isArray(uData) ? uData : []);
       }
-      if (rCup.ok) {
-        const cpData = await rCup.json();
+      if (rCup.status === 'fulfilled' && rCup.value.ok) {
+        const cpData = await rCup.value.json();
         setCupons(Array.isArray(cpData) ? cpData : []);
       }
-      if (rKpi.ok) setKpis(await rKpi.json());
-    } catch (err) {
-      console.error(err);
+      if (rKpi.status === 'fulfilled' && rKpi.value.ok) setKpis(await rKpi.value.json());
+
+      const anySuccess = results.some((r) => r.status === 'fulfilled' && r.value.ok);
+      const any503 = results.some((r) => r.status === 'fulfilled' && r.value.status === 503);
+      if (!anySuccess && any503) {
+        setFeedback({
+          tipo: 'error',
+          texto: 'API de Produção Offline (503). O módulo de Marketing não está conectado no momento.',
+        });
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setFeedback({
+          tipo: 'error',
+          texto: 'Tempo limite ao consultar o módulo de marketing.',
+        });
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [api, produtorId, eventoId]);

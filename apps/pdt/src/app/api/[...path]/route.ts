@@ -23,15 +23,19 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
   const headers = new Headers(req.headers);
   headers.delete("host");
   headers.delete("content-length");
+  const abortCtrl = new AbortController();
+  const abortTimer = setTimeout(() => abortCtrl.abort(), 5000);
   try {
-    const init: RequestInit = { method: req.method, headers, cache: "no-store" };
+    const init: RequestInit = { method: req.method, headers, cache: "no-store", signal: abortCtrl.signal };
     if (!["GET", "HEAD"].includes(req.method)) init.body = await req.arrayBuffer();
     const upstream = await fetch(target, init);
+    clearTimeout(abortTimer);
     const responseHeaders = new Headers(upstream.headers);
     responseHeaders.delete("content-encoding");
     responseHeaders.delete("content-length");
     return new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
   } catch {
+    clearTimeout(abortTimer);
     return NextResponse.json(
       { error: "API_BACKEND_INDISPONIVEL", message: "Não foi possível conectar à API operacional." },
       { status: 503 }

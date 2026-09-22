@@ -40,7 +40,11 @@ type View =
   | 'antecipacoes'
   | 'transferencias'
   | 'conciliacao'
-  | 'relatorios';
+  | 'relatorios'
+  | 'fluxo_caixa'
+  | 'agenda'
+  | 'auditoria'
+  | 'inteligencia';
 
 type Saldos = {
   disponivelCents: number;
@@ -163,6 +167,10 @@ const menu: { id: View; label: string; icon: React.ElementType }[] = [
   { id: 'transferencias', label: 'Transferências', icon: ArrowLeftRight },
   { id: 'conciliacao', label: 'Conciliação Financeira', icon: Landmark },
   { id: 'relatorios', label: 'Relatórios & DRE', icon: FileText },
+  { id: 'fluxo_caixa', label: 'Fluxo de Caixa', icon: TrendingUp },
+  { id: 'agenda', label: 'Agenda Financeira', icon: CalendarClock },
+  { id: 'auditoria', label: 'Auditoria', icon: ShieldCheck },
+  { id: 'inteligencia', label: 'Inteligência Financeira', icon: Search },
 ];
 
 export default function FinanceiroPage() {
@@ -204,7 +212,7 @@ export default function FinanceiroPage() {
     setFeedback(null);
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const qs = EVENTO ? `?eventoId=${EVENTO}` : '';
@@ -247,8 +255,22 @@ export default function FinanceiroPage() {
         const cfd = await cf.value.json();
         setContasFinanceiras(Array.isArray(cfd) ? cfd : []);
       }
+
+      const anySuccess = results.some((res) => res.status === 'fulfilled' && res.value.ok);
+      const any503 = results.some((res) => res.status === 'fulfilled' && res.value.status === 503);
+      if (!anySuccess && any503) {
+        setFeedback({
+          tipo: 'error',
+          texto: 'API de Produção Offline (503). Configure API_INTERNAL_URL com o backend operacional.',
+        });
+      }
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
+      if (err.name === 'AbortError') {
+        setFeedback({
+          tipo: 'error',
+          texto: 'Tempo limite ao consultar posições financeiras.',
+        });
+      } else {
         setFeedback({
           tipo: 'error',
           texto: err instanceof Error ? err.message : 'Erro ao conectar com a API Financeira.',
@@ -458,6 +480,19 @@ export default function FinanceiroPage() {
 
           {view === 'relatorios' && (
             <RelatoriosView saldos={saldos} extrato={extrato} contas={contas} repasses={repasses} />
+          )}
+
+          {view === 'fluxo_caixa' && (
+            <FluxoCaixaView saldos={saldos} extrato={extrato} contas={contas} repasses={repasses} />
+          )}
+          {view === 'agenda' && (
+            <AgendaFinanceiraView contas={contas} repasses={repasses} />
+          )}
+          {view === 'auditoria' && (
+            <AuditoriaFinanceiraView extrato={extrato} divergencias={divergencias} />
+          )}
+          {view === 'inteligencia' && (
+            <InteligenciaFinanceiraView saldos={saldos} contas={contas} repasses={repasses} divergencias={divergencias} />
           )}
         </>
       )}
@@ -2171,4 +2206,29 @@ function NoData({ text }: { text: string }) {
       <span>{text}</span>
     </div>
   );
+}
+
+
+// ============================================================================
+//  EDDIE 10.0 — CAMADAS OPERACIONAIS DERIVADAS EXCLUSIVAMENTE DE DADOS REAIS
+// ============================================================================
+function FluxoCaixaView({ saldos, extrato, contas, repasses }: { saldos:Saldos; extrato:Lancamento[]; contas:Conta[]; repasses:Repasse[] }) {
+  const aPagar = contas.filter(x => !['pago','cancelado'].includes(x.status?.toLowerCase())).reduce((a,x)=>a+centsOf(x),0);
+  const emRepasse = repasses.filter(x => !['liquidado','cancelado'].includes(x.status?.toLowerCase())).reduce((a,x)=>a+centsOf(x),0);
+  const rows = extrato.slice(0,20);
+  return <section className="space-y-4">
+    <div className="grid md:grid-cols-4 gap-3">{[['Disponível',saldos.disponivelCents],['Retido',saldos.retidoCents],['Compromissos',aPagar],['Repasses em aberto',emRepasse]].map(([l,v])=><div key={String(l)} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4"><p className="text-xs text-slate-400">{l}</p><p className="text-xl font-bold mt-1">{money(Number(v))}</p></div>)}</div>
+    <div className="rounded-xl border border-slate-800 overflow-hidden"><div className="p-4 border-b border-slate-800"><h3 className="font-semibold">Movimentação de caixa</h3><p className="text-xs text-slate-400">Derivada do Ledger. Nenhum valor é projetado artificialmente.</p></div><div className="divide-y divide-slate-800">{rows.length?rows.map(x=><div key={x.id} className="p-3 flex justify-between gap-4 text-sm"><span className="text-slate-300">{x.historico || x.origem}</span><span className="font-semibold">{money(centsOf(x))}</span></div>):<div className="p-8 text-center text-slate-500 text-sm">Sem movimentações no período.</div>}</div></div>
+  </section>
+}
+function AgendaFinanceiraView({ contas, repasses }:{contas:Conta[];repasses:Repasse[]}) {
+ const agenda=[...contas.map(x=>({id:'c'+x.id,data:x.vencimentoEm,tipo:'Conta a pagar',descricao:x.descricao||x.fornecedorNome,valor:centsOf(x),status:x.status})),...repasses.map(x=>({id:'r'+x.id,data:x.dataProgramada,tipo:'Repasse',descricao:'Repasse programado',valor:centsOf(x),status:x.status}))].filter(x=>x.data).sort((a,b)=>String(a.data).localeCompare(String(b.data)));
+ return <section className="rounded-xl border border-slate-800 overflow-hidden"><div className="p-4 border-b border-slate-800"><h3 className="font-semibold">Agenda Financeira</h3><p className="text-xs text-slate-400">Vencimentos e repasses reais em ordem cronológica.</p></div>{agenda.length?agenda.map(x=><div key={x.id} className="grid grid-cols-[120px_130px_1fr_140px_120px] gap-3 p-3 border-b border-slate-800 text-sm"><span>{new Date(x.data).toLocaleDateString('pt-BR')}</span><span className="text-slate-400">{x.tipo}</span><span>{x.descricao}</span><span className="text-right font-semibold">{money(x.valor)}</span><span className="text-right text-slate-400">{x.status}</span></div>):<div className="p-8 text-center text-slate-500">Nenhum compromisso agendado.</div>}</section>
+}
+function AuditoriaFinanceiraView({extrato,divergencias}:{extrato:Lancamento[];divergencias:Divergencia[]}) {
+ return <section className="space-y-4"><div className="grid md:grid-cols-3 gap-3"><div className="rounded-xl border border-slate-800 p-4"><p className="text-xs text-slate-400">Lançamentos rastreáveis</p><p className="text-2xl font-bold">{extrato.length}</p></div><div className="rounded-xl border border-slate-800 p-4"><p className="text-xs text-slate-400">Divergências abertas</p><p className="text-2xl font-bold">{divergencias.filter(x=>!x.resolvida).length}</p></div><div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"><p className="text-xs text-emerald-300">Fonte oficial</p><p className="font-semibold mt-1">Ledger imutável</p></div></div><div className="rounded-xl border border-slate-800 p-5"><h3 className="font-semibold">Trilha de auditoria</h3><p className="text-sm text-slate-400 mt-2">Esta visão não cria registros paralelos. A auditoria utiliza lançamentos e divergências persistidos pelos serviços financeiros do EDDIE.</p></div></section>
+}
+function InteligenciaFinanceiraView({saldos,contas,repasses,divergencias}:{saldos:Saldos;contas:Conta[];repasses:Repasse[];divergencias:Divergencia[]}) {
+ const compromissos=contas.filter(x=>!['pago','cancelado'].includes(x.status?.toLowerCase())).reduce((a,x)=>a+centsOf(x),0); const liquidez=saldos.disponivelCents-compromissos; const alertas=[...(liquidez<0?['Compromissos superam o saldo disponível.']:[]),...(divergencias.some(x=>!x.resolvida)?['Existem divergências de conciliação pendentes.']:[]),...(repasses.some(x=>x.status?.toLowerCase().includes('pend'))?['Há repasses aguardando processamento.']:[])];
+ return <section className="space-y-4"><div className="rounded-xl border border-slate-800 p-5"><h3 className="font-semibold">Diagnóstico Financeiro</h3><p className="text-sm text-slate-400 mt-1">Regras determinísticas sobre dados reais; sem previsões ou valores simulados.</p><div className="mt-4 grid md:grid-cols-2 gap-3"><div className="rounded-lg bg-slate-900 p-4"><p className="text-xs text-slate-400">Liquidez após compromissos</p><p className="text-xl font-bold">{money(liquidez)}</p></div><div className="rounded-lg bg-slate-900 p-4"><p className="text-xs text-slate-400">Alertas operacionais</p><p className="text-xl font-bold">{alertas.length}</p></div></div></div><div className="space-y-2">{alertas.length?alertas.map(a=><div key={a} className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-amber-200 flex gap-2"><AlertTriangle size={16}/>{a}</div>):<div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-200">Nenhum alerta financeiro identificado com os dados atuais.</div>}</div></section>
 }

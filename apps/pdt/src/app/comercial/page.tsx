@@ -153,7 +153,7 @@ export default function ComercialPage() {
     setLoading(true);
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     try {
       const results = await Promise.allSettled([
@@ -185,8 +185,22 @@ export default function ComercialPage() {
       if (rRes.status === 'fulfilled' && rRes.value.ok) {
         setResumo(await rRes.value.json());
       }
-    } catch (err) {
-      console.error(err);
+
+      const anySuccess = results.some((r) => r.status === 'fulfilled' && r.value.ok);
+      const any503 = results.some((r) => r.status === 'fulfilled' && r.value.status === 503);
+      if (!anySuccess && any503) {
+        setFeedback({
+          tipo: 'error',
+          texto: 'API de Produção Offline (503). O módulo Comercial B2B não está conectado no momento.',
+        });
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setFeedback({
+          tipo: 'error',
+          texto: 'Tempo limite ao consultar o CRM Comercial B2B.',
+        });
+      }
     } finally {
       clearTimeout(timer);
       setLoading(false);
