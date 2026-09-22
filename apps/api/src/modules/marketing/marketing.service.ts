@@ -34,6 +34,43 @@ export class MarketingService {
     private readonly outbox: OutboxService,
   ) {}
 
+  listarTemplatesCampanhasProntas() {
+    return [
+      {
+        id: 'lancamento-abertura',
+        nome: 'Abertura de Vendas & Pré-Venda',
+        descricao: 'Campanha de tração inicial com disparos WhatsApp, e-mail para base VIP e anúncios no Meta e Google Ads.',
+        canais: ['meta', 'google', 'whatsapp', 'email'],
+        sugestaoOrcamentoCents: 50000,
+        objetivo: 'Gerar pico de vendas nas primeiras 48 horas de lançamento',
+      },
+      {
+        id: 'virada-lote',
+        nome: 'Virada de Lote com Contagem Regressiva',
+        descricao: 'Gatilho de urgência com automação de remarketing 72h antes do aumento de preço.',
+        canais: ['meta', 'tiktok', 'whatsapp', 'email'],
+        sugestaoOrcamentoCents: 80000,
+        objetivo: 'Esgotar o lote atual e acelerar faturamento',
+      },
+      {
+        id: 'recuperacao-carrinho',
+        nome: 'Recuperação Automática de Carrinho',
+        descricao: 'Disparo transacional 15 minutos e 24h após abandono de checkout com link direto.',
+        canais: ['whatsapp', 'email'],
+        sugestaoOrcamentoCents: 20000,
+        objetivo: 'Recuperar até 22% dos abandonos de compra',
+      },
+      {
+        id: 'reta-final',
+        nome: 'Últimos Ingressos / Semana do Evento',
+        descricao: 'Intensificação de impressões locais e remarketing para público que visualizou a página.',
+        canais: ['meta', 'google', 'spotify', 'tiktok'],
+        sugestaoOrcamentoCents: 120000,
+        objetivo: 'Sold-out nos últimos 7 dias antes do evento',
+      },
+    ];
+  }
+
   // ==========================================================================
   //  CAMPANHAS (Prontas e Multicanais)
   // ==========================================================================

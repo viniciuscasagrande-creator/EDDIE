@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm", "marketing", "contabilidade"]
+  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte"]
 }
 
 
@@ -854,6 +854,65 @@ model ConciliacaoContabil {
   @@map("conciliacoes_contabeis")
   @@schema("contabilidade")
 }
+
+// ============================================================================
+//  SAC — Atendimento ao comprador final, chamados e SLA (ITIL)
+// ============================================================================
+//  SAC — Atendimento ao comprador final, chamados e SLA
+// ============================================================================
+
+model ChamadoSac {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @db.Uuid
+  protocolo     String    @unique
+  clienteNome   String
+  cpf           String?
+  telefone      String?
+  email         String?
+  pedidoId      String?
+  eventoId      String?   @db.Uuid
+  assunto       String
+  descricao     String
+  canal         String
+  prioridade    String    @default("normal")
+  status        String    @default("aberto")
+  responsavelId String?
+  slaVenceEm    DateTime?
+  resolvidoEm   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, cpf])
+  @@index([tenantId, telefone])
+  @@map("chamados")
+  @@schema("sac")
+}
+
+// ============================================================================
+//  SUPORTE — Operação e ocorrências do produtor no dia do evento
+// ============================================================================
+
+model OcorrenciaEvento {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @db.Uuid
+  eventoId      String    @db.Uuid
+  produtorId    String    @db.Uuid
+  titulo        String
+  descricao     String
+  categoria     String
+  prioridade    String    @default("normal")
+  status        String    @default("aberto")
+  responsavelId String?
+  resolvidoEm   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, eventoId, status])
+  @@map("ocorrencias")
+  @@schema("suporte")
+}
+
 
 
 

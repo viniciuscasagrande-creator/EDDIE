@@ -8,6 +8,9 @@ import {
   Briefcase,
   Scale,
   Calendar,
+  RotateCcw,
+  Headphones,
+  AlertTriangle,
   ArrowUpRight,
   TrendingUp,
   ShieldCheck,
@@ -81,7 +84,31 @@ export default function DashboardPage() {
           Acesso aos Bounded Contexts
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Eventos */}
+          <Link
+            href="/eventos"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-rose-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+                <Calendar size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-rose-400 transition" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base group-hover:text-rose-400 transition">
+                Eventos & Lotes
+              </h3>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Cockpit operacional, criação e virada de lotes, controle de ocupação e sessões com precificação.
+              </p>
+            </div>
+            <div className="text-[11px] font-semibold text-rose-400 pt-2 border-t border-slate-800/80">
+              ✓ Operacional
+            </div>
+          </Link>
+
           {/* Financeiro */}
           <Link
             href="/financeiro"
@@ -178,27 +205,75 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* Eventos */}
+          {/* Estorno */}
           <Link
-            href="/eventos"
-            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-rose-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+            href="/estorno"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-red-500/50 rounded-xl p-6 transition-all space-y-4 relative"
           >
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
-                <Calendar size={24} />
+              <div className="w-12 h-12 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+                <RotateCcw size={24} />
               </div>
-              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-rose-400 transition" />
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-red-400 transition" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-base group-hover:text-rose-400 transition">
-                Eventos & Lotes
+              <h3 className="font-bold text-white text-base group-hover:text-red-400 transition">
+                Estornos & CDC
               </h3>
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">
-                Cockpit operacional, criação e virada de lotes, controle de ocupação e sessões com precificação automática.
+                Máquina de estados de cancelamento, validação automática de CDC Art. 49, débito em Ledger e auditoria.
               </p>
             </div>
-            <div className="text-[11px] font-semibold text-rose-400 pt-2 border-t border-slate-800/80">
-              ✓ Operacional
+            <div className="text-[11px] font-semibold text-red-400 pt-2 border-t border-slate-800/80">
+              ✓ CDC & Antifraude Ativos
+            </div>
+          </Link>
+
+          {/* SAC */}
+          <Link
+            href="/sac"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                <Headphones size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-cyan-400 transition" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base group-hover:text-cyan-400 transition">
+                Atendimento SAC (360°)
+              </h3>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Localizador de comprador unificado por CPF, pedido e e-mail. Timeline de chamados, tickets e controle rigoroso de SLA.
+              </p>
+            </div>
+            <div className="text-[11px] font-semibold text-cyan-400 pt-2 border-t border-slate-800/80">
+              ✓ Visão 360° Operacional
+            </div>
+          </Link>
+
+          {/* Suporte Operacional */}
+          <Link
+            href="/suporte"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-amber-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <AlertTriangle size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-amber-400 transition" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base group-hover:text-amber-400 transition">
+                Suporte a Eventos
+              </h3>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Gestão de ocorrências no dia do evento: catracas offline, bilheteria, problemas de rede, portaria e contingência.
+              </p>
+            </div>
+            <div className="text-[11px] font-semibold text-amber-400 pt-2 border-t border-slate-800/80">
+              ✓ Monitor de Ocorrências
             </div>
           </Link>
         </div>

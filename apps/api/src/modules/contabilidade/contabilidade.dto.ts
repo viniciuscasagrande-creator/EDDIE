@@ -68,6 +68,7 @@ export interface LinhaBalanceteDto {
 export interface DreGerencialDto {
   competencia: string;
   receitaBrutaServicosCents: number;
+  recursosTerceirosCents: number;
   deducoesImpostosCents: number;
   receitaLiquidaCents: number;
   despesasOperacionaisCents: number;

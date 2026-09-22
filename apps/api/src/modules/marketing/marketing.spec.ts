@@ -174,6 +174,9 @@ describe('MarketingService & PublicService (Hub, Campanhas, UTMs, Pixels, Cupons
       mockPrisma.utmLink.create.mockImplementation(({ data }: any) => ({
         ...data,
         id: 'link-utm-01',
+        urlFinal: data.urlDestino,
+        qrPayload: data.urlDestino,
+        codigo: 'link-utm-01',
         cliques: 0,
         conversoes: 0,
       }));

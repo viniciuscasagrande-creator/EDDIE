@@ -26,6 +26,13 @@ export const criarSessaoSchema = z
   });
 export class CriarSessaoDto extends createZodDto(criarSessaoSchema) {}
 
+export const criarSetorSchema = z.object({
+  nome: z.string().min(1),
+  marcado: z.boolean().default(false),
+  capacidade: z.number().int().positive().optional(),
+});
+export class CriarSetorDto extends createZodDto(criarSetorSchema) {}
+
 export const criarLoteSchema = z.object({
   setorId: z.string().uuid(),
   nome: z.string().min(1),

@@ -4,8 +4,8 @@ import * as amqp from 'amqplib';
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMQService.name);
-  private connection: amqp.Connection | null = null;
-  private channel: amqp.Channel | null = null;
+  private connection: any = null;
+  private channel: any = null;
 
   async onModuleInit() {
     const uri = process.env.RABBITMQ_URI || 'amqp://guest:guest@localhost:5672';

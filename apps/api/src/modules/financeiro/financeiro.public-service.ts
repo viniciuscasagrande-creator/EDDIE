@@ -176,7 +176,6 @@ export class FinanceiroPublicService {
       where: {
         tenantId,
         produtorId,
-        eventoId,
         resolvida: false,
       },
     });

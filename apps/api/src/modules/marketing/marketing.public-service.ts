@@ -80,10 +80,10 @@ export class MarketingPublicService {
     return pixels.map((p) => ({
       id: p.id,
       provedor: p.provedor,
-      pixelId: p.pixelId,
+      pixelId: p.pixelExternalId,
       status: p.status,
       eventoId: p.eventoId,
-      configJson: p.configJson as Record<string, unknown> | null,
+      configJson: null,
     }));
   }
 
@@ -105,7 +105,7 @@ export class MarketingPublicService {
         select: { receitaAtribuida: true },
       }),
       this.prisma.utmLink.count({
-        where: { tenantId, produtorId, eventoId, ativo: true },
+        where: { tenantId, produtorId, eventoId },
       }),
       this.prisma.pixelTracking.count({
         where: { tenantId, produtorId, eventoId, status: 'ativo' },
@@ -157,7 +157,7 @@ export class MarketingPublicService {
         select: { provedor: true },
       }),
       this.prisma.utmLink.count({
-        where: { tenantId, produtorId, eventoId, ativo: true },
+        where: { tenantId, produtorId, eventoId },
       }),
       this.prisma.campanhaMarketing.count({
         where: { tenantId, produtorId, eventoId, status: 'ativa' },

@@ -466,12 +466,13 @@ export class ContabilidadeService {
       where: {
         tenantId,
         lancamento: { competencia, status: 'confirmado' },
-        conta: { tipo: { in: ['receita', 'despesa'] } },
+        conta: { tipo: { in: ['receita', 'despesa', 'passivo'] } },
       },
       include: { conta: true },
     });
 
     let receitaBrutaServicosCents = 0;
+    let recursosTerceirosCents = 0;
     let deducoesImpostosCents = 0;
     let despesasOperacionaisCents = 0;
 
@@ -479,6 +480,10 @@ export class ContabilidadeService {
       const val = decimalToCents(p.valor);
       if (p.conta.tipo === 'receita') {
         receitaBrutaServicosCents += val;
+      } else if (p.conta.tipo === 'passivo' && p.conta.codigo.startsWith('2.1')) {
+        if (p.tipo === 'C') {
+          recursosTerceirosCents += val;
+        }
       } else if (p.conta.tipo === 'despesa') {
         if (p.conta.codigo.startsWith('4.1')) {
           deducoesImpostosCents += val;
@@ -494,6 +499,7 @@ export class ContabilidadeService {
     return {
       competencia,
       receitaBrutaServicosCents,
+      recursosTerceirosCents,
       deducoesImpostosCents,
       receitaLiquidaCents,
       despesasOperacionaisCents,

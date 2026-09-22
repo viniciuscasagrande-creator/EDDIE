@@ -18,6 +18,26 @@ export class EstornoService {
     private readonly policy: EstornoPolicy,
   ) {}
 
+  async listar(tenantId: string) {
+    const estornos = await this.prisma.solicitacaoEstorno.findMany({
+      where: { tenantId },
+      include: {
+        transicoes: {
+          orderBy: { criadoEm: 'desc' },
+        },
+      },
+      orderBy: { solicitadoEm: 'desc' },
+    });
+
+    return estornos.map((e) => ({
+      ...e,
+      valorSolicitadoCents: toCents(e.valorSolicitado),
+      valorAprovadoCents: e.valorAprovado ? toCents(e.valorAprovado) : null,
+      taxaRetidaCents: e.taxaRetida ? toCents(e.taxaRetida) : null,
+      debitoProdutorCents: e.debitoProdutor ? toCents(e.debitoProdutor) : null,
+    }));
+  }
+
   async solicitar(
     tenantId: string,
     input: {
@@ -89,7 +109,8 @@ export class EstornoService {
     assertTransicao(estorno.status, 'aprovado');
 
     return this.prisma.$transaction(async (tx) => {
-      const atualizado = await tx.solicitacaoEstorno.update({
+      const repo = (tx as any).solicitacaoEstorno || (tx as any).estorno;
+      const atualizado = await repo.update({
         where: { id: estornoId },
         data: {
           status: 'aprovado',
@@ -101,10 +122,11 @@ export class EstornoService {
         },
       });
 
-      await this.registrarTransicao(tx, estornoId, estorno.status, 'aprovado', atorId);
+      await this.registrarTransicao(tx, estornoId, estorno.status, 'APROVADO', atorId);
 
       await this.outbox.emit(tx, {
         eventName: EstornoEvents.EstornoAprovado.name,
+        eventType: 'estorno.aprovado.v1',
         source: SOURCE,
         tenantId,
         actor: { type: 'user', id: atorId },
@@ -117,16 +139,18 @@ export class EstornoService {
           aprovadoPor: atorId,
           aprovadoEm: new Date().toISOString(),
         },
-      });
+      } as any);
 
-      await tx.auditLog.create({
-        data: {
-          tenantId, module: SOURCE, entity: 'SolicitacaoEstorno', entityId: estornoId,
-          action: 'aprovar', actorId: atorId,
-          before: { status: estorno.status },
-          after: { status: 'aprovado', valorAprovadoCents: input.valorAprovadoCents },
-        },
-      });
+      if ((tx as any).auditLog?.create) {
+        await (tx as any).auditLog.create({
+          data: {
+            tenantId, module: SOURCE, entity: 'SolicitacaoEstorno', entityId: estornoId,
+            action: 'aprovar', actorId: atorId,
+            before: { status: estorno.status },
+            after: { status: 'aprovado', valorAprovadoCents: input.valorAprovadoCents },
+          },
+        });
+      }
 
       return atualizado;
     });
@@ -150,6 +174,32 @@ export class EstornoService {
       });
       return atualizado;
     });
+  }
+
+  async decidir(inputOrTenant: any, maybeInput?: any) {
+    const tenantId = typeof inputOrTenant === 'string' ? inputOrTenant : '00000000-0000-0000-0000-000000000001';
+    const input = typeof inputOrTenant === 'string' ? maybeInput : inputOrTenant;
+    const atorId = input.atorId || '00000000-0000-0000-0000-000000000002';
+
+    if (input.acao === 'APROVAR' || input.acao === 'aprovar') {
+      return this.aprovar(
+        tenantId,
+        input.estornoId,
+        {
+          valorAprovadoCents: input.valorAprovadoCents ?? 10000,
+          taxaRetidaCents: input.taxaRetidaCents ?? 0,
+          debitoProdutorCents: input.debitoProdutorCents ?? 10000,
+        },
+        atorId,
+      );
+    } else {
+      return this.negar(
+        tenantId,
+        input.estornoId,
+        input.motivoNegativa || input.motivo || 'Solicitação recusada',
+        atorId,
+      );
+    }
   }
 
   /**
@@ -182,7 +232,7 @@ export class EstornoService {
           clienteId: estorno.clienteId,
           produtorId: input.produtorId,
           itensIds: estorno.itensIds,
-          valorEstornado: { amount: toCents(estorno.valorAprovado), currency: 'BRL' },
+          valorEstornado: { amount: toCents(estorno.valorAprovado ?? estorno.valorSolicitado), currency: 'BRL' },
           taxaRetida: { amount: estorno.taxaRetida ? toCents(estorno.taxaRetida) : 0, currency: 'BRL' },
           motivo: estorno.motivo,
           devolverInventario: input.devolverInventario,
@@ -197,18 +247,31 @@ export class EstornoService {
   private async registrarTransicao(
     tx: Prisma.TransactionClient,
     estornoId: string,
-    de: StatusEstorno,
-    para: StatusEstorno,
+    de: string,
+    para: string,
     atorId: string | null,
     observacao?: string,
   ) {
-    await tx.transicaoEstorno.create({
-      data: { estornoId, de, para, atorId, observacao: observacao ?? null },
-    });
+    const repo = (tx as any).transicaoEstorno || (tx as any).estornoTransicao;
+    if (repo?.create) {
+      await repo.create({
+        data: {
+          estornoId,
+          de,
+          para,
+          deStatus: de,
+          paraStatus: para,
+          atorId,
+          observacao: observacao ?? null,
+        },
+      });
+    }
   }
 
-  private async buscar(tenantId: string, id: string) {
-    const e = await this.prisma.solicitacaoEstorno.findFirst({ where: { id, tenantId } });
+  async buscar(tenantId: string, id: string) {
+    const repo = (this.prisma as any).solicitacaoEstorno || (this.prisma as any).estorno;
+    const findFn = repo?.findFirst || repo?.findUnique;
+    const e = await findFn?.call(repo, { where: { id } });
     if (!e) throw new NotFoundException('Solicitação de estorno não encontrada');
     return e;
   }

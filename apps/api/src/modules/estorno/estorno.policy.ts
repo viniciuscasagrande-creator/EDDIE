@@ -27,6 +27,42 @@ const HORAS_MINIMAS_ANTES_EVENTO = 48;
  */
 @Injectable()
 export class EstornoPolicy {
+  static avaliarDireitoArrependimento(params: {
+    dataCompra: Date;
+    dataSolicitacao: Date;
+    dataInicioEvento: Date;
+  }): {
+    elegivelCdc: boolean;
+    deveEstornarTaxaConveniencia: boolean;
+    motivo?: string;
+  } {
+    const diffDiasCompra =
+      (params.dataSolicitacao.getTime() - params.dataCompra.getTime()) / (24 * 60 * 60 * 1000);
+    const diffHorasEvento =
+      (params.dataInicioEvento.getTime() - params.dataSolicitacao.getTime()) / (60 * 60 * 1000);
+
+    if (diffDiasCompra > 7) {
+      return {
+        elegivelCdc: false,
+        deveEstornarTaxaConveniencia: false,
+        motivo: 'Prazo de arrependimento expirado (mais de 7 dias da data da compra)',
+      };
+    }
+
+    if (diffHorasEvento < 48) {
+      return {
+        elegivelCdc: false,
+        deveEstornarTaxaConveniencia: false,
+        motivo: 'Prazo expirado: a antecedência mínima é de 48h para o início do evento',
+      };
+    }
+
+    return {
+      elegivelCdc: true,
+      deveEstornarTaxaConveniencia: true,
+    };
+  }
+
   avaliar(ctx: ContextoPolitica): DecisaoPolitica {
     if (ctx.houveCheckin) {
       return {

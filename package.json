@@ -12,7 +12,8 @@
     "db:generate": "pnpm --filter @ticketing/api exec prisma generate",
     "db:studio": "pnpm --filter @ticketing/api exec prisma studio",
     "infra:up": "docker compose -f .devcontainer/docker-compose.yml up -d",
-    "infra:down": "docker compose -f .devcontainer/docker-compose.yml down"
+    "infra:down": "docker compose -f .devcontainer/docker-compose.yml down",
+    "preflight": "node scripts/preflight-go-live.mjs"
   },
   "devDependencies": {
     "next": "^15.1.7",

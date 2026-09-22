@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { EventosService } from './eventos.service';
 import {
-  CriarEventoDto, CriarSessaoDto, CriarLoteDto, CancelarEventoDto,
+  CriarEventoDto, CriarSessaoDto, CriarSetorDto, CriarLoteDto, CancelarEventoDto,
 } from './eventos.dto';
 
 // TODO: substituir por decorators reais de auth (@CurrentTenant, @CurrentUser)
@@ -14,10 +14,22 @@ const ATOR = (req?: unknown) => '00000000-0000-0000-0000-000000000002';
 export class EventosController {
   constructor(private readonly service: EventosService) {}
 
+  @Get('locais')
+  @ApiOperation({ summary: 'Lista os locais disponíveis para cadastro de sessões' })
+  listarLocais() {
+    return this.service.listarLocais(TENANT());
+  }
+
   @Get('produtor/:produtorId')
   @ApiOperation({ summary: 'Lista os eventos pertencentes ao produtor para seleção de contexto no PDT' })
   listarPorProdutor(@Param('produtorId') produtorId: string) {
     return this.service.listarPorProdutor(TENANT(), produtorId);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Obtém detalhes do evento com sessões, setores e lotes' })
+  buscar(@Param('id') id: string) {
+    return this.service.buscarDetalhado(TENANT(), id);
   }
 
   @Post()
@@ -29,6 +41,12 @@ export class EventosController {
   @Post(':id/sessoes')
   adicionarSessao(@Param('id') id: string, @Body() dto: CriarSessaoDto) {
     return this.service.adicionarSessao(TENANT(), id, dto);
+  }
+
+  @Post('sessoes/:sessaoId/setores')
+  @ApiOperation({ summary: 'Adiciona um setor a uma sessão' })
+  adicionarSetor(@Param('sessaoId') sessaoId: string, @Body() dto: CriarSetorDto) {
+    return this.service.adicionarSetor(TENANT(), sessaoId, dto);
   }
 
   @Post('sessoes/:sessaoId/lotes')

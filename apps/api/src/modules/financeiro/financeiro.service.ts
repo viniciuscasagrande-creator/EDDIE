@@ -440,7 +440,7 @@ export class FinanceiroService {
         eventoId: input.eventoId,
         fornecedorNome: input.fornecedorNome,
         fornecedorDocumento: input.fornecedorDocumento,
-        chavePix: input.chavePix,
+        chavePix: input.chavePix ?? null,
         categoria: input.categoria,
         descricao: input.descricao,
         valor: centsToDecimal(input.valorCents),
@@ -524,7 +524,11 @@ export class FinanceiroService {
     payload: PedidoPagoPayload,
     eventoId?: string | null,
   ) {
-    if (payload.repasseProdutor <= 0) {
+    const repasseCents = typeof payload.repasseProdutor === 'number'
+      ? payload.repasseProdutor
+      : (payload.repasseProdutor as any)?.amount ?? 0;
+
+    if (repasseCents <= 0) {
       this.logger.log(
         `Pedido ${payload.pedidoId} não possui repasse a creditar para produtor ${payload.produtorId}.`,
       );
@@ -552,7 +556,7 @@ export class FinanceiroService {
       }
 
       const lancamentoId = randomUUID();
-      const valorDecimal = centsToDecimal(payload.repasseProdutor);
+      const valorDecimal = centsToDecimal(repasseCents);
 
       const lancamento = await tx.lancamentoLedger.create({
         data: {
@@ -588,7 +592,9 @@ export class FinanceiroService {
           bucket: 'retido',
           tipo: 'entrada',
           origem: 'pedido_pago',
-          valor: payload.repasseProdutor,
+          valor: typeof payload.repasseProdutor === 'number'
+            ? { amount: payload.repasseProdutor, currency: 'BRL' as const }
+            : payload.repasseProdutor,
           saldoDerivadoBucket: saldos.retidoCents,
           referenciaId: payload.pedidoId,
           contrapartidaId: null,
@@ -613,7 +619,14 @@ export class FinanceiroService {
     payload: PagamentoEstornadoPayload,
     eventoId?: string | null,
   ) {
-    const debitoProdutorCents = Math.max(0, payload.valorEstornado - payload.taxaRetida);
+    const valorEstornadoCents = typeof payload.valorEstornado === 'number'
+      ? payload.valorEstornado
+      : (payload.valorEstornado as any)?.amount ?? 0;
+    const taxaRetidaCents = typeof payload.taxaRetida === 'number'
+      ? payload.taxaRetida
+      : (payload.taxaRetida as any)?.amount ?? 0;
+
+    const debitoProdutorCents = Math.max(0, valorEstornadoCents - taxaRetidaCents);
 
     if (debitoProdutorCents <= 0) {
       this.logger.log(

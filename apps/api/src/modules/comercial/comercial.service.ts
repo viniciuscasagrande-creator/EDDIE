@@ -63,7 +63,7 @@ export class ComercialService {
         source: SOURCE,
         tenantId,
         payload: {
-          produtorId,
+          produtorId: produtor.id,
           razaoSocial: produtor.razaoSocial,
           nomeFantasia: produtor.nomeFantasia,
           documento: produtor.documento,

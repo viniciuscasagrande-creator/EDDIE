@@ -34,12 +34,12 @@ export class OutboxService {
     tx: PrismaTransactionClient,
     event: EventEnvelope<T>,
   ): Promise<void> {
-    this.logger.debug(`[Outbox] Emitting event: ${event.eventType} (${event.eventId})`);
+    this.logger.debug(`[Outbox] Emitting event: ${event.eventName} (${event.eventId})`);
     
     await tx.outboxEvent.create({
       data: {
         id: event.eventId,
-        eventType: event.eventType,
+        eventType: event.eventName,
         payload: event as unknown as object,
         status: 'PENDENTE',
       },

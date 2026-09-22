@@ -10,6 +10,9 @@ import {
   Briefcase,
   Scale,
   Calendar,
+  RotateCcw,
+  Headphones,
+  AlertTriangle,
   ShieldCheck,
   ChevronRight,
 } from 'lucide-react';
@@ -22,22 +25,16 @@ const menuItems = [
     badge: null,
   },
   {
+    label: 'Eventos & Lotes',
+    href: '/eventos',
+    icon: Calendar,
+    badge: null,
+  },
+  {
     label: 'Financeiro',
     href: '/financeiro',
     icon: Wallet,
     badge: 'Ledger',
-  },
-  {
-    label: 'Marketing & Pixels',
-    href: '/marketing',
-    icon: Megaphone,
-    badge: 'Atribuição',
-  },
-  {
-    label: 'Comercial B2B',
-    href: '/comercial',
-    icon: Briefcase,
-    badge: 'CRM',
   },
   {
     label: 'Contabilidade',
@@ -46,10 +43,34 @@ const menuItems = [
     badge: 'DRE',
   },
   {
-    label: 'Eventos & Lotes',
-    href: '/eventos',
-    icon: Calendar,
-    badge: null,
+    label: 'Estornos & CDC',
+    href: '/estorno',
+    icon: RotateCcw,
+    badge: 'CDC Art. 49',
+  },
+  {
+    label: 'Comercial B2B',
+    href: '/comercial',
+    icon: Briefcase,
+    badge: 'CRM',
+  },
+  {
+    label: 'Marketing & Pixels',
+    href: '/marketing',
+    icon: Megaphone,
+    badge: 'Atribuição',
+  },
+  {
+    label: 'Atendimento SAC',
+    href: '/sac',
+    icon: Headphones,
+    badge: '360°',
+  },
+  {
+    label: 'Suporte Operacional',
+    href: '/suporte',
+    icon: AlertTriangle,
+    badge: 'Incidentes',
   },
 ];
 
