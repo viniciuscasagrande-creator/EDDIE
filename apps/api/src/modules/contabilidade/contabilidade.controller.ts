@@ -208,4 +208,47 @@ export class ContabilidadeController {
     const tenantId = resolveTenant(tenantIdHeader);
     return this.contabilidadeService.listarConciliacoes(tenantId, competencia || '2026-09');
   }
+
+  @Get('painel-enterprise')
+  @ApiOperation({ summary: 'Painel de controle contábil enterprise' })
+  async painelEnterprise(@Query('competencia') competencia = '2026-09', @Headers('x-tenant-id') h?: string) {
+    return this.contabilidadeService.obterPainelEnterprise(resolveTenant(h), competencia);
+  }
+
+  @Get('fechamento-mensal')
+  @ApiOperation({ summary: 'Processo e pendências do fechamento contábil mensal' })
+  async fechamentoMensal(@Query('competencia') competencia = '2026-09', @Headers('x-tenant-id') h?: string) {
+    return this.contabilidadeService.obterFechamentoMensal(resolveTenant(h), competencia);
+  }
+
+  @Get('posicao-patrimonial')
+  @ApiOperation({ summary: 'Balanço patrimonial e posição financeira' })
+  async posicaoPatrimonial(@Query('competencia') competencia = '2026-09', @Headers('x-tenant-id') h?: string) {
+    return this.contabilidadeService.obterPosicaoPatrimonial(resolveTenant(h), competencia);
+  }
+
+  @Get('centro-conciliacao')
+  @ApiOperation({ summary: 'Centro operacional de conciliação contábil' })
+  async centroConciliacao(@Query('competencia') competencia = '2026-09', @Headers('x-tenant-id') h?: string) {
+    return this.contabilidadeService.obterCentroConciliacao(resolveTenant(h), competencia);
+  }
+
+  @Get('recontabilizacao')
+  @ApiOperation({ summary: 'Rastreabilidade e recontabilização financeira-contábil' })
+  async recontabilizacao(@Query('competencia') competencia = '2026-09', @Query('eventoId') eventoId?: string, @Headers('x-tenant-id') h?: string) {
+    return this.contabilidadeService.obterRecontabilizacao(resolveTenant(h), competencia, eventoId);
+  }
+
+  @Get('fiscal')
+  @ApiOperation({ summary: 'Central fiscal e integrações NFS-e' })
+  async fiscal(@Query('competencia') competencia = '2026-09', @Headers('x-tenant-id') h?: string) {
+    return this.contabilidadeService.obterFiscal(resolveTenant(h), competencia);
+  }
+
+  @Get('auditoria-enterprise')
+  @ApiOperation({ summary: 'Trilha contábil consolidada para auditoria' })
+  async auditoriaEnterprise(@Query('competencia') competencia = '2026-09', @Headers('x-tenant-id') h?: string) {
+    return this.contabilidadeService.obterAuditoriaEnterprise(resolveTenant(h), competencia);
+  }
+
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Query } from '@nestjs/common';
+import { Controller, Get, Headers, Param, Query } from '@nestjs/common';
 import { RelatoriosService } from './relatorios.service';
 @Controller('relatorios')
 export class RelatoriosController {
@@ -13,4 +13,5 @@ export class RelatoriosController {
   @Get('sac') sac(@Headers('x-tenant-id') t?:string,@Query('eventoId') e?:string){return this.service.sac(t,e)}
   @Get('suporte') suporte(@Headers('x-tenant-id') t?:string,@Query('produtorId') p?:string,@Query('eventoId') e?:string){return this.service.suporte(t,p,e)}
   @Get('estornos') estornos(@Headers('x-tenant-id') t?:string){return this.service.estornos(t)}
+  @Get(':categoria/:slug') detalhe(@Param('categoria') c:string,@Param('slug') s:string,@Headers('x-tenant-id') t?:string,@Query('produtorId') p?:string,@Query('eventoId') e?:string){return this.service.detalhe(c,s,t,p,e)}
 }

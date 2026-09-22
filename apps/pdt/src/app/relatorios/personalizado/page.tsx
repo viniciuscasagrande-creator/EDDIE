@@ -1,0 +1,2 @@
+'use client';
+import Link from 'next/link'; export default function Page(){return <div className="p-8 text-slate-100"><h1 className="text-2xl font-bold">Relatório Personalizado</h1><p className="text-slate-400 mt-2">Selecione módulo, produtor, evento, período e métricas para montar um relatório sob demanda.</p><Link href="/relatorios" className="inline-block mt-6 text-blue-400">Voltar aos relatórios</Link></div>}

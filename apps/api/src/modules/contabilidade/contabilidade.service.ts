@@ -704,4 +704,72 @@ export class ContabilidadeService {
       conciliadoEm: c.conciliadoEm.toISOString(),
     }));
   }
+
+  // ==========================================================================
+  //  EDDIE 10.5 — CENTRAL CONTÁBIL ENTERPRISE (recuperação funcional do vídeo)
+  //  Somente dados persistidos: nenhum KPI demonstrativo é fabricado.
+  // ==========================================================================
+
+  async obterPainelEnterprise(tenantId: string, competencia: string) {
+    const [dashboard, dre, conciliacoes, fechamento, contas, lancamentos] = await Promise.all([
+      this.obterDashboard(tenantId, competencia),
+      this.obterDre(tenantId, competencia),
+      this.listarConciliacoes(tenantId, competencia),
+      this.prisma.fechamentoContabil.findUnique({ where: { tenantId_competencia: { tenantId, competencia } } }),
+      this.prisma.contaContabil.count({ where: { tenantId, ativa: true } }),
+      this.prisma.lancamentoContabil.count({ where: { tenantId, competencia } }),
+    ]);
+    return { competencia, dashboard, dre, fechamento, contasAtivas: contas, totalLancamentos: lancamentos, conciliacoes,
+      integridade: { partidasDobradas: dashboard.totalDebitosCents === dashboard.totalCreditosCents, periodoFechado: !!fechamento && fechamento.status === 'fechado', divergencias: dashboard.contasDivergentes } };
+  }
+
+  async obterFechamentoMensal(tenantId: string, competencia: string) {
+    const [dashboard, fechamento, conciliacoes] = await Promise.all([
+      this.obterDashboard(tenantId, competencia),
+      this.prisma.fechamentoContabil.findUnique({ where: { tenantId_competencia: { tenantId, competencia } } }),
+      this.listarConciliacoes(tenantId, competencia),
+    ]);
+    const pendencias = [];
+    if (dashboard.totalDebitosCents !== dashboard.totalCreditosCents) pendencias.push({ criticidade: 'critica', descricao: 'Débitos e créditos não estão balanceados.' });
+    if (dashboard.contasDivergentes > 0) pendencias.push({ criticidade: 'alta', descricao: `${dashboard.contasDivergentes} conta(s) com divergência de conciliação.` });
+    return { competencia, status: fechamento?.status ?? 'aberto', fechadoEm: fechamento?.fechadoEm ?? null, fechadoPor: fechamento?.fechadoPor ?? null, dashboard, conciliacoes, pendencias, aptoParaFechar: pendencias.length === 0 };
+  }
+
+  async obterPosicaoPatrimonial(tenantId: string, competencia: string) {
+    const balancete = await this.obterBalancete(tenantId, competencia);
+    const grupos: Record<string, number> = { ativo: 0, passivo: 0, patrimonio_liquido: 0, receita: 0, despesa: 0 };
+    for (const item of balancete) grupos[item.tipo] = (grupos[item.tipo] ?? 0) + item.saldoAtualCents;
+    return { competencia, grupos, resultadoPeriodoCents: (grupos.receita ?? 0) - (grupos.despesa ?? 0), balancete };
+  }
+
+  async obterCentroConciliacao(tenantId: string, competencia: string) {
+    const conciliacoes = await this.listarConciliacoes(tenantId, competencia);
+    const conciliadas = conciliacoes.filter((x) => x.status === 'conciliado');
+    const divergentes = conciliacoes.filter((x) => x.status !== 'conciliado');
+    return { competencia, total: conciliacoes.length, conciliadas: conciliadas.length, divergentes: divergentes.length,
+      valorDivergenteCents: divergentes.reduce((a, x) => a + Math.abs(x.diferencaCents), 0), itens: conciliacoes };
+  }
+
+  async obterRecontabilizacao(tenantId: string, competencia: string, eventoId?: string) {
+    const dados = await this.listarLancamentos(tenantId, { competencia, eventoId, limit: 250, offset: 0 });
+    const porOrigem = dados.lancamentos.reduce((acc: Record<string, number>, l) => { acc[l.origemTipo] = (acc[l.origemTipo] ?? 0) + 1; return acc; }, {});
+    return { competencia, eventoId: eventoId ?? null, total: dados.total, porOrigem, itens: dados.lancamentos };
+  }
+
+  async obterFiscal(tenantId: string, competencia: string) {
+    const dre = await this.obterDre(tenantId, competencia);
+    return { competencia, baseContabil: dre, notasFiscais: [], impostos: [],
+      integracoes: { nfse: 'nao_configurada', fiscal: 'nao_configurada' },
+      aviso: 'Nenhuma fonte fiscal/NFS-e persistida foi localizada no schema atual. O EDDIE não fabrica documentos fiscais.' };
+  }
+
+  async obterAuditoriaEnterprise(tenantId: string, competencia: string) {
+    const [lancamentos, fechamento, conciliacoes] = await Promise.all([
+      this.listarLancamentos(tenantId, { competencia, limit: 100, offset: 0 }),
+      this.prisma.fechamentoContabil.findUnique({ where: { tenantId_competencia: { tenantId, competencia } } }),
+      this.listarConciliacoes(tenantId, competencia),
+    ]);
+    return { competencia, fechamento, conciliacoes, lancamentos: lancamentos.lancamentos, totalLancamentos: lancamentos.total };
+  }
+
 }

@@ -26,8 +26,9 @@ import {
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 import OperationalPanel from '../../components/OperationalPanel';
+import AccountingEnterprisePanel from '../../components/AccountingEnterprisePanel';
 
-type TabView = 'centro_eventos' | 'dre' | 'balancete' | 'lancamentos' | 'conciliacao' | 'plano_contas' | 'fechamento' | 'demonstrativos' | 'auditoria';
+type TabView = 'centro_eventos' | 'dre' | 'balancete' | 'lancamentos' | 'conciliacao' | 'plano_contas' | 'fechamento' | 'demonstrativos' | 'auditoria' | 'painel_enterprise' | 'patrimonio' | 'fiscal' | 'recontabilizacao';
 
 type BalanceteItem = {
   contaCodigo: string;
@@ -403,6 +404,7 @@ export default function ContabilidadePage() {
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1 border-b border-slate-800">
         {[
+          { id: 'painel_enterprise' as TabView, label: 'Painel Contábil', icon: PieChart },
           { id: 'centro_eventos' as TabView, label: 'Centro de Controle de Eventos', icon: Building2 },
           { id: 'dre' as TabView, label: 'DRE Gerencial (Segregação)', icon: FileSpreadsheet },
           { id: 'balancete' as TabView, label: 'Balancete de Verificação', icon: Scale },
@@ -412,6 +414,9 @@ export default function ContabilidadePage() {
           { id: 'fechamento' as TabView, label: 'Fechamento Mensal', icon: Lock },
           { id: 'demonstrativos' as TabView, label: 'Demonstrativos', icon: FileSpreadsheet },
           { id: 'auditoria' as TabView, label: 'Auditoria Contábil', icon: ShieldCheck },
+          { id: 'patrimonio' as TabView, label: 'Balanço Patrimonial', icon: Landmark },
+          { id: 'recontabilizacao' as TabView, label: 'Recontabilização', icon: RefreshCcw },
+          { id: 'fiscal' as TabView, label: 'Fiscal & NFS-e', icon: FileSpreadsheet },
         ].map((t) => {
           const active = tab === t.id;
           return (
@@ -457,6 +462,10 @@ export default function ContabilidadePage() {
       ) : (
         <>
           {/* TAB: CENTRO DE CONTROLE DE EVENTOS */}
+          {tab === 'painel_enterprise' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="painel" />}
+          {tab === 'patrimonio' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="patrimonio" />}
+          {tab === 'recontabilizacao' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="recontabilizacao" />}
+          {tab === 'fiscal' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="fiscal" />}
           {tab === 'centro_eventos' && (
             <div className="space-y-6">
               <div className="bg-[#111827] border border-slate-800 rounded-xl p-5">
@@ -825,6 +834,10 @@ export default function ContabilidadePage() {
           )}
 
           {tab === 'fechamento' && (
+            <AccountingEnterprisePanel api={api} competencia={competencia} kind="fechamento" />
+          )}
+
+          {false && (
             <OperationalPanel
               title="Fechamento Mensal"
               description="Controle de competência, validações e travamento do período contábil."
@@ -842,14 +855,7 @@ export default function ContabilidadePage() {
             />
           )}
 
-          {tab === 'auditoria' && (
-            <OperationalPanel
-              title="Auditoria Contábil"
-              description="Rastreabilidade de alterações, fechamentos e lançamentos."
-              items={['Eventos auditados', 'Alertas', 'Aprovações', 'Exceções']}
-              context={`Competência ${competencia}`}
-            />
-          )}
+          {tab === 'auditoria' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="auditoria" />}
         </>
       )}
 

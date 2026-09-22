@@ -62,10 +62,10 @@ const menuItems = [
     badge: 'Atribuição',
   },
   {
-    label: 'Central de Relatórios',
+    label: 'Relatórios',
     href: '/relatorios',
     icon: FileBarChart,
-    badge: 'BI',
+    badge: 'Central',
   },
   {
     label: 'Atendimento SAC',
@@ -114,28 +114,52 @@ export function Sidebar() {
               : pathname.startsWith(item.href);
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Icon
-                  size={18}
-                  className={isActive ? 'text-emerald-400' : 'text-slate-400'}
-                />
-                <span>{item.label}</span>
-              </div>
-              {item.badge && (
-                <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                  {item.badge}
-                </span>
+            <React.Fragment key={item.href}>
+              <Link
+                href={item.href}
+                className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon
+                    size={18}
+                    className={isActive ? 'text-emerald-400' : 'text-slate-400'}
+                  />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge && (
+                  <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+              {item.href === '/relatorios' && isActive && (
+                <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-slate-800 pl-2">
+                  {[
+                    ['Painel de Relatórios', '/relatorios'],
+                    ['Financeiro', '/relatorios#financeiro'],
+                    ['Eventos', '/relatorios#eventos'],
+                    ['Contábil', '/relatorios#contabil'],
+                    ['Comercial', '/relatorios#comercial'],
+                    ['Marketing', '/relatorios#marketing'],
+                    ['SAC', '/relatorios#sac'],
+                    ['Estornos', '/relatorios#estornos'],
+                    ['Operacional', '/relatorios#operacional'],
+                  ].map(([label, href]) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      className="block px-2 py-1.5 rounded text-xs text-slate-400 hover:text-white hover:bg-slate-800"
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
               )}
-            </Link>
+            </React.Fragment>
           );
         })}
       </nav>

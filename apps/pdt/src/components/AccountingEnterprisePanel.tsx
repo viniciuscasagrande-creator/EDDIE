@@ -1,0 +1,34 @@
+'use client';
+import React, { useEffect, useState } from 'react';
+import { RefreshCcw, AlertTriangle, CheckCircle2, Database, FileText, Landmark, ReceiptText, Scale, ShieldCheck } from 'lucide-react';
+
+type Kind='painel'|'fechamento'|'patrimonio'|'conciliacao'|'recontabilizacao'|'fiscal'|'auditoria';
+const endpoint:Record<Kind,string>={painel:'painel-enterprise',fechamento:'fechamento-mensal',patrimonio:'posicao-patrimonial',conciliacao:'centro-conciliacao',recontabilizacao:'recontabilizacao',fiscal:'fiscal',auditoria:'auditoria-enterprise'};
+const title:Record<Kind,string>={painel:'Painel de Controle Contábil',fechamento:'Fechamento Contábil Mensal',patrimonio:'Balanço Patrimonial e Posição Financeira',conciliacao:'Centro de Conciliação Contábil',recontabilizacao:'Recontabilização Financeira e Contábil',fiscal:'Central Fiscal e NFS-e',auditoria:'Auditoria e Compliance Contábil'};
+const money=(c=0)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(c/100);
+export default function AccountingEnterprisePanel({api,competencia,kind}:{api:string|null;competencia:string;kind:Kind}){
+ const [data,setData]=useState<any>(null); const [loading,setLoading]=useState(false); const [error,setError]=useState('');
+ const load=async()=>{if(!api)return; setLoading(true);setError('');const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),2500);try{const r=await fetch(`${api}/contabilidade/${endpoint[kind]}?competencia=${competencia}`,{signal:ctl.signal});if(!r.ok)throw new Error(`API respondeu ${r.status}`);setData(await r.json())}catch(e:any){setError(e?.name==='AbortError'?'Tempo limite ao consultar a API contábil.':e.message)}finally{clearTimeout(t);setLoading(false)}};
+ useEffect(()=>{load()},[api,competencia,kind]);
+ const dash=data?.dashboard||{}; const dre=data?.dre||data?.baseContabil||{}; const grupos=data?.grupos||{};
+ const cards= kind==='patrimonio' ? [['Ativo',money(grupos.ativo)],['Passivo',money(grupos.passivo)],['Patrimônio Líquido',money(grupos.patrimonio_liquido)],['Resultado do Período',money(data?.resultadoPeriodoCents)]] :
+ kind==='conciliacao' ? [['Contas analisadas',data?.total??0],['Conciliadas',data?.conciliadas??0],['Divergentes',data?.divergentes??0],['Valor divergente',money(data?.valorDivergenteCents)]] :
+ kind==='fechamento' ? [['Lançamentos',data?.dashboard?.totalLancamentos??0],['Débitos',money(data?.dashboard?.totalDebitosCents)],['Créditos',money(data?.dashboard?.totalCreditosCents)],['Status',data?.status??'aberto']] :
+ [['Lançamentos',data?.totalLancamentos??dash.totalLancamentos??0],['Débitos',money(dash.totalDebitosCents)],['Créditos',money(dash.totalCreditosCents)],['Divergências',dash.contasDivergentes??data?.divergentes??0]];
+ return <section className="space-y-4">
+  <div className="flex items-center justify-between"><div><h2 className="text-xl font-bold text-white">{title[kind]}</h2><p className="text-xs text-slate-400">Competência {competencia} • dados persistidos no EDDIE</p></div><button onClick={load} className="px-3 py-2 rounded-lg border border-slate-700 text-xs text-slate-200 flex gap-2"><RefreshCcw size={14}/>{loading?'Atualizando...':'Atualizar'}</button></div>
+  {error&&<div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300 flex gap-2"><AlertTriangle size={16}/>{error}</div>}
+  <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">{cards.map(([a,b])=><div key={String(a)} className="rounded-xl border border-slate-800 bg-[#0f172a] p-4"><p className="text-[11px] uppercase text-slate-500">{a}</p><p className="mt-2 text-xl font-bold text-white">{String(b)}</p></div>)}</div>
+  {kind==='painel'&&<div className="grid lg:grid-cols-3 gap-3"><Box icon={<Scale/>} t="Integridade das Partidas" v={data?.integridade?.partidasDobradas?'Verificada':'Requer análise'}/><Box icon={<Landmark/>} t="Resultado Operacional" v={money(dre.resultadoOperacionalCents)}/><Box icon={<ShieldCheck/>} t="Período" v={data?.integridade?.periodoFechado?'Fechado':'Aberto'}/></div>}
+  {kind==='fechamento'&&<List title="Pendências do fechamento" items={data?.pendencias||[]} empty="Nenhuma pendência identificada pelas validações atuais."/>}
+  {kind==='conciliacao'&&<Table rows={data?.itens||[]} cols={['contaCodigo','contaNome','saldoContabilCents','saldoExtratoCents','diferencaCents','status']}/>} 
+  {kind==='recontabilizacao'&&<Table rows={data?.itens||[]} cols={['numeroLancamento','data','historico','origemTipo','totalCents','status']}/>} 
+  {kind==='patrimonio'&&<Table rows={data?.balancete||[]} cols={['contaCodigo','contaNome','tipo','debitosCents','creditosCents','saldoAtualCents']}/>} 
+  {kind==='fiscal'&&<div className="grid lg:grid-cols-2 gap-3"><Box icon={<ReceiptText/>} t="NFS-e" v={data?.integracoes?.nfse==='nao_configurada'?'Integração não configurada':'Integrado'}/><Box icon={<FileText/>} t="Documentos fiscais" v={`${data?.notasFiscais?.length??0} registros`}/><div className="lg:col-span-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-200">{data?.aviso||'Sem dados fiscais para o período.'}</div></div>}
+  {kind==='auditoria'&&<Table rows={data?.lancamentos||[]} cols={['numeroLancamento','data','historico','origemTipo','criadoPor','status']}/>} 
+  {!loading&&!error&&!data&&<div className="p-10 text-center text-slate-500"><Database className="mx-auto mb-2"/>Sem dados retornados pela API.</div>}
+ </section>
+}
+function Box({icon,t,v}:{icon:any;t:string;v:string}){return <div className="rounded-xl border border-slate-800 bg-[#0f172a] p-4 flex gap-3"><span className="text-cyan-400">{React.cloneElement(icon,{size:20})}</span><div><p className="text-xs text-slate-400">{t}</p><p className="font-semibold text-white mt-1">{v}</p></div></div>}
+function List({title,items,empty}:{title:string;items:any[];empty:string}){return <div className="rounded-xl border border-slate-800 overflow-hidden"><div className="px-4 py-3 bg-slate-900 text-sm font-semibold text-white">{title}</div>{items.length?items.map((x,i)=><div key={i} className="px-4 py-3 border-t border-slate-800 text-sm text-slate-300">{x.descricao||JSON.stringify(x)}</div>):<div className="p-6 text-sm text-emerald-300 flex gap-2"><CheckCircle2 size={16}/>{empty}</div>}</div>}
+function Table({rows,cols}:{rows:any[];cols:string[]}){return <div className="rounded-xl border border-slate-800 overflow-auto"><table className="w-full text-xs"><thead className="bg-slate-900"><tr>{cols.map(c=><th key={c} className="p-3 text-left text-slate-400">{c}</th>)}</tr></thead><tbody>{rows.length?rows.map((r,i)=><tr key={r.id||i} className="border-t border-slate-800">{cols.map(c=><td key={c} className="p-3 text-slate-200">{c.endsWith('Cents')?money(Number(r[c]||0)):String(r[c]??'—')}</td>)}</tr>):<tr><td colSpan={cols.length} className="p-8 text-center text-slate-500">Sem registros para os filtros selecionados.</td></tr>}</tbody></table></div>}

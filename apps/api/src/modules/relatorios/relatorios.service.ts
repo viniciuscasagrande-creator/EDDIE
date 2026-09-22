@@ -85,4 +85,30 @@ export class RelatoriosService {
   async sac(tenantId?: string, eventoId?: string) { const t=this.tenant(tenantId); return { geradoEm:new Date().toISOString(), chamados: await this.prisma.chamadoSac.findMany({ where:{tenantId:t,...(eventoId?{eventoId}:{})}, include:{mensagens:true}, orderBy:{createdAt:'desc'}, take:500 }) }; }
   async suporte(tenantId?: string, produtorId?: string, eventoId?: string) { const t=this.tenant(tenantId); return { geradoEm:new Date().toISOString(), ocorrencias: await this.prisma.ocorrenciaEvento.findMany({ where:{tenantId:t,...(produtorId?{produtorId}:{}),...(eventoId?{eventoId}:{})}, orderBy:{createdAt:'desc'}, take:500 }) }; }
   async estornos(tenantId?: string) { const t=this.tenant(tenantId); return { geradoEm:new Date().toISOString(), estornos: await this.prisma.solicitacaoEstorno.findMany({ where:{tenantId:t}, include:{transicoes:true}, orderBy:{solicitadoEm:'desc'}, take:500 }) }; }
+  async detalhe(categoria:string, slug:string, tenantId?:string, produtorId?:string, eventoId?:string) {
+    const permitidas = ['financeiro','eventos','contabil','comercial','marketing','sac','estornos','operacional'];
+    if (!permitidas.includes(categoria)) return { geradoEm:new Date().toISOString(), resumo:{registros:0}, registros:[], aviso:'Categoria de relatório inválida.' };
+    let base:any;
+    if(categoria==='financeiro') base=await this.financeiro(tenantId,produtorId,eventoId);
+    else if(categoria==='eventos') base={geradoEm:new Date().toISOString(), eventos:await this.eventos(tenantId,produtorId)};
+    else if(categoria==='contabil') base=await this.contabilidade(tenantId,produtorId,eventoId);
+    else if(categoria==='comercial') base=await this.comercial(tenantId);
+    else if(categoria==='marketing') base=await this.marketing(tenantId,produtorId,eventoId);
+    else if(categoria==='sac') base=await this.sac(tenantId,eventoId);
+    else if(categoria==='estornos') base=await this.estornos(tenantId);
+    else base=await this.executivo(tenantId,produtorId,eventoId);
+    const colecoes=Object.entries(base).filter(([,v])=>Array.isArray(v)) as [string,any[]][];
+    const mapa:any={
+      financeiro:{receitas:'ledger','fluxo-caixa':'ledger','repasse-evento':'repasses',antecipacoes:'antecipacoes','conciliacao-bancaria':'divergencias','comissoes-taxas':'ledger','extrato-periodo':'ledger','receitas-despesas':'contas','centro-custo':'contas',fornecedores:'contas',cobrancas:'contas','dre-financeira':'ledger'},
+      eventos:{periodo:'eventos',vendas:'eventos',participantes:'eventos','setores-lotes':'eventos',receita:'eventos',comparativo:'eventos',metas:'eventos','custo-venda':'eventos',local:'eventos',pedidos:'eventos'},
+      contabil:{dre:'lancamentos',balancete:'lancamentos','livro-diario':'lancamentos','plano-contas':'contas',fechamento:'fechamentos',demonstrativos:'lancamentos',conciliacao:'conciliacoes',auditoria:'lancamentos'},
+      comercial:{leads:'oportunidades',propostas:'oportunidades',contratos:'oportunidades',produtores:'produtores',metas:'metas',atividades:'atividades'},
+      marketing:{campanhas:'campanhas',utm:'utms',conversoes:'conversoes',carrinho:'conversoes','whatsapp-email':'campanhas',roi:'conversoes',pixels:'pixels',cupons:'cupons'},
+      sac:{tickets:'chamados',sla:'chamados',satisfacao:'chamados',motivos:'chamados',atendentes:'chamados',historico:'chamados'},
+      estornos:{solicitacoes:'estornos',valores:'estornos',motivos:'estornos',sla:'estornos'},
+    };
+    const chave=mapa[categoria]?.[slug];
+    const registros=(chave && Array.isArray(base[chave])) ? base[chave] : (colecoes[0]?.[1]||[]);
+    return { geradoEm:new Date().toISOString(), categoria, relatorio:slug, filtros:{produtorId,eventId:eventoId}, resumo:{registros:registros.length}, registros };
+  }
 }
