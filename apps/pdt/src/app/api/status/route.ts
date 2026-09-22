@@ -10,12 +10,14 @@ function configuredBackend() {
 }
 
 export async function GET() {
+  const contextConfigured = Boolean(process.env.PRODUTOR_ID || process.env.NEXT_PUBLIC_PRODUTOR_ID);
   const base = configuredBackend();
   if (!base) {
     return NextResponse.json({
       status: 'misconfigured',
       proxy: 'online',
       backendConfigured: false,
+      contextConfigured,
       message: 'Configure API_INTERNAL_URL na Vercel com a URL pública da API EDDIE.',
     }, { status: 503 });
   }
@@ -29,6 +31,7 @@ export async function GET() {
       status: response.ok ? 'ok' : 'degraded',
       proxy: 'online',
       backendConfigured: true,
+      contextConfigured,
       backendReachable: response.ok,
       backendStatus: response.status,
       backend: payload,
@@ -38,6 +41,7 @@ export async function GET() {
       status: 'offline',
       proxy: 'online',
       backendConfigured: true,
+      contextConfigured,
       backendReachable: false,
       message: error instanceof Error ? error.message : 'Backend indisponível',
     }, { status: 503 });

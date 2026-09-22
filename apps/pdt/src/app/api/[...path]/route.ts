@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 function backendBase() {
-  const raw = process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || "";
-  return raw.replace(/\/$/, "");
+  const raw = process.env.API_INTERNAL_URL || process.env.BACKEND_URL || process.env.API_URL || "";
+  if (!raw || !/^https?:\/\//i.test(raw)) return "";
+  const clean = raw.replace(/\/$/, "");
+  return clean.endsWith("/api") ? clean : `${clean}/api`;
 }
 
 async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
@@ -24,7 +26,7 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
   headers.delete("host");
   headers.delete("content-length");
   const abortCtrl = new AbortController();
-  const abortTimer = setTimeout(() => abortCtrl.abort(), 2500);
+  const abortTimer = setTimeout(() => abortCtrl.abort(), 5000);
   try {
     const init: RequestInit = { method: req.method, headers, cache: "no-store", signal: abortCtrl.signal };
     if (!["GET", "HEAD"].includes(req.method)) init.body = await req.arrayBuffer();

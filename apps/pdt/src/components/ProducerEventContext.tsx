@@ -2,7 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-export const DEFAULT_PRODUTOR_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'; // somente desenvolvimento
+export const DEFAULT_PRODUTOR_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 export const DEFAULT_API = '/api';
 
 export type EventoContexto = {
@@ -30,62 +30,69 @@ const Ctx = createContext<ContextValue | null>(null);
 const STORAGE_KEY = 'diskingressos.eventoSelecionado';
 
 export function ProducerEventProvider({ children }: { children: React.ReactNode }) {
-  // Se NEXT_PUBLIC_API_URL estiver vazia ou ausente (comum no Vercel), usa a rota local '/api'
   const rawApi = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
-  const api = rawApi || DEFAULT_API;
-  const produtorId = process.env.NEXT_PUBLIC_PRODUTOR_ID || (process.env.NODE_ENV === 'development' ? DEFAULT_PRODUTOR_ID : '');
+  const api = rawApi && rawApi.startsWith('/') ? rawApi : DEFAULT_API;
+  const initial = process.env.NEXT_PUBLIC_PRODUTOR_ID || (process.env.NODE_ENV === 'development' ? DEFAULT_PRODUTOR_ID : '');
 
+  const [produtorId, setProdutorId] = useState(initial);
   const [eventos, setEventos] = useState<EventoContexto[]>([]);
   const [eventoId, setEventoId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const resolveProdutor = useCallback(async () => {
+    if (produtorId) return produtorId;
+    try {
+      const r = await fetch('/api/context', { cache: 'no-store' });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.produtorId) {
+        setProdutorId(d.produtorId);
+        return d.produtorId as string;
+      }
+      throw new Error(d.message || 'Produtor não configurado.');
+    } catch (e) {
+      throw e instanceof Error ? e : new Error('Produtor não configurado.');
+    }
+  }, [produtorId]);
+
   const recarregarEventos = useCallback(async () => {
     setLoading(true);
     setError('');
-
-    if (!produtorId) {
-      setEventos([]);
-      setEventoId('');
-      setError('Produtor não configurado. Defina NEXT_PUBLIC_PRODUTOR_ID no ambiente.');
-      setLoading(false);
-      return;
-    }
-
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    const timer = setTimeout(() => controller.abort(), 7000);
 
     try {
-      const r = await fetch(`${api}/eventos/produtor/${produtorId}`, {
-        cache: 'no-store',
-        signal: controller.signal,
-      });
+      const pid = await resolveProdutor();
+      const r = await fetch(`${api}/eventos/produtor/${pid}`, { cache: 'no-store', signal: controller.signal });
+      const payload = await r.json().catch(() => ({}));
 
       if (!r.ok) {
-        if (r.status === 503) {
-          throw new Error('API de Produção Offline (503)');
-        }
-        throw new Error(`Falha HTTP ${r.status} ao carregar eventos.`);
+        throw new Error(payload?.message || `Falha HTTP ${r.status} ao carregar eventos.`);
       }
 
-      const data = await r.json();
-      const lista: EventoContexto[] = Array.isArray(data) ? data : (data.items || []);
+      const lista: EventoContexto[] = Array.isArray(payload) ? payload : (payload.items || []);
       setEventos(lista);
 
       const salvo = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : '';
       const inicial = salvo && lista.some((e) => e.id === salvo) ? salvo : (lista[0]?.id || '');
       setEventoId((atual) => (lista.some((e) => e.id === atual) ? atual : inicial));
-    } catch (e: any) {
-      if (e.name === 'AbortError') {
-        setError('Tempo limite ao conectar com a API.');
-      } else {
-        setError(e instanceof Error ? e.message : 'Falha ao conectar com o serviço de eventos.');
+
+      if (!lista.length) {
+        setError('Nenhum evento disponível para este produtor.');
       }
+    } catch (e: any) {
+      setEventos([]);
+      setEventoId('');
+      setError(
+        e?.name === 'AbortError'
+          ? 'Tempo limite ao conectar com a API de eventos.'
+          : e?.message || 'Falha ao conectar com o serviço de eventos.'
+      );
     } finally {
       clearTimeout(timer);
       setLoading(false);
     }
-  }, [api, produtorId]);
+  }, [api, resolveProdutor]);
 
   useEffect(() => {
     void recarregarEventos();
@@ -112,7 +119,7 @@ export function ProducerEventProvider({ children }: { children: React.ReactNode 
       selecionarEvento,
       recarregarEventos,
     }),
-    [api, produtorId, eventos, eventoId, evento, loading, error, selecionarEvento, recarregarEventos],
+    [api, produtorId, eventos, eventoId, evento, loading, error, selecionarEvento, recarregarEventos]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
