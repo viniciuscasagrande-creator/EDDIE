@@ -2,7 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-export const DEFAULT_PRODUTOR_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+export const DEFAULT_PRODUTOR_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'; // somente desenvolvimento
 export const DEFAULT_API = '/api';
 
 export type EventoContexto = {
@@ -33,7 +33,7 @@ export function ProducerEventProvider({ children }: { children: React.ReactNode 
   // Se NEXT_PUBLIC_API_URL estiver vazia ou ausente (comum no Vercel), usa a rota local '/api'
   const rawApi = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
   const api = rawApi || DEFAULT_API;
-  const produtorId = process.env.NEXT_PUBLIC_PRODUTOR_ID || DEFAULT_PRODUTOR_ID;
+  const produtorId = process.env.NEXT_PUBLIC_PRODUTOR_ID || (process.env.NODE_ENV === 'development' ? DEFAULT_PRODUTOR_ID : '');
 
   const [eventos, setEventos] = useState<EventoContexto[]>([]);
   const [eventoId, setEventoId] = useState('');
@@ -44,8 +44,16 @@ export function ProducerEventProvider({ children }: { children: React.ReactNode 
     setLoading(true);
     setError('');
 
+    if (!produtorId) {
+      setEventos([]);
+      setEventoId('');
+      setError('Produtor não configurado. Defina NEXT_PUBLIC_PRODUTOR_ID no ambiente.');
+      setLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
+    const timer = setTimeout(() => controller.abort(), 5000);
 
     try {
       const r = await fetch(`${api}/eventos/produtor/${produtorId}`, {

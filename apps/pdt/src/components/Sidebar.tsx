@@ -166,10 +166,15 @@ export function Sidebar() {
 
       {/* Security & Status Footer */}
       <div className="p-4 border-t border-[#1e293b] text-xs text-slate-400 space-y-2">
-        <div className="flex items-center gap-2 text-emerald-400 font-medium">
-          <ShieldCheck size={16} />
-          <span>Multi-Tenant Seguro</span>
-        </div>
+        <Link href="/diagnostico" className="flex items-center justify-between text-emerald-400 hover:text-emerald-300 font-medium transition">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} />
+            <span>Diagnóstico & Status</span>
+          </div>
+          <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            Live
+          </span>
+        </Link>
         <div className="text-[11px] text-slate-400">
           Arquitetura Event-Driven • Vercel Web
         </div>

@@ -15,12 +15,14 @@ import { ContabilidadeModule } from './modules/contabilidade/contabilidade.modul
 import { SacModule } from './modules/sac/sac.module';
 import { SuporteModule } from './modules/suporte/suporte.module';
 import { RelatoriosModule } from './modules/relatorios/relatorios.module';
+import { HealthController } from './health.controller';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
  * Ao adicionar um módulo novo, registre-o aqui e crie o GEMINI.md dele.
  */
 @Module({
+  controllers: [HealthController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
