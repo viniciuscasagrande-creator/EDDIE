@@ -78,6 +78,18 @@ export class FinanceiroController {
     );
   }
 
+  @Get('saldos/produtor/:produtorId/eventos')
+  @ApiOperation({
+    summary: 'Obtém a posição financeira consolidada e os saldos reais por evento do produtor',
+  })
+  async obterGestaoSaldosPorEvento(
+    @Param('produtorId') produtorId: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financeiroService.obterGestaoSaldosPorEvento(tenantId, produtorId);
+  }
+
   @Get('saldos/evento/:eventoId')
   @ApiOperation({
     summary: 'Obtém resumo financeiro consolidado do evento para o Cockpit Operacional',

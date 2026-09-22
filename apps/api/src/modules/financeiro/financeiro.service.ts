@@ -115,6 +115,57 @@ export class FinanceiroService {
   }
 
   /**
+   * Consolida a posição financeira real de todos os eventos do produtor.
+   * Não persiste saldo: todos os valores são derivados do Ledger existente.
+   */
+  async obterGestaoSaldosPorEvento(tenantId: string, produtorId: string) {
+    const [eventos, lancamentos] = await Promise.all([
+      this.prisma.evento.findMany({
+        where: { tenantId, produtorId },
+        select: { id: true, nome: true, status: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.lancamentoLedger.findMany({
+        where: { tenantId, produtorId, eventoId: { not: null } },
+        select: { eventoId: true, bucket: true, tipo: true, valor: true },
+      }),
+    ]);
+
+    const porEvento = new Map<string, SaldosContaGraficaDto>();
+    for (const evento of eventos) {
+      porEvento.set(evento.id, {
+        produtorId, eventoId: evento.id, disponivelCents: 0, bloqueadoCents: 0,
+        reservadoEstornoCents: 0, retidoCents: 0, totalPatrimonioCents: 0,
+      });
+    }
+
+    for (const lancamento of lancamentos) {
+      if (!lancamento.eventoId) continue;
+      const saldo = porEvento.get(lancamento.eventoId);
+      if (!saldo) continue;
+      const valorCents = decimalToCents(lancamento.valor);
+      const valorAssinado = lancamento.tipo === 'entrada' ? valorCents : -valorCents;
+      if (lancamento.bucket === 'disponivel') saldo.disponivelCents += valorAssinado;
+      if (lancamento.bucket === 'bloqueado') saldo.bloqueadoCents += valorAssinado;
+      if (lancamento.bucket === 'reservado_estorno') saldo.reservadoEstornoCents += valorAssinado;
+      if (lancamento.bucket === 'retido') saldo.retidoCents += valorAssinado;
+      saldo.totalPatrimonioCents += valorAssinado;
+    }
+
+    const itens = eventos.map((evento) => ({ ...evento, ...porEvento.get(evento.id)! }));
+    const consolidado = itens.reduce((acc, item) => ({
+      produtorId, eventoId: null,
+      disponivelCents: acc.disponivelCents + item.disponivelCents,
+      bloqueadoCents: acc.bloqueadoCents + item.bloqueadoCents,
+      reservadoEstornoCents: acc.reservadoEstornoCents + item.reservadoEstornoCents,
+      retidoCents: acc.retidoCents + item.retidoCents,
+      totalPatrimonioCents: acc.totalPatrimonioCents + item.totalPatrimonioCents,
+    }), { produtorId, eventoId: null as null, disponivelCents: 0, bloqueadoCents: 0, reservadoEstornoCents: 0, retidoCents: 0, totalPatrimonioCents: 0 });
+
+    return { consolidado, eventos: itens };
+  }
+
+  /**
    * Transferência inter-eventos com partidas dobradas no Ledger.
    */
   async transferirInterEventos(

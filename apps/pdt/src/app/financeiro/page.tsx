@@ -13,6 +13,8 @@ type Saldos = { disponivelCents:number; bloqueadoCents:number; reservadoEstornoC
 type Lancamento = { id:string; criadoEm:string; origem:string; bucket:string; historico:string; tipo:string; valorCents?:number; valor?:number|string };
 type Conta = { id:string; fornecedorNome:string; categoria:string; descricao:string; valorCents?:number; valor?:number|string; vencimentoEm:string; status:string };
 type Repasse = { id:string; valorCents?:number; valor?:number|string; valorLiquidoCents?:number; status:string; solicitadoEm:string; dataProgramada:string };
+type SaldoEvento = Saldos & { id:string; nome:string; status:string; eventoId:string };
+type GestaoSaldos = { consolidado:Saldos; eventos:SaldoEvento[] };
 
 const money = (cents = 0) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(cents/100);
 const centsOf = (item:{valorCents?:number;valor?:number|string}) => item.valorCents ?? Math.round(Number(item.valor ?? 0) * 100);
@@ -25,7 +27,7 @@ const menu: {id:View;label:string;icon:React.ElementType}[] = [
 ];
 
 export default function FinanceiroPage() {
-  const { api:API, produtorId:PRODUTOR, eventoId:EVENTO, evento, eventos, loading:contextLoading } = useProducerEvent();
+  const { api:API, produtorId:PRODUTOR, eventoId:EVENTO, evento, eventos, loading:contextLoading, selecionarEvento } = useProducerEvent();
   const [view,setView] = useState<View>('dashboard');
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState('');
@@ -33,21 +35,23 @@ export default function FinanceiroPage() {
   const [extrato,setExtrato] = useState<Lancamento[]>([]);
   const [contas,setContas] = useState<Conta[]>([]);
   const [repasses,setRepasses] = useState<Repasse[]>([]);
+  const [gestaoSaldos,setGestaoSaldos] = useState<GestaoSaldos|null>(null);
 
   const carregar = useCallback(async () => {
     if (!API || !PRODUTOR) { setLoading(false); return; }
     setLoading(true); setError('');
     try {
       const qs = EVENTO ? `?eventoId=${EVENTO}` : '';
-      const [s,e,c,r] = await Promise.all([
+      const [s,e,c,r,g] = await Promise.all([
         fetch(`${API}/financeiro/saldos/produtor/${PRODUTOR}${qs}`),
         fetch(`${API}/financeiro/extrato/${PRODUTOR}${qs}`),
         fetch(`${API}/financeiro/contas-pagar${EVENTO ? `?eventoId=${EVENTO}` : ''}`),
         fetch(`${API}/financeiro/repasses/${PRODUTOR}`),
+        fetch(`${API}/financeiro/saldos/produtor/${PRODUTOR}/eventos`),
       ]);
-      if (![s,e,c,r].every(x=>x.ok)) throw new Error('A API Financeira respondeu com erro.');
-      const [sd,ed,cd,rd] = await Promise.all([s.json(),e.json(),c.json(),r.json()]);
-      setSaldos(sd); setExtrato(Array.isArray(ed)?ed:(ed.items||[])); setContas(Array.isArray(cd)?cd:(cd.items||[])); setRepasses(Array.isArray(rd)?rd:(rd.items||[]));
+      if (![s,e,c,r,g].every(x=>x.ok)) throw new Error('A API Financeira respondeu com erro.');
+      const [sd,ed,cd,rd,gd] = await Promise.all([s.json(),e.json(),c.json(),r.json(),g.json()]);
+      setSaldos(sd); setGestaoSaldos(gd); setExtrato(Array.isArray(ed)?ed:(ed.items||[])); setContas(Array.isArray(cd)?cd:(cd.items||[])); setRepasses(Array.isArray(rd)?rd:(rd.items||[]));
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível carregar o Financeiro.'); }
     finally { setLoading(false); }
   },[API,PRODUTOR,EVENTO]);
@@ -76,7 +80,7 @@ export default function FinanceiroPage() {
     {loading ? <div className="h-64 grid place-items-center text-slate-400"><Loader2 className="animate-spin"/></div> : <>
       {(view==='dashboard'||view==='saldos') && <Kpis saldos={saldos} contas={contasPendentes} repasses={repassesAbertos}/>} 
       {view==='dashboard' && <Dashboard extrato={extrato} contas={contas} repasses={repasses} setView={setView}/>} 
-      {view==='saldos' && <Extrato items={extrato}/>} 
+      {view==='saldos' && <GestaoSaldosView gestao={gestaoSaldos} eventoId={EVENTO} selecionarEvento={selecionarEvento} extrato={extrato}/>} 
       {view==='transferencias' && <Transferencias api={API} produtorId={PRODUTOR} eventoPadrao={EVENTO} eventos={eventos} onDone={carregar}/>} 
       {view==='repasses' && <Repasses items={repasses} api={API} produtorId={PRODUTOR} eventoId={EVENTO} onDone={carregar}/>} 
       {view==='antecipacoes' && <Antecipacoes api={API} produtorId={PRODUTOR} eventoId={EVENTO}/>} 
@@ -92,6 +96,27 @@ function Kpis({saldos,contas,repasses}:{saldos:Saldos;contas:number;repasses:num
 function Dashboard({extrato,contas,repasses,setView}:{extrato:Lancamento[];contas:Conta[];repasses:Repasse[];setView:(v:View)=>void}) { const ops=[['Transferir entre eventos','transferencias' as View,ArrowLeftRight],['Solicitar repasse','repasses' as View,HandCoins],['Simular antecipação','antecipacoes' as View,Banknote],['Gerenciar contas','contas' as View,CircleDollarSign]] as const; return <div className="grid xl:grid-cols-[1.45fr_.75fr] gap-4"><div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden"><SectionTitle title="Movimentações recentes" action="Ver extrato" onClick={()=>setView('saldos')}/><ExtratoTable items={extrato.slice(0,6)}/></div><div className="space-y-4"><div className="bg-[#111827] border border-slate-800 rounded-xl p-4"><h2 className="font-bold text-sm">Operações</h2><div className="grid grid-cols-2 gap-2 mt-4">{ops.map(([l,v,I])=><button key={l} onClick={()=>setView(v)} className="text-left p-3 rounded-lg bg-slate-900/70 border border-slate-800 hover:border-emerald-500/30"><I size={17} className="text-emerald-400 mb-2"/><span className="text-xs font-semibold">{l}</span></button>)}</div></div><div className="bg-[#111827] border border-slate-800 rounded-xl p-4"><h2 className="font-bold text-sm">Pendências operacionais</h2><div className="mt-3 space-y-2 text-xs text-slate-400"><p>{contas.filter(c=>c.status==='pendente').length} conta(s) pendente(s)</p><p>{repasses.filter(r=>r.status==='solicitado').length} repasse(s) solicitado(s)</p></div></div></div></div> }
 
 function SectionTitle({title,action,onClick}:{title:string;action?:string;onClick?:()=>void}) { return <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center"><h2 className="text-sm font-bold">{title}</h2>{action&&<button onClick={onClick} className="text-xs text-emerald-400 inline-flex items-center">{action}<ChevronRight size={14}/></button>}</div> }
+
+function GestaoSaldosView({gestao,eventoId,selecionarEvento,extrato}:{gestao:GestaoSaldos|null;eventoId:string;selecionarEvento:(id:string)=>void;extrato:Lancamento[]}) {
+  if(!gestao) return <NoData/>;
+  const c=gestao.consolidado;
+  return <div className="space-y-4">
+    <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden">
+      <SectionTitle title="Posição financeira por evento"/>
+      <div className="px-5 py-4 border-b border-slate-800 grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <Mini label="Disponível consolidado" value={money(c.disponivelCents)}/>
+        <Mini label="Bloqueado" value={money(c.bloqueadoCents)}/>
+        <Mini label="Reserva de estorno" value={money(c.reservadoEstornoCents)}/>
+        <Mini label="Retido" value={money(c.retidoCents)}/>
+        <Mini label="Patrimônio no Ledger" value={money(c.totalPatrimonioCents)}/>
+      </div>
+      {gestao.eventos.length ? <div className="overflow-x-auto"><table className="w-full text-xs"><thead className="bg-slate-900/60 text-slate-500"><tr><th className="p-3 text-left">Evento</th><th className="p-3 text-left">Status</th><th className="p-3 text-right">Disponível</th><th className="p-3 text-right">Bloqueado</th><th className="p-3 text-right">Reserva</th><th className="p-3 text-right">Retido</th><th className="p-3 text-right">Total</th><th className="p-3"></th></tr></thead><tbody className="divide-y divide-slate-800">{gestao.eventos.map(x=><tr key={x.id} className={x.id===eventoId?'bg-emerald-500/5':'hover:bg-slate-800/30'}><td className="p-3 font-semibold text-slate-200">{x.nome}</td><td className="p-3 text-slate-400">{x.status}</td><td className="p-3 text-right text-emerald-400 font-bold">{money(x.disponivelCents)}</td><td className="p-3 text-right">{money(x.bloqueadoCents)}</td><td className="p-3 text-right">{money(x.reservadoEstornoCents)}</td><td className="p-3 text-right">{money(x.retidoCents)}</td><td className="p-3 text-right font-bold text-white">{money(x.totalPatrimonioCents)}</td><td className="p-3 text-right"><button onClick={()=>selecionarEvento(x.id)} className="px-2.5 py-1.5 rounded-md border border-slate-700 hover:border-emerald-500/40 text-slate-300">{x.id===eventoId?'Selecionado':'Operar'}</button></td></tr>)}</tbody></table></div> : <NoData/>}
+      <div className="px-5 py-3 border-t border-slate-800 text-[11px] text-slate-500">Valores calculados exclusivamente a partir do Ledger imutável do EDDIE. Transferências entre eventos não criam nova receita.</div>
+    </div>
+    <Extrato items={extrato}/>
+  </div>
+}
+
 function Extrato({items}:{items:Lancamento[]}) { return <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden"><SectionTitle title="Extrato auditável do Ledger"/><ExtratoTable items={items}/></div> }
 function ExtratoTable({items}:{items:Lancamento[]}) { if(!items.length) return <NoData/>; return <div className="overflow-x-auto"><table className="w-full text-xs"><thead className="bg-slate-900/60 text-slate-500"><tr><th className="p-3 text-left">Data</th><th className="p-3 text-left">Origem</th><th className="p-3 text-left">Histórico</th><th className="p-3 text-left">Bucket</th><th className="p-3 text-right">Valor</th></tr></thead><tbody className="divide-y divide-slate-800">{items.map(x=><tr key={x.id} className="hover:bg-slate-800/30"><td className="p-3 text-slate-400 whitespace-nowrap">{new Date(x.criadoEm).toLocaleString('pt-BR')}</td><td className="p-3">{x.origem}</td><td className="p-3 text-slate-300">{x.historico}</td><td className="p-3"><span className="px-2 py-1 rounded bg-slate-800">{x.bucket}</span></td><td className={`p-3 text-right font-bold ${x.tipo==='entrada'?'text-emerald-400':'text-rose-400'}`}>{x.tipo==='entrada'?'+ ':'- '}{money(centsOf(x))}</td></tr>)}</tbody></table></div> }
 
