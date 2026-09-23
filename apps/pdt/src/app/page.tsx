@@ -121,6 +121,9 @@ export default function DashboardPage() {
               <Zap size={14} />
               <span>Monólito Modular Event-Driven</span>
             </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold">
+              v11.4.2 Event OS
+            </span>
             {evento && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium">
                 Contexto: <b>{evento.nome}</b>

@@ -108,9 +108,14 @@ export function Sidebar() {
           Di
         </div>
         <div>
-          <h1 className="font-bold text-white text-base leading-tight tracking-tight">
-            DiskIngressos
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-bold text-white text-base leading-tight tracking-tight">
+              DiskIngressos
+            </h1>
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">
+              v11.4.2
+            </span>
+          </div>
           <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
             Painel do Produtor (PDT)
           </span>
@@ -255,8 +260,11 @@ export function Sidebar() {
             Live
           </span>
         </Link>
-        <div className="text-[11px] text-slate-400">
-          Arquitetura Event-Driven • Vercel Web
+        <div className="flex items-center justify-between text-[11px] text-slate-400">
+          <span>Arquitetura Event-Driven</span>
+          <span className="text-[10px] font-mono font-bold text-sky-400">
+            v11.4.2
+          </span>
         </div>
       </div>
     </aside>

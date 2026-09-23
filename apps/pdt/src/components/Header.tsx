@@ -10,6 +10,9 @@ export function Header() {
   return (
     <header className="min-h-16 bg-[#0d1322]/90 backdrop-blur border-b border-[#1e293b] flex items-center justify-between gap-4 px-8 py-3 sticky top-0 z-30">
       <div className="flex items-center gap-3 min-w-0">
+        <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">
+          v11.4.2
+        </span>
         {error ? (
           <div className="hidden lg:flex items-center gap-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20" title={error}>
             <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
