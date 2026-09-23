@@ -14,6 +14,8 @@ const checks = [
   'apps/pdt/src/app/eventos/[eventoId]/financeiro/page.tsx',
   'apps/pdt/src/app/eventos/[eventoId]/marketing/page.tsx',
   'apps/pdt/src/app/eventos/[eventoId]/remarketing/page.tsx',
+  'apps/pdt/src/app/api/build-info/route.ts',
+  'apps/pdt/src/components/BuildBadge.tsx',
   'apps/pdt/src/app/eventos/[eventoId]/relatorios/page.tsx',
   'apps/pdt/src/app/eventos/[eventoId]/detalhes/page.tsx',
 ];

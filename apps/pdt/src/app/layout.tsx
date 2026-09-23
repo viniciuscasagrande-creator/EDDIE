@@ -4,6 +4,7 @@ import './globals.css';
 import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
 import { ProducerEventProvider } from '../components/ProducerEventContext';
+import { BuildBadge } from '../components/BuildBadge';
 
 export const metadata: Metadata = {
   title: 'DiskIngressos PDT • Painel do Produtor',
@@ -24,6 +25,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1 p-8 overflow-y-auto">{children}</main>
           </div>
+          <BuildBadge />
         </ProducerEventProvider>
       </body>
     </html>
