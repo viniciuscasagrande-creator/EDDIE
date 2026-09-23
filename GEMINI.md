@@ -62,6 +62,7 @@ pare e pergunte: essa rota vai para `apps/api` (PDT) ou `apps/api-storefront`
 6. **Nada de `any`.** `strict: true` e `noUncheckedIndexedAccess: true` estão ligados.
 7. **Toda escrita em Financeiro, Contabilidade e Estorno gera audit log** imutável.
 8. Datas em UTC, ISO 8601. O fuso de exibição é responsabilidade do frontend.
+9. **Repositório oficial exclusivo: GitHub (`origin`).** Nunca fazer push para GitLab. O projeto e a esteira de CI/CD da Vercel operam exclusivamente sobre o repositório GitHub (`origin/main`).
 
 ## Estrutura
 
