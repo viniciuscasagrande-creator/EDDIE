@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(){
  return NextResponse.json({
   app:'EDDIE',
-  version:'11.6.0',
+  version:'11.7.0',
   eventOs:true,
-  marker:'EDDIE-11.6-EVENT-OS',
+  marker:'EDDIE-11.7-EVENT-OS',
+  marker116:'EDDIE-11.6-EVENT-OS',
   marker115:'EDDIE-11.5-EVENT-OS',
   marker1142:'EDDIE-11.4.2-EVENT-OS',
   commit:process.env.VERCEL_GIT_COMMIT_SHA||'local',

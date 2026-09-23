@@ -1,0 +1,13 @@
+{
+  "fase": "EDDIE 11.7",
+  "nome": "Consulta de Ingressos + Relatórios + Detalhes + Novo Evento + Produtor/Local + Sessões/Setores/Lotes/Cortesias",
+  "baseline": "EDDIE 11.5 HOMOLOGADO",
+  "principios": [
+    "sem mocks como produção",
+    "eventoId obrigatório",
+    "pt-BR",
+    "preservar arquitetura existente"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_7.md",
+  "preflight": "scripts/preflight-11-7.mjs"
+}
