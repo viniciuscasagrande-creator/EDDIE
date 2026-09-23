@@ -18,6 +18,7 @@ import {
   Gift,
   Layers,
   Calendar,
+  Compass,
 } from 'lucide-react';
 import { EventContextNav, NavItem } from '../event-operations/EventContextNav';
 
@@ -31,6 +32,7 @@ export function EventOsShell({
   const navItems: NavItem[] = [
     // Itens Prioritários (visíveis diretamente na barra)
     { href: `/eventos/${eventoId}/operacao`, label: 'Operação', icon: Activity, priority: true },
+    { href: `/eventos/${eventoId}/cockpit`, label: 'Cockpit', icon: Compass, priority: true },
     { href: `/eventos/${eventoId}/dashboard`, label: 'Dashboard', icon: LayoutDashboard, priority: true },
     { href: `/eventos/${eventoId}/ingressos`, label: 'Ingressos', icon: Ticket, priority: true },
     { href: `/eventos/${eventoId}/portaria`, label: 'Portaria', icon: ScanLine, priority: true },

@@ -1,0 +1,12 @@
+{
+  "fase": "EDDIE 11.11.1 — Automação Operacional Enterprise",
+  "baseline": "EDDIE_11_10_1_CENTRO_OPERACOES_UX_ENTERPRISE.zip",
+  "routes": [
+    "/automacoes",
+    "/automacoes/regras",
+    "/automacoes/execucoes",
+    "/automacoes/aprovacoes",
+    "/eventos/:eventoId/cockpit"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_11_1.md"
+}

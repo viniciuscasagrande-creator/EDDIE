@@ -20,6 +20,7 @@ import {
   ChevronRight,
   FileBarChart,
   Activity,
+  Zap,
 } from 'lucide-react';
 
 const menuItems = [
@@ -34,6 +35,12 @@ const menuItems = [
     href: '/operacao',
     icon: Activity,
     badge: 'Enterprise',
+  },
+  {
+    label: 'Automações & Regras',
+    href: '/automacoes',
+    icon: Zap,
+    badge: 'Motor IA',
   },
   {
     label: 'Todos os Eventos',
