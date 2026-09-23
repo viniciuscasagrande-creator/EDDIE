@@ -1,0 +1,1 @@
+Execute a Fase EDDIE 11.6 preservando toda a arquitetura existente. Não substitua o Event OS por mocks. Valide /eventos e todas as rotas /eventos/:eventoId/*. Corrija apenas erros reais de TypeScript/build sem remover funcionalidades. Rode pnpm --filter @ticketing/pdt build e reporte qualquer endpoint ainda ausente no backend.
