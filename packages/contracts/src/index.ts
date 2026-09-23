@@ -1,6 +1,8 @@
 export * from './shared/envelope.js';
 export * from './shared/money.js';
 export * from './events/index.js';
+export * from './operacao-real/index.js';
+
 
 import * as Eventos from './events/eventos.js';
 import * as Pedidos from './events/pedidos.js';

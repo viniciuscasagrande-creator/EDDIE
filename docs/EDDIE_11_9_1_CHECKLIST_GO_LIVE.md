@@ -1,0 +1,23 @@
+# Checklist Go-Live 11.9.1
+
+- [ ] branch de produção confirmada
+- [ ] SHA do commit anotado
+- [ ] `.env*` e `secrets/` ignorados
+- [ ] variáveis da Vercel conferidas
+- [ ] Prisma validate
+- [ ] Prisma generate
+- [ ] migrate deploy
+- [ ] build API
+- [ ] build PDT
+- [ ] rotas 11.9 verificadas
+- [ ] menu sem links órfãos
+- [ ] preview homologado
+- [ ] production deployment criado
+- [ ] `/api/build-info` = 11.9.1 / EDDIE-11.9.1-GOLIVE
+- [ ] SHA retornado = SHA implantado
+- [ ] Portaria abre
+- [ ] Antifraude abre
+- [ ] Conciliação abre
+- [ ] Estorno/Chargeback abre
+- [ ] nenhum loading infinito
+- [ ] nenhum erro 404/500 nas rotas críticas

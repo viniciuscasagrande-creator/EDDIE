@@ -1,0 +1,21 @@
+{
+  "fase": "EDDIE 11.9.1",
+  "version": "11.9.1",
+  "marker": "EDDIE-11.9.1-GOLIVE",
+  "baseline": "EDDIE 11.9 HOMOLOGADO",
+  "gates": [
+    "git",
+    "env",
+    "prisma",
+    "migrations",
+    "api-build",
+    "pdt-build",
+    "routes",
+    "menus",
+    "preview",
+    "production",
+    "build-info",
+    "smoke"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_9_1.md"
+}

@@ -1,0 +1,18 @@
+{
+  "fase": "EDDIE 11.10",
+  "nome": "Centro de Operações do Evento em Tempo Real",
+  "baseline": "EDDIE 11.9.1",
+  "route": "/eventos/:eventoId/operacao",
+  "areas": [
+    "vendas",
+    "portaria",
+    "inventario",
+    "financeiro",
+    "marketing",
+    "antifraude",
+    "alertas",
+    "incidentes",
+    "timeline"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_10.md"
+}

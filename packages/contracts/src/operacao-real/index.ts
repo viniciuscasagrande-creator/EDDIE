@@ -31,3 +31,7 @@ export interface TicketIssuer {
 export interface CheckinService {
   validateAndConsume(qrToken: string, eventoId: string, operadorId: string, dispositivoId?: string): Promise<{ result: CheckinResult; ingressoId?: string }>;
 }
+
+export * from './risk-reconciliation.js';
+export * from './live-operations.js';
+
