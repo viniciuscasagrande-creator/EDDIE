@@ -73,7 +73,7 @@ const formatBRL = (val: number | { toNumber?: () => number } | undefined) => {
 };
 
 export default function EventosPage() {
-  const { api, produtorId, eventoId, selecionarEvento, recarregarEventos } = useProducerEvent();
+  const { api, produtorId, eventoId, eventos: eventosContexto, selecionarEvento, recarregarEventos, loading: contextoLoading, error: contextoError } = useProducerEvent();
   const [eventos, setEventos] = useState<EventoDetalhado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -122,14 +122,12 @@ export default function EventosPage() {
   });
 
   const carregarEventos = useCallback(async () => {
-    if (!api || !produtorId) {
-      setLoading(false);
-      return;
-    }
+    if (contextoLoading) return;
+    if (!api || !produtorId) { setLoading(false); setError(contextoError || 'Contexto do produtor não resolvido.'); return; }
     setLoading(true);
     setError('');
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
+    const timer = setTimeout(() => controller.abort(), 6500);
 
     try {
       const res = await fetch(`${api}/eventos/produtor/${produtorId}`, {
@@ -162,7 +160,7 @@ export default function EventosPage() {
       clearTimeout(timer);
       setLoading(false);
     }
-  }, [api, produtorId, eventoId]);
+  }, [api, produtorId, eventoId, contextoLoading, contextoError]);
 
   useEffect(() => {
     void carregarEventos();

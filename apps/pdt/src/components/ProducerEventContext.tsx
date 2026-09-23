@@ -27,7 +27,7 @@ export function ProducerEventProvider({children}:{children:React.ReactNode}){
 
   const recarregarEventos=useCallback(async()=>{
     const request=++requestRef.current; setLoading(true); setError(''); setStatus('inicializando');
-    const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),10000);
+    const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),6500);
     try{
       const response=await fetch('/api/bootstrap',{cache:'no-store',signal:controller.signal});
       const data=await response.json().catch(()=>({}));
@@ -39,9 +39,9 @@ export function ProducerEventProvider({children}:{children:React.ReactNode}){
       const candidato=[salvo,data.eventoId,eventoId,lista[0]?.id].find(id=>id&&lista.some(e=>e.id===id))||'';
       setEventoId(candidato); if(candidato&&typeof window!=='undefined')localStorage.setItem(STORAGE_KEY,candidato);
       if(!lista.length){setStatus('vazio');setError('Nenhum evento disponível para este produtor.');}else setStatus('online');
-    }catch(e:any){if(request!==requestRef.current)return;setEventos([]);setEventoId('');setStatus('erro');setError(e?.name==='AbortError'?'Tempo limite no bootstrap operacional. Abra Diagnóstico & Status.':e?.message||'Falha no bootstrap operacional.');}
+    }catch(e:any){if(request!==requestRef.current)return;setEventos([]);setEventoId('');setStatus('erro');setError(e?.name==='AbortError'?'Bootstrap excedeu 6,5 s. Abra Diagnóstico & Status para identificar backend, banco, produtor ou tenant.':e?.message||'Falha no bootstrap operacional.');}
     finally{clearTimeout(timer);if(request===requestRef.current)setLoading(false)}
-  },[eventoId]);
+  },[]);
   useEffect(()=>{void recarregarEventos()},[]); // bootstrap único; evita loops por mudança do contexto resolvido
   const selecionarEvento=useCallback((id:string)=>{setEventoId(id); if(typeof window!=='undefined')localStorage.setItem(STORAGE_KEY,id)},[]);
   const evento=useMemo(()=>eventos.find(e=>e.id===eventoId)||null,[eventos,eventoId]);

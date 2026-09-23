@@ -1,0 +1,3 @@
+import fs from 'node:fs';
+const checks=['apps/pdt/src/app/eventos/page.tsx','apps/pdt/src/components/Sidebar.tsx','apps/pdt/src/components/ProducerEventContext.tsx','apps/pdt/src/components/eventos/EventOsShell.tsx','apps/pdt/src/components/eventos/EventRouteContextSync.tsx','apps/pdt/src/app/api/event-os/status/route.ts','apps/pdt/src/app/eventos/[eventoId]/dashboard/page.tsx','apps/pdt/src/app/eventos/[eventoId]/ingressos/page.tsx','apps/pdt/src/app/eventos/[eventoId]/mapa/page.tsx'];
+let fail=false; for(const f of checks){const ok=fs.existsSync(f); console.log(ok?'OK':'FALTA',f); if(!ok)fail=true} if(fail)process.exit(1); console.log('EDDIE 11.4.1 preflight estrutural OK');

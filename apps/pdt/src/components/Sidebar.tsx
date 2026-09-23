@@ -34,7 +34,7 @@ const menuItems = [
     badge: 'Enterprise',
   },
   {
-    label: 'Eventos & Lotes',
+    label: 'Todos os Eventos',
     href: '/eventos',
     icon: Calendar,
     badge: null,

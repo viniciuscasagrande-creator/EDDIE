@@ -13,12 +13,12 @@ export function Header() {
         {error ? (
           <div className="hidden lg:flex items-center gap-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20" title={error}>
             <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-            <span>API Offline (503)</span>
+            <span>Contexto indisponível</span>
           </div>
         ) : (
           <div className="hidden lg:flex items-center gap-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>Produção Online</span>
+            <span>Contexto operacional</span>
           </div>
         )}
         <div className="h-7 w-px bg-slate-700 hidden lg:block" />

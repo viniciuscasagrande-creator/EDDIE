@@ -247,7 +247,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <h3 className="font-bold text-white text-base group-hover:text-rose-400 transition">
-                Eventos & Lotes
+                Event OS · Todos os Eventos
               </h3>
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">
                 Gestão de sessões, setores, lotes, capacidade e precificação.
