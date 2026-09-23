@@ -352,6 +352,53 @@ export default function EventosPage() {
         </button>
       </div>
 
+      {/* Cockpit de Acesso Rápido ao Event OS */}
+      <div className="rounded-2xl border border-sky-500/30 bg-gradient-to-r from-sky-950/40 via-[#0d1728] to-[#0d1728] p-6 shadow-xl space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold mb-2">
+              <Sparkles size={13} />
+              <span>Event OS · Modo Operação Individual</span>
+            </div>
+            <h2 className="text-lg font-bold text-white">
+              Cockpit Operacional do Evento
+            </h2>
+            <p className="text-slate-400 text-xs mt-1">
+              Ciclo operacional completo: Dashboard, Ingressos & Pedidos, Mapa de Assentos, Financeiro, Marketing, Remarketing, Relatórios e Detalhes.
+            </p>
+          </div>
+          <Link
+            href={`/eventos/${eventoId || activeEvento?.id || 'evento-operacao'}/dashboard`}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-lg shadow-sky-600/20 transition shrink-0"
+          >
+            <span>Abrir Event OS Completo</span>
+            <ChevronRight size={16} />
+          </Link>
+        </div>
+
+        {/* Links Rápidos das 8 Ferramentas */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 pt-2 border-t border-slate-800">
+          {[
+            ['Dashboard', 'dashboard'],
+            ['Ingressos', 'ingressos'],
+            ['Mapa', 'mapa'],
+            ['Financeiro', 'financeiro'],
+            ['Marketing', 'marketing'],
+            ['Remarketing', 'remarketing'],
+            ['Relatórios', 'relatorios'],
+            ['Detalhes', 'detalhes'],
+          ].map(([label, slug]) => (
+            <Link
+              key={slug}
+              href={`/eventos/${eventoId || activeEvento?.id || 'evento-operacao'}/${slug}`}
+              className="text-center px-2 py-2 rounded-lg bg-slate-900/80 hover:bg-sky-500/10 text-slate-300 hover:text-sky-300 border border-slate-800 hover:border-sky-500/30 text-xs font-medium transition"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {feedback && (
         <div
           className={`p-4 rounded-xl border flex items-center justify-between text-xs font-semibold ${

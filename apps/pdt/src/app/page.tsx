@@ -255,6 +255,9 @@ export default function DashboardPage() {
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">
                 Gestão de sessões, setores, lotes, capacidade e precificação.
               </p>
+              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-800 text-[10px] text-sky-400 font-medium">
+                <span>Dashboard</span> • <span>Ingressos</span> • <span>Mapa</span> • <span>Financeiro</span>
+              </div>
             </div>
           </Link>
 
