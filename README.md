@@ -17,12 +17,12 @@ pnpm dev
 ```
 
 | Serviço | URL |
-|---|---|
-| API + Swagger | http://localhost:3333/docs |
-| Frontend | http://localhost:3000 |
-| RabbitMQ (event bus) | http://localhost:15672 — ticketing/ticketing |
-| Grafana (telemetria) | http://localhost:3001 |
-| Mailpit | http://localhost:8025 |
+| --- | --- |
+| API + Swagger | <http://localhost:3333/docs> |
+| Frontend | <http://localhost:3000> |
+| RabbitMQ (event bus) | <http://localhost:15672> — ticketing/ticketing |
+| Grafana (telemetria) | <http://localhost:3001> |
+| Mailpit | <http://localhost:8025> |
 
 No VS Code: `Reopen in Container` usa o devcontainer já configurado com o
 Gemini Code Assist instalado.
@@ -34,7 +34,7 @@ exclusivamente por eventos de domínio gravados via Transactional Outbox.
 
 ## Fluxo de um pedido
 
-```
+```text
 Inventário   reserva.criada ──► Redis TTL 10min
 Pagamentos   pedido.pago ──┬──► Financeiro     (AR + fluxo de caixa)
                            ├──► Contabilidade  (lançamento de competência)
