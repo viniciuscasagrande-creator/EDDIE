@@ -22,6 +22,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
+import { ModuleNavigation } from '../../components/navigation/ModuleNavigation';
+import { CompactOperationalAlert } from '../../components/navigation/CompactOperationalAlert';
 
 type StatusEstorno = 'solicitado' | 'em_analise' | 'aprovado' | 'negado' | 'executado' | 'falha';
 
@@ -77,6 +79,13 @@ export default function EstornoPage() {
   const [dataCompra, setDataCompra] = useState(new Date().toISOString().slice(0, 10));
   const [dataEvento, setDataEvento] = useState(new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10));
 
+  // Controle de Abas Estornos vs Chargebacks (EDDIE 11.9)
+  const [secaoAtiva, setSecaoAtiva] = useState<'estornos' | 'chargebacks'>('estornos');
+  const [chargebacks, setChargebacks] = useState<any[]>([]);
+  const [modalChargeback, setModalChargeback] = useState<any>(null);
+  const [justificativaDefesa, setJustificativaDefesa] = useState('');
+  const [enviandoDefesa, setEnviandoDefesa] = useState(false);
+
   const carregar = useCallback(async () => {
     if (!api) {
       setLoading(false);
@@ -89,16 +98,21 @@ export default function EstornoPage() {
     const timer = setTimeout(() => controller.abort(), 2500);
 
     try {
-      const res = await fetch(`${api}/estornos`, { signal: controller.signal });
-      if (!res.ok) {
-        if (res.status === 503) throw new Error('API Offline (503). Backend Estornos não conectado.');
-        throw new Error('Não foi possível carregar as solicitações de estorno.');
+      const [resEstornos, resChargebacks] = await Promise.all([
+        fetch(`${api}/estornos`, { signal: controller.signal }),
+        fetch(`${api}/chargebacks`, { signal: controller.signal }).catch(() => null),
+      ]);
+      if (resEstornos.ok) {
+        const data = await resEstornos.json();
+        setEstornos(Array.isArray(data) ? data : (data.items || []));
       }
-      const data = await res.json();
-      setEstornos(Array.isArray(data) ? data : (data.items || []));
+      if (resChargebacks && resChargebacks.ok) {
+        const cbData = await resChargebacks.json();
+        setChargebacks(Array.isArray(cbData) ? cbData : []);
+      }
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        setError('Tempo limite ao carregar estornos.');
+        setError('Tempo limite ao carregar estornos e chargebacks.');
       } else {
         setError(err instanceof Error ? err.message : 'Falha na comunicação com a API.');
       }
@@ -107,6 +121,28 @@ export default function EstornoPage() {
       setLoading(false);
     }
   }, [api]);
+
+  const handleEnviarDefesa = async () => {
+    if (!modalChargeback || !justificativaDefesa || !api) return;
+    setEnviandoDefesa(true);
+    try {
+      const res = await fetch(`${api}/chargebacks/${modalChargeback.id}/evidencias`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentos: ['comprovante_leitura_portaria.pdf', 'comprovante_pagamento.pdf'],
+          justificativa: justificativaDefesa,
+        }),
+      });
+      if (res.ok) {
+        setModalChargeback(null);
+        setJustificativaDefesa('');
+        void carregar();
+      }
+    } finally {
+      setEnviandoDefesa(false);
+    }
+  };
 
   useEffect(() => {
     void carregar();
@@ -247,7 +283,32 @@ export default function EstornoPage() {
         </div>
       </header>
 
-      {/* KPI Cards */}
+      {/* Navegação Fixa e Responsiva (Sem scroll horizontal) */}
+      <ModuleNavigation
+        items={[
+          { id: 'estornos', label: 'Solicitações de Reembolso', icon: <RotateCcw size={15} />, badge: estornos.length },
+          { id: 'chargebacks', label: 'Disputas & Chargebacks', icon: <ShieldAlert size={15} />, badge: chargebacks.length },
+        ]}
+        activeItem={secaoAtiva}
+        onSelect={(id) => setSecaoAtiva(id as 'estornos' | 'chargebacks')}
+        ariaLabel="Navegação do módulo de Estorno e Chargebacks"
+      />
+
+      {/* Alerta Operacional Compacto */}
+      {error && (
+        <div className="py-1">
+          <CompactOperationalAlert
+            status="offline"
+            title="Módulo Estornos/Chargebacks Offline (503)"
+            detail={error}
+            onOpen={() => alert(error)}
+          />
+        </div>
+      )}
+
+      {secaoAtiva === 'estornos' && (
+        <>
+          {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
           <div className="flex justify-between text-[11px] uppercase tracking-wider text-slate-500 font-bold">
@@ -298,7 +359,7 @@ export default function EstornoPage() {
             className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-white outline-none focus:border-rose-500"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {['todos', 'solicitado', 'aprovado', 'negado', 'executado'].map((st) => (
             <button
               key={st}
@@ -415,6 +476,192 @@ export default function EstornoPage() {
           </div>
         )}
       </div>
+        </>
+      )}
+
+      {secaoAtiva === 'chargebacks' && (
+        <div className="space-y-6">
+          {/* KPI Cards Chargeback */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
+              <div className="flex justify-between text-[11px] uppercase tracking-wider text-slate-500 font-bold">
+                <span>Total Disputas</span>
+                <ShieldAlert size={16} className="text-slate-400" />
+              </div>
+              <div className="text-2xl font-black text-white mt-2">{chargebacks.length}</div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
+              <div className="flex justify-between text-[11px] uppercase tracking-wider text-amber-500 font-bold">
+                <span>Defesa Pendente</span>
+                <Clock size={16} className="text-amber-400" />
+              </div>
+              <div className="text-2xl font-black text-amber-400 mt-2">
+                {chargebacks.filter((c) => !c.defesaEnviada).length}
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
+              <div className="flex justify-between text-[11px] uppercase tracking-wider text-purple-500 font-bold">
+                <span>Em Disputa</span>
+                <Scale size={16} className="text-purple-400" />
+              </div>
+              <div className="text-2xl font-black text-purple-400 mt-2">
+                {chargebacks.filter((c) => c.defesaEnviada && (!c.resultado || c.resultado === 'pendente')).length}
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
+              <div className="flex justify-between text-[11px] uppercase tracking-wider text-emerald-500 font-bold">
+                <span>Ganhos</span>
+                <CheckCircle2 size={16} className="text-emerald-400" />
+              </div>
+              <div className="text-2xl font-black text-emerald-400 mt-2">
+                {chargebacks.filter((c) => c.resultado === 'ganho').length}
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
+              <div className="flex justify-between text-[11px] uppercase tracking-wider text-rose-500 font-bold">
+                <span>Perdidos</span>
+                <XCircle size={16} className="text-rose-400" />
+              </div>
+              <div className="text-2xl font-black text-rose-400 mt-2">
+                {chargebacks.filter((c) => c.resultado === 'perdido').length}
+              </div>
+            </div>
+          </div>
+
+          {/* Tabela de Chargebacks */}
+          <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+            <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
+              <h2 className="text-sm font-bold text-white">Casos de Chargeback & Contestação</h2>
+              <span className="text-xs text-slate-400">{chargebacks.length} registro(s)</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-slate-900/60 text-slate-500">
+                  <tr>
+                    <th className="p-3 text-left">Pedido / ID</th>
+                    <th className="p-3 text-left">Adquirente</th>
+                    <th className="p-3 text-left">Código / Motivo</th>
+                    <th className="p-3 text-right">Valor em Disputa</th>
+                    <th className="p-3 text-left">Prazo Limite Defesa</th>
+                    <th className="p-3 text-center">Status Defesa</th>
+                    <th className="p-3 text-right">Ação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {chargebacks.map((cb) => (
+                    <tr key={cb.id} className="hover:bg-slate-800/30 transition">
+                      <td className="p-3 font-mono text-slate-300">
+                        {cb.pedidoId?.slice(0, 8)}...{cb.pedidoId?.slice(-4)}
+                      </td>
+                      <td className="p-3 font-bold text-white">{cb.adquirente}</td>
+                      <td className="p-3 text-slate-300">{cb.codigoRazao}</td>
+                      <td className="p-3 text-right font-bold text-rose-400">
+                        {money(Number(cb.valor || 0) * 100)}
+                      </td>
+                      <td className="p-3 text-slate-400">
+                        {new Date(cb.prazoDefesaEm).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="p-3 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            cb.resultado === 'ganho'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : cb.resultado === 'perdido'
+                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                              : cb.defesaEnviada
+                              ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }`}
+                        >
+                          {cb.resultado === 'ganho'
+                            ? 'Ganho'
+                            : cb.resultado === 'perdido'
+                            ? 'Perdido'
+                            : cb.defesaEnviada
+                            ? 'Defesa Enviada'
+                            : 'Aguardando Defesa'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right">
+                        <button
+                          onClick={() => setModalChargeback(cb)}
+                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition"
+                        >
+                          Evidências & Defesa
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {chargebacks.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="p-12 text-center text-slate-500 text-xs">
+                        Nenhum chargeback ou contestação aberta no momento.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Enviar Defesa Chargeback */}
+      {modalChargeback && (
+        <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-lg font-bold text-white">Anexar Defesa de Chargeback</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Pedido: {modalChargeback.pedidoId} • Valor: {money(Number(modalChargeback.valor || 0) * 100)}
+                </p>
+              </div>
+              <button onClick={() => setModalChargeback(null)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-1">
+              <div className="text-slate-400 font-semibold uppercase text-[10px]">Evidências Operacionais Pré-Coletadas:</div>
+              <div>• Comprovante de Pagamento & Autorização Gateway</div>
+              <div>• Log de Emissão do Ingresso & Hash QR Code</div>
+              <div>• Registro de Check-in em Portaria / Dispositivo (quando houver)</div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">Parecer / Justificativa da Defesa</label>
+              <textarea
+                rows={4}
+                value={justificativaDefesa}
+                onChange={(e) => setJustificativaDefesa(e.target.value)}
+                placeholder="Descreva a contestação, termos de serviço aceitos e comprovação da entrega do serviço..."
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-white outline-none focus:border-rose-500"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                onClick={() => setModalChargeback(null)}
+                className="px-3 py-2 rounded-lg border border-slate-700 text-xs text-slate-400 hover:text-white"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleEnviarDefesa}
+                disabled={enviandoDefesa || !justificativaDefesa}
+                className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition disabled:opacity-50"
+              >
+                {enviandoDefesa ? 'Enviando...' : 'Transmitir Defesa à Adquirente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Decisão (Aprovar / Recusar) */}
       {modalDecisao && (

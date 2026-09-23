@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 import OperationalPanel from '../../components/OperationalPanel';
+import { ModuleNavigation } from '../../components/navigation/ModuleNavigation';
+import { CompactOperationalAlert } from '../../components/navigation/CompactOperationalAlert';
 
 type TabView = 'pipeline' | 'produtores' | 'condicoes' | 'atividades' | 'leads' | 'propostas' | 'contratos' | 'metas' | 'relatorios';
 
@@ -431,54 +433,55 @@ export default function ComercialPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1 border-b border-slate-800">
-        {[
-          { id: 'pipeline' as TabView, label: 'Pipeline de Oportunidades (Kanban)', icon: Briefcase },
-          { id: 'produtores' as TabView, label: 'Carteira de Produtores B2B', icon: Users },
-          { id: 'condicoes' as TabView, label: 'Condições Comerciais Vigentes', icon: FileCheck },
-          { id: 'atividades' as TabView, label: 'Agenda & Atividades Comerciais', icon: Calendar },
-          { id: 'leads' as TabView, label: 'Leads B2B', icon: Users },
-          { id: 'propostas' as TabView, label: 'Propostas Comerciais', icon: FileCheck },
-          { id: 'contratos' as TabView, label: 'Contratos & Ativação', icon: FileCheck },
-          { id: 'metas' as TabView, label: 'Metas Comerciais', icon: Briefcase },
-          { id: 'relatorios' as TabView, label: 'Relatórios Comerciais', icon: Calendar },
-        ].map((t) => {
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`shrink-0 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition ${
-                active
-                  ? 'bg-purple-500/15 border border-purple-500/40 text-purple-300'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-              }`}
-            >
-              <t.icon size={15} className={active ? 'text-purple-400' : 'text-slate-500'} />
-              <span>{t.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Module Navigation (Sem scroll horizontal) */}
+      <ModuleNavigation
+        items={[
+          { id: 'pipeline', label: 'Pipeline (Kanban)', icon: <Briefcase size={15} /> },
+          { id: 'produtores', label: 'Carteira B2B', icon: <Users size={15} /> },
+          { id: 'condicoes', label: 'Condições Comerciais', icon: <FileCheck size={15} /> },
+          { id: 'atividades', label: 'Agenda & Atividades', icon: <Calendar size={15} /> },
+          { id: 'leads', label: 'Leads B2B', icon: <Users size={15} /> },
+          { id: 'propostas', label: 'Propostas Comerciais', icon: <FileCheck size={15} /> },
+          { id: 'contratos', label: 'Contratos & Ativação', icon: <FileCheck size={15} /> },
+          { id: 'metas', label: 'Metas Comerciais', icon: <Briefcase size={15} /> },
+          { id: 'relatorios', label: 'Relatórios Comerciais', icon: <Calendar size={15} /> },
+        ]}
+        activeItem={tab}
+        onSelect={(id) => setTab(id as TabView)}
+        ariaLabel="Navegação do módulo Comercial"
+      />
 
-      {/* Feedback Toast */}
+      {/* Feedback Toast / Alerta Operacional Compacto */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
-            feedback.tipo === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.tipo === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-            <span>{feedback.texto}</span>
+        feedback.texto.includes('503') || feedback.texto.includes('Offline') ? (
+          <div className="flex items-center justify-between py-1 px-1">
+            <CompactOperationalAlert
+              status="offline"
+              title="API Comercial B2B Offline (503)"
+              detail={feedback.texto}
+              onOpen={() => alert(feedback.texto)}
+            />
+            <button onClick={() => setFeedback(null)} className="text-xs text-slate-500 hover:text-white">
+              Dispensar
+            </button>
           </div>
-          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white">
-            ✕
-          </button>
-        </div>
+        ) : (
+          <div
+            className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+              feedback.tipo === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {feedback.tipo === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+              <span>{feedback.texto}</span>
+            </div>
+            <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white">
+              ✕
+            </button>
+          </div>
+        )
       )}
 
       {loading ? (

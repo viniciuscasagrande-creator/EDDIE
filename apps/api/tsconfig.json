@@ -6,7 +6,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": "src",
-    "paths": { "@/*": ["*"] }
+    "paths": { "@/*": ["*"] },
+    "ignoreDeprecations": "5.0"
   },
   "include": ["src/**/*"]
 }

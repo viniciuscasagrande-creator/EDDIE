@@ -28,6 +28,8 @@ import { useProducerEvent } from '../../components/ProducerEventContext';
 import OperationalPanel from '../../components/OperationalPanel';
 import AccountingEnterprisePanel from '../../components/AccountingEnterprisePanel';
 import AccountingDashboardCharts from '../../components/AccountingDashboardCharts';
+import { ModuleNavigation } from '../../components/navigation/ModuleNavigation';
+import { CompactOperationalAlert } from '../../components/navigation/CompactOperationalAlert';
 
 type TabView = 'centro_eventos' | 'dre' | 'balancete' | 'lancamentos' | 'conciliacao' | 'plano_contas' | 'fechamento' | 'demonstrativos' | 'auditoria' | 'painel_enterprise' | 'patrimonio' | 'fiscal' | 'recontabilizacao';
 
@@ -402,58 +404,59 @@ export default function ContabilidadePage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1 border-b border-slate-800">
-        {[
-          { id: 'painel_enterprise' as TabView, label: 'Painel Contábil', icon: PieChart },
-          { id: 'centro_eventos' as TabView, label: 'Centro de Controle de Eventos', icon: Building2 },
-          { id: 'dre' as TabView, label: 'DRE Gerencial (Segregação)', icon: FileSpreadsheet },
-          { id: 'balancete' as TabView, label: 'Balancete de Verificação', icon: Scale },
-          { id: 'lancamentos' as TabView, label: 'Livro Diário / Lançamentos', icon: BookOpen },
-          { id: 'conciliacao' as TabView, label: 'Conciliação Contábil', icon: Landmark },
-          { id: 'plano_contas' as TabView, label: 'Plano de Contas', icon: Layers },
-          { id: 'fechamento' as TabView, label: 'Fechamento Mensal', icon: Lock },
-          { id: 'demonstrativos' as TabView, label: 'Demonstrativos', icon: FileSpreadsheet },
-          { id: 'auditoria' as TabView, label: 'Auditoria Contábil', icon: ShieldCheck },
-          { id: 'patrimonio' as TabView, label: 'Balanço Patrimonial', icon: Landmark },
-          { id: 'recontabilizacao' as TabView, label: 'Recontabilização', icon: RefreshCcw },
-          { id: 'fiscal' as TabView, label: 'Fiscal & NFS-e', icon: FileSpreadsheet },
-        ].map((t) => {
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`shrink-0 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition ${
-                active
-                  ? 'bg-amber-500/15 border border-amber-500/40 text-amber-300'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-              }`}
-            >
-              <t.icon size={15} className={active ? 'text-amber-400' : 'text-slate-500'} />
-              <span>{t.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Module Navigation (Sem scroll horizontal) */}
+      <ModuleNavigation
+        items={[
+          { id: 'painel_enterprise', label: 'Painel Contábil', icon: <PieChart size={15} /> },
+          { id: 'centro_eventos', label: 'Centro de Eventos', icon: <Building2 size={15} /> },
+          { id: 'dre', label: 'DRE Gerencial', icon: <FileSpreadsheet size={15} /> },
+          { id: 'balancete', label: 'Balancete', icon: <Scale size={15} /> },
+          { id: 'lancamentos', label: 'Livro Diário', icon: <BookOpen size={15} /> },
+          { id: 'conciliacao', label: 'Conciliação Contábil', icon: <Landmark size={15} /> },
+          { id: 'plano_contas', label: 'Plano de Contas', icon: <Layers size={15} /> },
+          { id: 'fechamento', label: 'Fechamento Mensal', icon: <Lock size={15} /> },
+          { id: 'demonstrativos', label: 'Demonstrativos', icon: <FileSpreadsheet size={15} /> },
+          { id: 'auditoria', label: 'Auditoria Contábil', icon: <ShieldCheck size={15} /> },
+          { id: 'patrimonio', label: 'Balanço Patrimonial', icon: <Landmark size={15} /> },
+          { id: 'recontabilizacao', label: 'Recontabilização', icon: <RefreshCcw size={15} /> },
+          { id: 'fiscal', label: 'Fiscal & NFS-e', icon: <FileSpreadsheet size={15} /> },
+        ]}
+        activeItem={tab}
+        onSelect={(id) => setTab(id as TabView)}
+        ariaLabel="Navegação do módulo Contábil"
+      />
 
-      {/* Toast Feedback */}
+      {/* Toast Feedback / Alerta Operacional Compacto */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
-            feedback.tipo === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.tipo === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-            <span>{feedback.texto}</span>
+        feedback.texto.includes('503') || feedback.texto.includes('Offline') ? (
+          <div className="flex items-center justify-between py-1 px-1">
+            <CompactOperationalAlert
+              status="offline"
+              title="API Contábil Offline (503)"
+              detail={feedback.texto}
+              onOpen={() => alert(feedback.texto)}
+            />
+            <button onClick={() => setFeedback(null)} className="text-xs text-slate-500 hover:text-white">
+              Dispensar
+            </button>
           </div>
-          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white">
-            ✕
-          </button>
-        </div>
+        ) : (
+          <div
+            className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+              feedback.tipo === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {feedback.tipo === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+              <span>{feedback.texto}</span>
+            </div>
+            <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white">
+              ✕
+            </button>
+          </div>
+        )
       )}
 
       {loading ? (

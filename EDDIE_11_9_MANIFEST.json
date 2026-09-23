@@ -1,0 +1,15 @@
+{
+  "fase": "EDDIE 11.9",
+  "nome": "Portaria em Tempo Real + Antifraude + Conciliação + Chargeback/Estorno",
+  "baseline": "EDDIE 11.8",
+  "dominios": [
+    "portaria",
+    "check-in",
+    "dispositivos",
+    "antifraude",
+    "conciliação",
+    "chargeback",
+    "estorno"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_9.md"
+}

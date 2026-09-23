@@ -1,0 +1,27 @@
+{
+  "fase": "EDDIE 11.8",
+  "nome": "Operação Real Ponta a Ponta",
+  "baseline": "EDDIE 11.7.1",
+  "cadeia": [
+    "inventário",
+    "reserva",
+    "pedido",
+    "PIX/cartão",
+    "webhook",
+    "ingresso/QR",
+    "check-in",
+    "financeiro",
+    "Ledger",
+    "liquidação",
+    "repasse"
+  ],
+  "regras": [
+    "idempotência",
+    "concorrência",
+    "snapshot comercial por evento",
+    "sem mocks como produção",
+    "sem float para dinheiro",
+    "auditoria"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_8.md"
+}

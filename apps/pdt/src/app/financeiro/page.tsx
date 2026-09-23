@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 import { BarChartCard, DonutCard, LineChartCard } from '../../components/ExecutiveCharts';
+import { ModuleNavigation } from '../../components/navigation/ModuleNavigation';
+import { CompactOperationalAlert } from '../../components/navigation/CompactOperationalAlert';
 
 type View =
   | 'dashboard'
@@ -348,44 +350,52 @@ export default function FinanceiroPage() {
         </div>
       </header>
 
-      {/* Tabs Navigation */}
-      <nav className="flex gap-1.5 overflow-x-auto pb-1 border-b border-slate-800/80">
-        {menu.map((m) => {
-          const active = view === m.id;
-          return (
-            <button
-              key={m.id}
-              onClick={() => setView(m.id)}
-              className={`shrink-0 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition ${
-                active
-                  ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-              }`}
-            >
-              <m.icon size={15} className={active ? 'text-emerald-400' : 'text-slate-500'} />
-              <span>{m.label}</span>
-            </button>
-          );
+      {/* Module Navigation (Sem scroll horizontal) */}
+      <ModuleNavigation
+        items={menu.map((m) => {
+          const Icon = m.icon;
+          return {
+            id: m.id,
+            label: m.label,
+            icon: <Icon size={15} />,
+          };
         })}
-      </nav>
+        activeItem={view}
+        onSelect={(id) => setView(id as View)}
+        ariaLabel="Navegação do módulo Financeiro"
+      />
 
-      {/* Feedback Toast */}
+      {/* Feedback Toast / Alerta Operacional Compacto */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
-            feedback.tipo === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.tipo === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-            <span>{feedback.texto}</span>
+        feedback.texto.includes('503') || feedback.texto.includes('Offline') ? (
+          <div className="flex items-center justify-between py-1 px-1">
+            <CompactOperationalAlert
+              status="offline"
+              title="API Financeira Offline (503)"
+              detail={feedback.texto}
+              onOpen={() => alert(feedback.texto)}
+            />
+            <button onClick={() => setFeedback(null)} className="text-xs text-slate-500 hover:text-white">
+              Dispensar
+            </button>
           </div>
-          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white">
-            ✕
-          </button>
-        </div>
+        ) : (
+          <div
+            className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+              feedback.tipo === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {feedback.tipo === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+              <span>{feedback.texto}</span>
+            </div>
+            <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white">
+              ✕
+            </button>
+          </div>
+        )
       )}
 
       {loading ? (

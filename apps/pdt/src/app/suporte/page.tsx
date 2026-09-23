@@ -242,7 +242,7 @@ export default function SuportePage() {
 
       {/* Filtros */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-[#111827] border border-slate-800 p-4 rounded-xl">
-        <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-slate-500 font-semibold mr-1">Status:</span>
           {['todas', 'aberta', 'em_andamento', 'escalada', 'resolvida'].map((st) => (
             <button

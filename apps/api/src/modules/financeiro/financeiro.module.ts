@@ -5,9 +5,11 @@ import { FinanceiroPublicService } from './financeiro.public-service';
 import { FinanceiroConsumer } from './financeiro.consumer';
 import { EventosModule } from '../eventos/eventos.module';
 
+import { ConciliacaoController } from './conciliacao.controller';
+
 @Module({
   imports: [EventosModule],
-  controllers: [FinanceiroController],
+  controllers: [FinanceiroController, ConciliacaoController],
   providers: [
     FinanceiroService,
     FinanceiroPublicService,

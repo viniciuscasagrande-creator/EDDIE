@@ -162,9 +162,9 @@ export default function NovoEventoPage() {
         </div>
       </div>
 
-      {/* Stepper Wizard Progress */}
-      <div className="overflow-x-auto pb-2">
-        <div className="flex items-center gap-1 min-w-[700px]">
+      {/* Stepper Wizard Progress (Sem scroll horizontal) */}
+      <div className="w-full pb-2">
+        <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-1.5">
           {STEPS.map((stepName, i) => {
             const stepNum = i + 1;
             const isCompleted = stepNum < currentStep;
@@ -175,30 +175,30 @@ export default function NovoEventoPage() {
                 onClick={() => {
                   if (stepNum <= currentStep) setCurrentStep(stepNum);
                 }}
-                className={`flex-1 flex flex-col items-center cursor-pointer group ${
+                className={`flex flex-col items-center cursor-pointer group p-1.5 rounded-lg border border-slate-800/60 bg-slate-900/40 transition hover:bg-slate-800/40 ${
                   stepNum > currentStep ? 'pointer-events-none opacity-40' : ''
                 }`}
               >
                 <div
-                  className={`w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center transition ${
+                  className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center transition ${
                     isCurrent
-                      ? 'bg-sky-500 text-white ring-4 ring-sky-500/20'
+                      ? 'bg-sky-500 text-white ring-2 ring-sky-500/20'
                       : isCompleted
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50'
                       : 'bg-slate-800 text-slate-400'
                   }`}
                 >
-                  {isCompleted ? <CheckCircle2 size={14} /> : stepNum}
+                  {isCompleted ? <CheckCircle2 size={13} /> : stepNum}
                 </div>
                 <span
-                  className={`text-[10px] mt-1.5 text-center truncate max-w-[85px] ${
+                  className={`text-[10px] mt-1 text-center truncate max-w-full leading-tight ${
                     isCurrent ? 'text-sky-300 font-semibold' : 'text-slate-400'
                   }`}
                 >
                   {stepName}
                 </span>
                 <div
-                  className={`h-0.5 w-full mt-2 rounded-full ${
+                  className={`h-0.5 w-full mt-1.5 rounded-full ${
                     isCompleted ? 'bg-emerald-500/60' : isCurrent ? 'bg-sky-500' : 'bg-slate-800'
                   }`}
                 />

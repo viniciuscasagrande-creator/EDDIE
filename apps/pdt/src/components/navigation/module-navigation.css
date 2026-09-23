@@ -1,0 +1,91 @@
+.eddie-module-nav {
+  width: 100%;
+  position: relative;
+  overflow: visible;
+}
+
+.eddie-module-nav__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.eddie-module-nav__item {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--border, rgba(148,163,184,.22));
+  border-radius: 10px;
+  background: var(--card, rgba(255,255,255,.03));
+  color: var(--foreground, inherit);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+  white-space: normal;
+}
+
+.eddie-module-nav__item:hover {
+  background: var(--accent, rgba(59,130,246,.10));
+  border-color: rgba(59,130,246,.40);
+}
+
+.eddie-module-nav__item.is-active {
+  background: rgba(37,99,235,.14);
+  border-color: rgba(59,130,246,.70);
+  color: #60a5fa;
+  box-shadow: inset 0 0 0 1px rgba(59,130,246,.12);
+}
+
+.eddie-module-nav__item.is-disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.eddie-module-nav__icon { display: inline-flex; flex: 0 0 auto; }
+.eddie-module-nav__label { min-width: 0; }
+.eddie-module-nav__badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(59,130,246,.16);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+@media (min-width: 1280px) {
+  .eddie-module-nav__grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .eddie-module-nav__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .eddie-module-nav__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .eddie-module-nav__item { justify-content: flex-start; text-align: left; }
+}
+
+/* Regra EDDIE: navegação de módulos nunca depende de scrollbar horizontal. */
+.eddie-module-nav,
+.eddie-module-nav__grid {
+  scrollbar-width: none;
+}
+.eddie-module-nav::-webkit-scrollbar,
+.eddie-module-nav__grid::-webkit-scrollbar { display: none; }

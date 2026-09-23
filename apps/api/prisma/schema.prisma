@@ -1038,3 +1038,62 @@ model IngressoVenda {
   @@map("ingressos")
   @@schema("pedidos")
 }
+
+model CheckinRegistro {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  eventoId        String   @db.Uuid
+  ingressoId      String   @db.Uuid
+  numeroIngresso  String
+  operadorId      String
+  dispositivoId   String?
+  portaria        String   @default("Portaria Principal")
+  resultado       String   // VALIDO, JA_UTILIZADO, CANCELADO, ESTORNADO, INVALIDO, FORA_DA_SESSAO, FORA_DA_JANELA, BLOQUEADO_RISCO
+  motivoRecusa    String?
+  timestamp       DateTime @default(now())
+
+  @@index([tenantId, eventoId, resultado])
+  @@index([ingressoId])
+  @@map("checkin_registros")
+  @@schema("pedidos")
+}
+
+model DispositivoPortaria {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @db.Uuid
+  eventoId          String   @db.Uuid
+  nome              String
+  portaria          String   @default("Portaria Principal")
+  identificador     String   @unique
+  token             String
+  status            String   @default("ATIVO") // ATIVO, REVOGADO
+  ultimoHeartbeat   DateTime @default(now())
+  leiturasValidas   Int      @default(0)
+  leiturasRecusadas Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  @@index([tenantId, eventoId, status])
+  @@map("dispositivos_portaria")
+  @@schema("pedidos")
+}
+
+model AlertaAntifraude {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @db.Uuid
+  eventoId      String    @db.Uuid
+  ingressoId    String?   @db.Uuid
+  pedidoId      String?   @db.Uuid
+  codigoSinal   String
+  descricao     String
+  severidade    String    @default("MEDIA") // INFO, BAIXA, MEDIA, ALTA, CRITICA
+  origem        String    // CHECKIN, PAGAMENTO, DISPOSITIVO, CHARGEBACK
+  detalhes      Json?
+  status        String    @default("ABERTO") // ABERTO, REVISADO, BLOQUEADO, PERMITIDO
+  resolvidoPor  String?
+  resolvidoEm   DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([tenantId, eventoId, status])
+  @@map("alertas_antifraude")
+  @@schema("pedidos")
+}
