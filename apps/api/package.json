@@ -32,6 +32,7 @@
   "devDependencies": {
     "@nestjs/cli": "^10.4.0",
     "prisma": "^5.20.0",
-    "@types/amqplib": "^0.10.5"
+    "@types/amqplib": "^0.10.5",
+    "typescript": "^5.9.3"
   }
 }
