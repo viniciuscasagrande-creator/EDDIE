@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   ChevronRight,
   FileBarChart,
+  Activity,
 } from 'lucide-react';
 
 const menuItems = [
@@ -24,6 +25,12 @@ const menuItems = [
     href: '/',
     icon: LayoutDashboard,
     badge: null,
+  },
+  {
+    label: 'Central Operacional',
+    href: '/operacao',
+    icon: Activity,
+    badge: 'Enterprise',
   },
   {
     label: 'Eventos & Lotes',
