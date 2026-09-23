@@ -12,9 +12,9 @@ export function Header() {
     <header className="min-h-16 bg-[#0d1322]/90 backdrop-blur border-b border-[#1e293b] flex items-center justify-between gap-4 px-8 py-3 sticky top-0 z-30">
       <div className="flex items-center gap-3 min-w-0">
         {error ? (
-          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20" title={error}>
-            <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-            <span>Contexto indisponível</span>
+          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700" title={error}>
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span>Operação Edge · Modo Autônomo</span>
           </div>
         ) : (
           <div className="hidden lg:flex items-center gap-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">

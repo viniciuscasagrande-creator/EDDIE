@@ -1,0 +1,20 @@
+# QA 11.10.1
+- [ ] apenas uma sidebar vertical
+- [ ] menu do evento em barra contextual
+- [ ] sem perda de rotas
+- [ ] sem scroll horizontal na navegação
+- [ ] cabeçalho compacto
+- [ ] 8 KPIs primários
+- [ ] gráfico principal dominante
+- [ ] painel Agora no Evento
+- [ ] saúde operacional com dados reais
+- [ ] erro de contexto compacto
+- [ ] versão sem hardcode 11.4.2
+- [ ] 1920px
+- [ ] 1440px
+- [ ] 1366px
+- [ ] 1024px
+- [ ] 768px
+- [ ] 390px
+- [ ] loading/erro parcial/stale/reconnecting
+- [ ] build/typecheck/test

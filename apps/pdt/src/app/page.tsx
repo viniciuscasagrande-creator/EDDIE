@@ -20,6 +20,7 @@ import {
   FileBarChart,
 } from 'lucide-react';
 import { useProducerEvent } from '../components/ProducerEventContext';
+import { EDDIE_BUILD } from '../lib/buildInfo';
 
 const formatBRL = (cents = 0) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
@@ -122,7 +123,7 @@ export default function DashboardPage() {
               <span>Monólito Modular Event-Driven</span>
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold">
-              v11.4.2 Event OS
+              {EDDIE_BUILD.uiVersion} Event OS
             </span>
             {evento && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium">

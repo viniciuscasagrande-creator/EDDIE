@@ -1,8 +1,115 @@
 'use client';
-import Link from 'next/link';import {usePathname} from 'next/navigation';import {ArrowLeft,LayoutDashboard,Ticket,Map,FileBarChart,Info,Wallet,Megaphone,RotateCcw,Settings2,Gift,ScanLine,ShieldAlert,Activity} from 'lucide-react';
-const menu=[['operacao','Centro de Operações',Activity],['dashboard','Dashboard',LayoutDashboard],['ingressos','Consultar Ingresso',Ticket],['portaria','Portaria & Check-in',ScanLine],['antifraude','Antifraude',ShieldAlert],['mapa','Mapa',Map],['cortesias','Cortesias',Gift],['relatorios','Relatórios',FileBarChart],['detalhes','Detalhes',Info]] as const;
-const tools=[['financeiro','Financeiro',Wallet],['marketing','Marketing',Megaphone],['remarketing','Remarketing',RotateCcw]] as const;
-export function EventOsShell({eventoId,children}:{eventoId:string;children:React.ReactNode}){const p=usePathname();return <div className="grid xl:grid-cols-[330px_1fr] min-h-[calc(100vh-80px)] -m-4 lg:-m-6"><aside className="bg-[#111315] border-r border-slate-700 sticky top-0 h-[calc(100vh-80px)] overflow-y-auto"><div className="p-5"><Link href="/eventos" className="inline-flex gap-2 items-center text-white font-semibold"><ArrowLeft size={20}/> Voltar</Link></div><div className="mx-4 h-48 rounded-lg bg-[#25272c] grid place-items-center text-slate-500"><Ticket size={50}/></div><div className="px-4 py-4 text-lg font-bold text-white break-words">{eventoId} · Evento selecionado</div><nav>{menu.map(([slug,label,I])=><Nav key={slug} href={`/eventos/${eventoId}/${slug}`} on={p.endsWith('/'+slug)} icon={I} label={label}/>)}</nav><div className="border-t border-slate-700 mt-3 px-4 pt-4 text-xs uppercase text-slate-500">Ferramentas do Evento</div><nav className="pb-5">{tools.map(([slug,label,I])=><Nav key={slug} href={`/eventos/${eventoId}/${slug}`} on={p.endsWith('/'+slug)} icon={I} label={label}/>)}</nav></aside><main className="min-w-0 bg-[#1d1f23] p-6">{children}</main></div>}
-function Nav({href,on,icon:I,label}:any){return <Link href={href} className={`flex items-center gap-4 px-5 py-4 text-base font-semibold border-l-4 ${on?'bg-[#37393d] border-sky-500 text-white':'border-transparent text-slate-200 hover:bg-[#25272c]'}`}><I size={20}/>{label}</Link>}
-export const Kpi=({label,value,help}:{label:string;value:string;help:string})=><div className="rounded-xl border border-slate-700 bg-[#292b31] p-4"><div className="text-xs text-slate-400">{label}</div><div className="text-2xl font-bold text-white mt-2">{value}</div><div className="text-xs text-slate-500 mt-1">{help}</div></div>;
-export const EmptyChart=({title}:{title:string})=><div className="rounded-xl border border-slate-700 bg-[#292b31] p-5 min-h-52"><h3 className="font-semibold text-white">{title}</h3><div className="h-32 mt-4 grid place-items-center border-b border-l border-slate-600 text-xs text-slate-500">Aguardando dados reais do evento</div></div>;
+
+import React from 'react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  LayoutDashboard,
+  Ticket,
+  Map,
+  FileBarChart,
+  Info,
+  Wallet,
+  Megaphone,
+  ScanLine,
+  ShieldAlert,
+  Activity,
+  RefreshCcw,
+  Gift,
+  Layers,
+  Calendar,
+} from 'lucide-react';
+import { EventContextNav, NavItem } from '../event-operations/EventContextNav';
+
+export function EventOsShell({
+  eventoId,
+  children,
+}: {
+  eventoId: string;
+  children: React.ReactNode;
+}) {
+  const navItems: NavItem[] = [
+    // Itens Prioritários (visíveis diretamente na barra)
+    { href: `/eventos/${eventoId}/operacao`, label: 'Operação', icon: Activity, priority: true },
+    { href: `/eventos/${eventoId}/dashboard`, label: 'Dashboard', icon: LayoutDashboard, priority: true },
+    { href: `/eventos/${eventoId}/ingressos`, label: 'Ingressos', icon: Ticket, priority: true },
+    { href: `/eventos/${eventoId}/portaria`, label: 'Portaria', icon: ScanLine, priority: true },
+    { href: `/eventos/${eventoId}/antifraude`, label: 'Antifraude', icon: ShieldAlert, priority: true },
+    { href: `/eventos/${eventoId}/mapa`, label: 'Mapa', icon: Map, priority: true },
+    { href: `/eventos/${eventoId}/financeiro`, label: 'Financeiro', icon: Wallet, priority: true },
+
+    // Itens Secundários (agrupados sob o menu "Mais" sem scrollbar horizontal)
+    { href: `/eventos/${eventoId}/marketing`, label: 'Marketing', icon: Megaphone, priority: false },
+    { href: `/eventos/${eventoId}/remarketing`, label: 'Remarketing', icon: RefreshCcw, priority: false },
+    { href: `/eventos/${eventoId}/cortesias`, label: 'Cortesias', icon: Gift, priority: false },
+    { href: `/eventos/${eventoId}/relatorios`, label: 'Relatórios', icon: FileBarChart, priority: false },
+    { href: `/eventos/${eventoId}/detalhes`, label: 'Configurações', icon: Info, priority: false },
+    { href: `/eventos/${eventoId}/configuracao/lotes`, label: 'Gestão de Lotes', icon: Layers, priority: false },
+    { href: `/eventos/${eventoId}/configuracao/sessoes`, label: 'Sessões do Evento', icon: Calendar, priority: false },
+    { href: `/eventos/${eventoId}/configuracao/setores`, label: 'Setores & Capacidade', icon: Map, priority: false },
+  ];
+
+  return (
+    <div className="flex flex-col w-full min-h-[calc(100vh-80px)] -m-4 lg:-m-6">
+      {/* BARRA HORIZONTAL FIXA DE CONTEXTO DO EVENTO (Substitui a 2ª sidebar) */}
+      <div className="sticky top-16 z-20 w-full bg-[#111317]/95 backdrop-blur-md border-b border-slate-800 px-4 lg:px-6 py-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Lado Esquerdo: Voltar + Identificador do Evento */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              href="/eventos"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-[#1e2026] px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-slate-700 hover:text-white"
+            >
+              <ArrowLeft size={14} />
+              <span>Eventos</span>
+            </Link>
+            <div className="h-4 w-px bg-slate-700" />
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+                <Ticket size={15} />
+              </div>
+              <span className="font-mono text-xs font-bold text-slate-200">
+                {eventoId}
+              </span>
+            </div>
+          </div>
+
+          {/* Navegação Contextual do Evento (EventContextNav) */}
+          <div className="min-w-0">
+            <EventContextNav items={navItems} />
+          </div>
+        </div>
+      </div>
+
+      {/* Conteúdo Principal Ocupando 100% da Largura Útil */}
+      <main className="flex-1 w-full min-w-0 bg-[#0f1115] p-4 lg:p-6 overflow-x-hidden">
+        {children}
+      </main>
+    </div>
+  );
+}
+
+export const Kpi = ({
+  label,
+  value,
+  help,
+}: {
+  label: string;
+  value: string;
+  help: string;
+}) => (
+  <div className="rounded-xl border border-slate-700 bg-[#292b31] p-4">
+    <div className="text-xs text-slate-400">{label}</div>
+    <div className="text-2xl font-bold text-white mt-2">{value}</div>
+    <div className="text-xs text-slate-500 mt-1">{help}</div>
+  </div>
+);
+
+export const EmptyChart = ({ title }: { title: string }) => (
+  <div className="rounded-xl border border-slate-700 bg-[#292b31] p-5 min-h-52">
+    <h3 className="font-semibold text-white">{title}</h3>
+    <div className="h-32 mt-4 grid place-items-center border-b border-l border-slate-600 text-xs text-slate-500">
+      Aguardando dados reais do evento
+    </div>
+  </div>
+);

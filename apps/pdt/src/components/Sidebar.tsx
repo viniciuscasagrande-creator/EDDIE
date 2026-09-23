@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useProducerEvent } from './ProducerEventContext';
 import { eventOsMenu } from '../lib/eventOsCatalog';
+import { EDDIE_BUILD } from '../lib/buildInfo';
 import {
   LayoutDashboard,
   Wallet,
@@ -116,7 +117,7 @@ export function Sidebar() {
               DiskIngressos
             </h1>
             <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">
-              v11.4.2
+              {EDDIE_BUILD.uiVersion}
             </span>
           </div>
           <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
@@ -288,7 +289,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between text-[11px] text-slate-400">
           <span>Arquitetura Event-Driven</span>
           <span className="text-[10px] font-mono font-bold text-sky-400">
-            v11.4.2
+            {EDDIE_BUILD.uiVersion}
           </span>
         </div>
       </div>

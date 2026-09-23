@@ -1,0 +1,17 @@
+{
+  "fase": "EDDIE 11.10.1",
+  "nome": "Centro de Operações UX Enterprise",
+  "baseline": "EDDIE 11.10",
+  "route": "/eventos/:eventoId/operacao",
+  "objetivos": [
+    "remover sidebar interna redundante",
+    "barra contextual do evento",
+    "reorganizar KPIs",
+    "aumentar área dos gráficos",
+    "saúde operacional",
+    "diagnóstico compacto",
+    "versão via build-info",
+    "responsividade sem scroll horizontal"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_10_1.md"
+}
