@@ -339,4 +339,15 @@ export class EventosService {
     return this.prisma.lote.update({where:{id},data});
   }
 
+  async resumoEventOs(tenantId: string, eventoId: string) {
+    const evento = await this.buscarDetalhado(tenantId, eventoId);
+    const ledger = await this.prisma.lancamentoLedger.findMany({ where: { tenantId, eventoId } });
+    const entradas = ledger.filter(x => x.tipo === 'entrada').reduce((a,x)=>a+Number(x.valor),0);
+    const saidas = ledger.filter(x => x.tipo === 'saida').reduce((a,x)=>a+Number(x.valor),0);
+    const vendidosEspelho = evento.sessoes.reduce((a,s)=>a+s.lotes.reduce((b,l)=>b+(l.vendidos || 0),0),0);
+    const capacidade = evento.sessoes.reduce((a,s)=>a+s.capacidadeTotal,0);
+    const dinheiro=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+    return { eventoId, nome:evento.nome, status:evento.status, capacidade, ingressosVendidos: vendidosEspelho, pedidosPagos: null, gmv: null, gmvFormatado:'—', saldo: entradas-saidas, saldoFormatado:dinheiro(entradas-saidas), fontePedidos:'Módulo transacional de pedidos ainda não persistido nesta API; não inferir pedido a partir de ingresso.', ledgerLancamentos:ledger.length };
+  }
+
 }

@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { eventOsMenu } from '../lib/eventOsCatalog';
 import {
   LayoutDashboard,
   Wallet,
@@ -96,6 +97,8 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const eventMatch = pathname.match(/^\/eventos\/([^/]+)/);
+  const activeEventId = eventMatch?.[1] || null;
 
   return (
     <aside className="w-64 bg-[#0d1322] border-r border-[#1e293b] flex flex-col shrink-0 min-h-screen">
@@ -149,6 +152,15 @@ export function Sidebar() {
                   </span>
                 )}
               </Link>
+              {item.href === '/eventos' && activeEventId && (
+                <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-sky-900 pl-2">
+                  <Link href="/eventos" className="block px-2 py-1 text-xs text-sky-400 hover:text-white">← Todos os Eventos</Link>
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-slate-500">Evento em operação</div>
+                  {eventOsMenu.map((sub) => { const SubIcon=sub.icon; const href=`/eventos/${activeEventId}/${sub.slug}`; return (
+                    <Link key={sub.slug} href={href} className={`flex items-center gap-2 px-2 py-1.5 rounded text-xs ${pathname===href?'text-sky-300 bg-sky-500/10':'text-slate-400 hover:text-white hover:bg-slate-800'}`}><SubIcon size={13}/>{sub.label}</Link>
+                  )})}
+                </div>
+              )}
               {item.href === '/marketing' && isActive && (
                 <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-slate-800 pl-2">
                   {[

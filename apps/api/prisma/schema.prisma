@@ -547,8 +547,17 @@ model CondicaoComercial {
   produtor                    ProdutorB2B @relation(fields: [produtorId], references: [id], onDelete: Cascade)
   /// ID do evento no schema eventos (escalar sem @relation cross-schema). Null = condição padrão do produtor
   eventoId                    String?     @db.Uuid
+  /// Modelo negociado para este produtor/evento: percentual | fixa | hibrida
+  modeloTaxa                  String      @default("percentual")
   taxaServicoPercentual       Decimal     @db.Decimal(5, 2)
+  /// Valor fixo por ingresso quando aplicável. Null = não contratado.
+  taxaServicoFixa             Decimal?    @db.Decimal(14, 2)
   taxaProcessamentoPercentual Decimal     @db.Decimal(5, 2)
+  /// Spread financeiro negociado especificamente para a condição.
+  spreadPercentual            Decimal?    @db.Decimal(5, 2)
+  /// Advanced/antecipação habilitado e sua taxa negociada.
+  advancedHabilitado          Boolean     @default(false)
+  advancedTaxaPercentual      Decimal?    @db.Decimal(5, 2)
   prazoRepasseDias            Int         @default(2)
   vigenciaInicio              DateTime
   vigenciaFim                 DateTime?

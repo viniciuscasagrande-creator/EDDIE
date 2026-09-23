@@ -11,6 +11,7 @@ export class EventosController {
   @Get('locais') listarLocais(@Headers('x-tenant-id') t?:string){return this.service.listarLocais(this.tenant(t))}
   @Get('produtor/:produtorId/contexto') resolverContexto(@Param('produtorId') p:string){return this.service.resolverContextoProdutor(p)}
   @Get('produtor/:produtorId') listarPorProdutor(@Param('produtorId') p:string,@Headers('x-tenant-id') t?:string){return this.service.listarPorProdutor(this.tenant(t),p)}
+  @Get(':id/os-resumo') resumoEventOs(@Param('id') id:string,@Headers('x-tenant-id') t?:string){return this.service.resumoEventOs(this.tenant(t),id)}
   @Get(':id') buscar(@Param('id') id:string,@Headers('x-tenant-id') t?:string){return this.service.buscarDetalhado(this.tenant(t),id)}
   @Post() criar(@Body() dto:CriarEventoDto,@Headers('x-tenant-id') t?:string,@Headers('x-user-id') u?:string){return this.service.criar(this.tenant(t),dto,this.ator(u))}
   @Patch(':id') @ApiOperation({summary:'Atualiza dados cadastrais do evento'}) atualizar(@Param('id') id:string,@Body() body:any,@Headers('x-tenant-id') t?:string){return this.service.atualizarEvento(this.tenant(t),id,body)}

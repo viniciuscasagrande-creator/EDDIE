@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Calendar,
   MapPin,
@@ -469,6 +470,8 @@ export default function EventosPage() {
                     >
                       {isSelected ? '✓ Contexto Ativo' : 'Operar Evento'}
                     </button>
+
+                    <Link href={`/eventos/${ev.id}/dashboard`} onClick={() => selecionarEvento(ev.id)} className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold">Abrir Event OS</Link>
 
                     {ev.status === 'rascunho' && (
                       <button
