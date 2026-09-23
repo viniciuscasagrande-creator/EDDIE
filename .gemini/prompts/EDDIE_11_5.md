@@ -1,0 +1,2 @@
+# Executar EDDIE 11.5
+Implante integralmente o núcleo transacional sem remover o Event OS 11.4.2. Rode Prisma generate/migrate, build da API e PDT. Corrija erros de tipagem preservando arquitetura. Não crie mocks. Valide os quatro endpoints de pedidos e `/eventos/:eventoId/ingressos`. Confirme que x-tenant-id e x-produtor-id chegam à API. Não marque pagamento como PAGO sem confirmação externa/idempotente.

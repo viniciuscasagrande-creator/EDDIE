@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte"]
+  schemas  = ["platform", "eventos", "inventario", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos"]
 }
 
 
@@ -944,3 +944,97 @@ model OcorrenciaEvento {
 
 
 
+
+
+// ============================================================================
+// PEDIDOS — núcleo transacional da venda de ingressos (EDDIE 11.5)
+// ============================================================================
+model ReservaVenda {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  produtorId  String   @db.Uuid
+  eventoId    String   @db.Uuid
+  loteId      String   @db.Uuid
+  quantidade  Int
+  status      String   @default("ATIVA")
+  expiraEm    DateTime
+  createdAt   DateTime @default(now())
+  @@index([tenantId, eventoId, status])
+  @@map("reservas")
+  @@schema("pedidos")
+}
+
+model PedidoVenda {
+  id                    String   @id @default(uuid()) @db.Uuid
+  numero                 String   @unique
+  tenantId               String   @db.Uuid
+  produtorId             String   @db.Uuid
+  eventoId               String   @db.Uuid
+  reservaId              String?  @db.Uuid
+  compradorNome          String
+  compradorDocumento     String?
+  compradorEmail         String?
+  compradorTelefone      String?
+  status                 String   @default("AGUARDANDO_PAGAMENTO")
+  subtotal                Decimal  @db.Decimal(14,2)
+  taxaDisk                Decimal  @db.Decimal(14,2)
+  total                   Decimal  @db.Decimal(14,2)
+  repasseProdutor         Decimal  @db.Decimal(14,2)
+  modeloTaxaSnapshot      String
+  taxaPercentualSnapshot  Decimal? @db.Decimal(5,2)
+  taxaFixaSnapshot        Decimal? @db.Decimal(14,2)
+  spreadSnapshot          Decimal? @db.Decimal(5,2)
+  advancedSnapshot        Boolean  @default(false)
+  prazoRepasseSnapshot    Int
+  createdAt               DateTime @default(now())
+  paidAt                  DateTime?
+  @@index([tenantId, eventoId, createdAt])
+  @@index([compradorDocumento])
+  @@map("pedidos")
+  @@schema("pedidos")
+}
+
+model ItemPedidoVenda {
+  id          String  @id @default(uuid()) @db.Uuid
+  pedidoId    String  @db.Uuid
+  loteId      String  @db.Uuid
+  quantidade  Int
+  valorUnitario Decimal @db.Decimal(14,2)
+  subtotal    Decimal @db.Decimal(14,2)
+  @@index([pedidoId])
+  @@map("itens_pedido")
+  @@schema("pedidos")
+}
+
+model PagamentoVenda {
+  id          String   @id @default(uuid()) @db.Uuid
+  pedidoId    String   @db.Uuid
+  tenantId    String   @db.Uuid
+  status      String   @default("PENDENTE")
+  metodo      String
+  adquirente  String?
+  transacaoId String?
+  nsu         String?
+  valor       Decimal  @db.Decimal(14,2)
+  pagoEm      DateTime?
+  createdAt   DateTime @default(now())
+  @@index([pedidoId, status])
+  @@map("pagamentos")
+  @@schema("pedidos")
+}
+
+model IngressoVenda {
+  id          String   @id @default(uuid()) @db.Uuid
+  numero      String   @unique
+  pedidoId    String   @db.Uuid
+  eventoId    String   @db.Uuid
+  loteId      String   @db.Uuid
+  status      String   @default("VALIDO")
+  qrTokenHash String   @unique
+  emitidoEm   DateTime @default(now())
+  utilizadoEm DateTime?
+  @@index([eventoId, status])
+  @@index([pedidoId])
+  @@map("ingressos")
+  @@schema("pedidos")
+}

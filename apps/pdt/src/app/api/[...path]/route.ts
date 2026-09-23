@@ -29,7 +29,10 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
   const tenantId = process.env.TENANT_ID || process.env.NEXT_PUBLIC_TENANT_ID || "";
   const produtorId = process.env.PRODUTOR_ID || process.env.NEXT_PUBLIC_PRODUTOR_ID || "";
   if (tenantId && !headers.has("x-tenant-id")) headers.set("x-tenant-id", tenantId);
-  if (produtorId && !headers.has("x-producer-id")) headers.set("x-producer-id", produtorId);
+  if (produtorId) {
+    if (!headers.has("x-producer-id")) headers.set("x-producer-id", produtorId);
+    if (!headers.has("x-produtor-id")) headers.set("x-produtor-id", produtorId);
+  }
   const abortCtrl = new AbortController();
   const abortTimer = setTimeout(() => abortCtrl.abort(), 5000);
   try {

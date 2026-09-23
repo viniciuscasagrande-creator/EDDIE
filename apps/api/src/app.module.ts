@@ -16,6 +16,7 @@ import { SacModule } from './modules/sac/sac.module';
 import { SuporteModule } from './modules/suporte/suporte.module';
 import { RelatoriosModule } from './modules/relatorios/relatorios.module';
 import { HealthController } from './health.controller';
+import { PedidosModule } from './modules/pedidos/pedidos.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
@@ -39,6 +40,7 @@ import { HealthController } from './health.controller';
     SacModule,
     SuporteModule,
     RelatoriosModule,
+    PedidosModule,
   ],
 })
 export class AppModule {}
