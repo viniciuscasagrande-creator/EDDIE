@@ -1,0 +1,12 @@
+# QA — EDDIE 11.13.3 — Concorrência + Alta Escala de Vendas
+- [ ] baseline
+- [ ] RBAC/tenant isolation
+- [ ] testes negativos
+- [ ] idempotência/concorrência quando aplicável
+- [ ] secrets/PII protegidos
+- [ ] falha parcial
+- [ ] logs/correlationId
+- [ ] reteste
+- [ ] typecheck/lint/test/build
+- [ ] nenhum stress destrutivo em produção
+- [ ] capacidade não inventada

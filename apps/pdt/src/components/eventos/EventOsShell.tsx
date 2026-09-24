@@ -20,6 +20,7 @@ import {
   Calendar,
   Compass,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 import { EventContextNav, NavItem } from '../event-operations/EventContextNav';
 
@@ -51,6 +52,7 @@ export function EventOsShell({
     { href: `/eventos/${eventoId}/configuracao/lotes`, label: 'Gestão de Lotes', icon: Layers, priority: false },
     { href: `/eventos/${eventoId}/configuracao/sessoes`, label: 'Sessões do Evento', icon: Calendar, priority: false },
     { href: `/eventos/${eventoId}/configuracao/setores`, label: 'Setores & Capacidade', icon: Map, priority: false },
+    { href: `/eventos/${eventoId}/hardening`, label: 'Hardening & Segurança', icon: ShieldCheck, priority: false },
   ];
 
   return (

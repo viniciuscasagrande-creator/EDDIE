@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.13.3 — Concorrência + Alta Escala de Vendas",
+  "baseline": "EDDIE_11_13_2_PERFORMANCE_BANCO_API_FRONTEND.zip",
+  "prompt": ".gemini/prompts/EDDIE_11_13_3.md",
+  "productionStressAllowed": false,
+  "requiresMeasuredEvidence": true
+}

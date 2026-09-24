@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.13.4 — Resiliência + Observabilidade + Recuperação",
+  "baseline": "EDDIE_11_13_3_CONCORRENCIA_ALTA_ESCALA_VENDAS.zip",
+  "prompt": ".gemini/prompts/EDDIE_11_13_4.md",
+  "productionStressAllowed": false,
+  "requiresMeasuredEvidence": true
+}

@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.13.2 — Performance + Banco + APIs + Frontend",
+  "baseline": "EDDIE_11_13_1_SEGURANCA_ENTERPRISE_RBAC_ISOLAMENTO.zip",
+  "prompt": ".gemini/prompts/EDDIE_11_13_2.md",
+  "productionStressAllowed": false,
+  "requiresMeasuredEvidence": true
+}

@@ -1,0 +1,12 @@
+# QA — EDDIE 11.13.2 — Performance + Banco + APIs + Frontend
+- [ ] baseline
+- [ ] RBAC/tenant isolation
+- [ ] testes negativos
+- [ ] idempotência/concorrência quando aplicável
+- [ ] secrets/PII protegidos
+- [ ] falha parcial
+- [ ] logs/correlationId
+- [ ] reteste
+- [ ] typecheck/lint/test/build
+- [ ] nenhum stress destrutivo em produção
+- [ ] capacidade não inventada

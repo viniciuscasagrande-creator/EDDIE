@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.13.1 — Segurança Enterprise + RBAC + Isolamento de Dados",
+  "baseline": "EDDIE_11_12_5_HOMOLOGACAO_INTELIGENCIA_QA.zip",
+  "prompt": ".gemini/prompts/EDDIE_11_13_1.md",
+  "productionStressAllowed": false,
+  "requiresMeasuredEvidence": true
+}

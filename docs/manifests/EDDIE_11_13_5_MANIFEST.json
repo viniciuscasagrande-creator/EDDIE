@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.13.5 — Stress Test + Homologação Enterprise",
+  "baseline": "EDDIE_11_13_4_RESILIENCIA_OBSERVABILIDADE_RECUPERACAO.zip",
+  "prompt": ".gemini/prompts/EDDIE_11_13_5.md",
+  "productionStressAllowed": false,
+  "requiresMeasuredEvidence": true
+}

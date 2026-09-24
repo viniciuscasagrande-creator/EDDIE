@@ -37,6 +37,12 @@ const menuItems = [
     badge: 'Enterprise',
   },
   {
+    label: 'Hardening & Segurança',
+    href: '/operacao/hardening',
+    icon: ShieldCheck,
+    badge: 'v11.13',
+  },
+  {
     label: 'Automações & Regras',
     href: '/automacoes',
     icon: Zap,
