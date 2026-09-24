@@ -1,5 +1,8 @@
 'use client';
-import Link from 'next/link';
-import { remarketingScreens } from '../../lib/marketingVideoCatalog';
-import MarketingExecutiveDashboard from '../../components/MarketingExecutiveDashboard';
-export default function RemarketingHub(){return <div className="space-y-7 p-4 md:p-6"><div><h1 className="text-3xl font-bold text-white">Remarketing & Recuperação</h1><p className="text-slate-400">Dashboard executivo de recuperação e motor operacional de carrinhos, pagamentos pendentes, WhatsApp, e-mail e reativação.</p></div><MarketingExecutiveDashboard grupo="remarketing"/><section><div className="mb-3"><h2 className="text-lg font-semibold text-white">Ferramentas de Remarketing</h2><p className="text-xs text-slate-500">Recuperação baseada somente em eventos e conversões reais disponíveis.</p></div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{remarketingScreens.filter(x=>x.slug!=='painel').map(x=>{const I=x.icon;return <Link key={x.slug} href={`/remarketing/${x.slug}`} className="group rounded-xl border border-slate-800 bg-slate-900 p-5 hover:border-orange-500"><div className="mb-4 flex items-center gap-3"><div className="rounded-lg bg-slate-950 p-3 text-orange-400"><I size={22}/></div><h2 className="font-semibold text-white">{x.titulo}</h2></div><p className="text-sm text-slate-400">{x.subtitulo}</p><div className="mt-4 text-xs font-semibold text-orange-400">Abrir módulo →</div></Link>})}</div></section></div>;}
+
+import React from 'react';
+import RemarketingWorkspace from '../../components/remarketing/RemarketingWorkspace';
+
+export default function RemarketingPage() {
+  return <RemarketingWorkspace />;
+}

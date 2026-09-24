@@ -1,5 +1,8 @@
 'use client';
-import Link from 'next/link';
-import { marketingScreens } from '../../lib/marketingVideoCatalog';
-import MarketingExecutiveDashboard from '../../components/MarketingExecutiveDashboard';
-export default function MarketingHub(){return <div className="space-y-6 max-w-7xl mx-auto"><div><div className="text-[10px] font-bold uppercase tracking-wider text-sky-400 mb-1">Módulo Oficial</div><h1 className="text-2xl font-bold text-white tracking-tight">Marketing & Aquisição</h1><p className="text-slate-400 text-xs">Dashboard executivo e central operacional de campanhas, mídia, CRM, tracking, atribuição e conversões.</p></div><MarketingExecutiveDashboard grupo="marketing"/><section><div className="mb-3"><h2 className="text-base font-semibold text-white">Ferramentas de Marketing</h2><p className="text-xs text-slate-500">Acesse as áreas operacionais mantendo o mesmo contexto de produtor e evento.</p></div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{marketingScreens.filter(x=>x.slug!=='painel').map(x=>{const I=x.icon;return <Link key={x.slug} href={`/marketing/${x.slug}`} className="group rounded-xl border border-slate-800 bg-[#131722] hover:bg-[#162032] p-5 hover:border-sky-500/50 transition"><div className="mb-4 flex items-center gap-3"><div className="rounded-lg bg-slate-950 p-3 text-sky-400"><I size={22}/></div><h2 className="font-semibold text-white">{x.titulo}</h2></div><p className="text-sm text-slate-400">{x.subtitulo}</p><div className="mt-4 text-xs font-semibold text-sky-400">Abrir módulo →</div></Link>})}</div></section></div>;}
+
+import React from 'react';
+import MarketingWorkspace from '../../components/marketing/MarketingWorkspace';
+
+export default function MarketingPage() {
+  return <MarketingWorkspace />;
+}

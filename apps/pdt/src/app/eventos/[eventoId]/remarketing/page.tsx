@@ -1,1 +1,10 @@
-import { EmptyChart } from '../../../../components/eventos/EventOsShell'; export default function Page(){return <div className="space-y-4"><h2 className="text-xl font-bold text-white">Remarketing do Evento</h2><p className="text-sm text-slate-400">Carrinho abandonado, recuperação de PIX, WhatsApp, e-mail e réguas de resgate no contexto deste evento.</p><div className="grid xl:grid-cols-2 gap-4"><EmptyChart title="Recuperação por canal"/><EmptyChart title="Conversões recuperadas"/></div></div>}
+'use client';
+
+import React from 'react';
+import { useParams } from 'next/navigation';
+import RemarketingWorkspace from '../../../../components/remarketing/RemarketingWorkspace';
+
+export default function EventRemarketingPage() {
+  const { eventoId } = useParams<{ eventoId: string }>();
+  return <RemarketingWorkspace eventoId={eventoId} />;
+}

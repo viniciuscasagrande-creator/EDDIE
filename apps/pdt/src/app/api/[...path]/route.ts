@@ -286,6 +286,285 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
   }
 
   // 3. MARKETING & REMARKETING
+  const isMarketingPath = fullPath.includes('marketing/');
+  const isRemarketingPath = fullPath.includes('remarketing/');
+
+  // 3.1 Marketing Dashboard
+  if (fullPath.endsWith('marketing/dashboard')) {
+    return NextResponse.json({
+      kpis: {
+        vendasAtribuidas: 4800000,
+        investimento: 800000,
+        roas: 6.0,
+        conversoes: 1420,
+        cpa: 31.69,
+        ctr: 3.85,
+        percentualGmv: '58.4%',
+      },
+      serieDiaria: [
+        { data: '2026-09-24', cliques: 840, conv: 64, gasto: 120000, receita: 820000, roas: 6.8 },
+        { data: '2026-09-23', cliques: 920, conv: 72, gasto: 135000, receita: 940000, roas: 7.0 },
+        { data: '2026-09-22', cliques: 710, conv: 48, gasto: 110000, receita: 650000, roas: 5.9 },
+        { data: '2026-09-21', cliques: 680, conv: 42, gasto: 105000, receita: 590000, roas: 5.6 },
+        { data: '2026-09-20', cliques: 1150, conv: 98, gasto: 180000, receita: 1280000, roas: 7.1 },
+      ],
+      campanhas: [
+        {
+          id: 'camp-1',
+          nome: 'Meta Ads · Lançamento Lote 1 Promocional',
+          canal: 'Meta Ads',
+          status: 'ATIVA',
+          orcamentoDiarioCents: 50000,
+          cliques: 3420,
+          conversoes: 142,
+          receitaAtribuidaCents: 2840000,
+        },
+        {
+          id: 'camp-2',
+          nome: 'Google Search · Palavras-Chave Nome do Artista',
+          canal: 'Google Search',
+          status: 'ATIVA',
+          orcamentoDiarioCents: 30000,
+          cliques: 1890,
+          conversoes: 98,
+          receitaAtribuidaCents: 1960000,
+        },
+      ],
+    });
+  }
+
+  // 3.2 Marketing Campanhas
+  if (fullPath.endsWith('marketing/campanhas')) {
+    return NextResponse.json([
+      {
+        id: 'camp-1',
+        nome: 'Meta Ads · Lançamento Lote 1 Promocional',
+        canal: 'Meta Ads',
+        status: 'ATIVA',
+        orcamentoDiarioCents: 50000,
+        cliques: 3420,
+        conversoes: 142,
+        receitaAtribuidaCents: 2840000,
+      },
+      {
+        id: 'camp-2',
+        nome: 'Google Search · Palavras-Chave Nome do Artista',
+        canal: 'Google Search',
+        status: 'ATIVA',
+        orcamentoDiarioCents: 30000,
+        cliques: 1890,
+        conversoes: 98,
+        receitaAtribuidaCents: 1960000,
+      },
+    ]);
+  }
+
+  // 3.3 Marketing Criativos
+  if (fullPath.endsWith('marketing/criativos')) {
+    return NextResponse.json([
+      {
+        id: 'cr-1',
+        titulo: 'Arte Principal Oficial · Lote 1',
+        formato: '1:1 Feed',
+        dimensao: '1080x1080',
+        status: 'APROVADO',
+        campanhasVinculadas: 2,
+        ctr: '4.2%',
+      },
+      {
+        id: 'cr-2',
+        titulo: 'Vídeo Teaser Oficial Artista',
+        formato: '9:16 Stories/Reels',
+        dimensao: '1080x1920',
+        status: 'APROVADO',
+        campanhasVinculadas: 1,
+        ctr: '5.8%',
+      },
+    ]);
+  }
+
+  // 3.4 Marketing Cupons
+  if (fullPath.endsWith('marketing/cupons')) {
+    return NextResponse.json([
+      {
+        id: 'cup-1',
+        codigo: 'PRIMEIRACOMPRA10',
+        tipo: 'porcentagem',
+        valor: 10,
+        limiteUsos: 500,
+        usosAtuais: 142,
+        vendasCents: 4970000,
+        ativo: true,
+      },
+      {
+        id: 'cup-2',
+        codigo: 'VIPDISK20',
+        tipo: 'porcentagem',
+        valor: 20,
+        limiteUsos: 100,
+        usosAtuais: 80,
+        vendasCents: 3200000,
+        ativo: true,
+      },
+    ]);
+  }
+
+  // 3.5 Marketing Pixels & Tracking
+  if (fullPath.endsWith('marketing/pixels')) {
+    return NextResponse.json([
+      {
+        nome: 'Meta Pixel & Conversions API (CAPI)',
+        id: '849201948102938',
+        status: 'ATIVO',
+        modo: 'Navegador + Servidor (CAPI)',
+        eventos: 'PageView, ViewContent, InitiateCheckout, Purchase',
+      },
+      {
+        nome: 'Google Tag Manager (GTM) & GA4',
+        id: 'GTM-DK9821',
+        status: 'ATIVO',
+        modo: 'Measurement Protocol',
+        eventos: 'begin_checkout, purchase, view_item',
+      },
+    ]);
+  }
+
+  // 3.6 Marketing Links / UTMs
+  if (fullPath.endsWith('marketing/links') || fullPath === 'marketing/utms') {
+    return NextResponse.json([
+      {
+        id: 'utm-1',
+        origem: 'instagram',
+        midia: 'stories',
+        campanha: 'lote1_lancamento',
+        cliques: 3420,
+        conversoes: 142,
+        receitaCents: 2840000,
+      },
+    ]);
+  }
+
+  // 3.7 Marketing Integrações
+  if (fullPath.endsWith('marketing/integracoes')) {
+    return NextResponse.json([
+      {
+        canal: 'Meta Ads',
+        status: 'CONECTADO',
+        conta: 'act_8941029410',
+        ultimaSincronizacao: new Date().toISOString(),
+      },
+      {
+        canal: 'Google Ads',
+        status: 'CONECTADO',
+        conta: 'cid_741-982-1049',
+        ultimaSincronizacao: new Date().toISOString(),
+      },
+      {
+        canal: 'TikTok Ads',
+        status: 'AGUARDANDO_INTEGRACAO',
+        conta: null,
+        ultimaSincronizacao: null,
+      },
+      {
+        canal: 'Spotify Ad Studio',
+        status: 'AGUARDANDO_INTEGRACAO',
+        conta: null,
+        ultimaSincronizacao: null,
+      },
+    ]);
+  }
+
+  // 3.8 Remarketing Dashboard
+  if (fullPath.endsWith('remarketing/dashboard')) {
+    return NextResponse.json({
+      kpis: {
+        publicosAtivos: 4820,
+        carrinhosAbandonados: 382,
+        carrinhosRecuperados: 164,
+        taxaRecuperacao: '42.9%',
+        receitaRecuperadaCents: 5845000,
+      },
+    });
+  }
+
+  // 3.9 Remarketing Carrinhos Abandonados
+  if (fullPath.endsWith('remarketing/carrinhos')) {
+    return NextResponse.json([
+      {
+        id: 'car-9821',
+        clienteNome: 'Mariana Silva',
+        email: 'mariana.silva@email.com',
+        telefone: '(41) 98765-4321',
+        setor: 'Pista Premium (2 ingressos)',
+        valorCents: 35000,
+        tempoAbandono: 'há 18 min',
+        canalEntrada: 'Meta Ads (Instagram)',
+        status: 'ABERTO',
+      },
+      {
+        id: 'car-9820',
+        clienteNome: 'Carlos Eduardo',
+        email: 'carlos.edu@gmail.com',
+        telefone: '(11) 99882-1244',
+        setor: 'Camarote Open Bar (1 ingresso)',
+        valorCents: 45000,
+        tempoAbandono: 'há 42 min',
+        canalEntrada: 'Google Search',
+        status: 'DISPARADO',
+      },
+      {
+        id: 'car-9819',
+        clienteNome: 'Fernanda Lima',
+        email: 'fe.lima@outlook.com',
+        telefone: '(41) 99123-8877',
+        setor: 'Pista Comum (3 ingressos)',
+        valorCents: 36000,
+        tempoAbandono: 'há 1h 15m',
+        canalEntrada: 'Orgânico',
+        status: 'RECUPERADO',
+      },
+    ]);
+  }
+
+  // 3.10 Remarketing Jornadas
+  if (fullPath.endsWith('remarketing/jornadas')) {
+    return NextResponse.json({
+      jornadaAtiva: true,
+      passos: [
+        { id: '1', kind: 'GATILHO', titulo: 'Visitou evento ou adicionou ao carrinho', ativo: true },
+        { id: '2', kind: 'CONDICAO', titulo: 'Não comprou após 30 minutos', ativo: true },
+        { id: '3', kind: 'ACAO', titulo: 'WhatsApp Oficial com link de 1-Clique', ativo: true },
+        { id: '4', kind: 'ESPERA', titulo: 'Aguardar 6 horas', ativo: true },
+        { id: '5', kind: 'DECISAO', titulo: 'Pedido foi concluído?', ativo: true },
+        { id: '6', kind: 'ACAO_REMARKETING', titulo: 'Retargeting Meta/Google/TikTok + E-mail Cupom', ativo: true },
+        { id: '7', kind: 'RESULTADO', titulo: 'Conversão & Registro no Ledger', ativo: true },
+      ],
+    });
+  }
+
+  // 3.11 Remarketing Conversões & Auditoria
+  if (fullPath.endsWith('remarketing/conversoes')) {
+    return NextResponse.json([
+      {
+        numero: 'PED-849102',
+        comprador: 'Mariana Silva',
+        canal: 'WhatsApp Oficial 1-Clique',
+        valorCents: 35000,
+        tempoResgate: '24 minutos após abandono',
+        correlationId: 'corr_mkt_984102941',
+      },
+      {
+        numero: 'PED-849098',
+        comprador: 'Carlos Eduardo',
+        canal: 'Retargeting Meta Ads (Instagram)',
+        valorCents: 45000,
+        tempoResgate: '4 horas após abandono',
+        correlationId: 'corr_mkt_984102888',
+      },
+    ]);
+  }
+
+  // 3.12 Marketing / Remarketing legado de vídeo screen
   if (fullPath.startsWith('marketing/video/')) {
     const isMkt = fullPath.includes('/marketing/');
     return NextResponse.json({
@@ -306,14 +585,6 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
           cliques: 3120,
           createdAt: '2026-09-20',
         },
-        {
-          id: 'row-2',
-          canal: 'Google Search',
-          receitaAtribuida: 1960000,
-          gastoAtual: 350000,
-          cliques: 2190,
-          createdAt: '2026-09-22',
-        },
       ],
       channels: [
         { label: 'Meta Ads', value: 2840000 },
@@ -321,47 +592,6 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
       ],
       notices: [],
     });
-  }
-
-  if (fullPath === 'marketing/campanhas') {
-    return NextResponse.json([
-      {
-        id: 'camp-1',
-        nome: 'Campanha Lote Promocional Meta Ads',
-        status: 'ativa',
-        orcamentoDiarioCents: 50000,
-        cliques: 3420,
-        conversoes: 142,
-        receitaAtribuidaCents: 2840000,
-      },
-      {
-        id: 'camp-2',
-        nome: 'Google Search DiskIngressos',
-        status: 'ativa',
-        orcamentoDiarioCents: 30000,
-        cliques: 1890,
-        conversoes: 98,
-        receitaAtribuidaCents: 1960000,
-      },
-    ]);
-  }
-
-  if (fullPath === 'marketing/utms') {
-    return NextResponse.json([]);
-  }
-
-  if (fullPath === 'marketing/cupons') {
-    return NextResponse.json([
-      {
-        id: 'cup-1',
-        codigo: 'PROMO10',
-        tipo: 'porcentagem',
-        valor: 10,
-        limiteUsos: 500,
-        usosAtuais: 124,
-        ativo: true,
-      },
-    ]);
   }
 
   // 4. COMERCIAL B2B
