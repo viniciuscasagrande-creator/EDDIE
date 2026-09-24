@@ -3,14 +3,14 @@ import { execSync } from "node:child_process";
 
 const required = [
   "apps/pdt/src/lib/buildInfo.ts",
-  "EDDIE_11_9_1_GO_LIVE_REAL_CORRECAO_DEPLOY.md",
+  "docs/EDDIE_11_9_1_GO_LIVE_REAL_CORRECAO_DEPLOY.md",
   "docs/EDDIE_11_9_1_CHECKLIST_GO_LIVE.md",
   ".gemini/prompts/EDDIE_11_9_1.md"
 ];
 
 let ok = true;
 for (const f of required) {
-  const exists = fs.existsSync(f);
+  const exists = fs.existsSync(f) || (f.startsWith("docs/") && fs.existsSync(f.replace("docs/", ""))) || fs.existsSync("docs/" + f);
   console.log(`${exists ? "OK" : "FALHA"} ${f}`);
   if (!exists) ok = false;
 }

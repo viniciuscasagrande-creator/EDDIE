@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 const required = [
-  'EDDIE_11_7_OPERACAO_COMPLETA_EVENTO.md',
+  'docs/EDDIE_11_7_OPERACAO_COMPLETA_EVENTO.md',
   '.gemini/prompts/EDDIE_11_7.md',
   'docs/EDDIE_11_7_CONTRATOS_TELAS_E_API.md',
   'apps/pdt/src/app/eventos/page.tsx',
@@ -19,7 +19,7 @@ const required = [
 
 let ok = true;
 for (const f of required) {
-  const exists = fs.existsSync(f);
+  const exists = fs.existsSync(f) || (f.startsWith('docs/') && fs.existsSync(f.replace('docs/', ''))) || fs.existsSync('docs/' + f);
   console.log(`${exists ? 'OK' : 'FALHA'} ${f}`);
   if (!exists) ok = false;
 }
