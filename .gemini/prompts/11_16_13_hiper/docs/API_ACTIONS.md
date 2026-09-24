@@ -1,0 +1,23 @@
+# API alvo — reutilizar equivalentes existentes
+POST /api/marketing/integrations/:provider/connect
+POST /api/marketing/integrations/:provider/reconnect
+POST /api/marketing/integrations/:provider/disconnect
+POST /api/marketing/integrations/:provider/test
+POST /api/marketing/integrations/:provider/sync
+POST /api/eventos/:eventId/marketing/campaigns
+PATCH /api/eventos/:eventId/marketing/campaigns/:id
+POST /api/eventos/:eventId/marketing/campaigns/:id/publish
+POST /api/eventos/:eventId/marketing/campaigns/:id/duplicate
+POST /api/eventos/:eventId/marketing/campaigns/:id/pause
+POST /api/eventos/:eventId/marketing/campaigns/:id/resume
+POST /api/eventos/:eventId/marketing/campaigns/:id/stop
+PATCH /api/eventos/:eventId/marketing/campaigns/:id/budget
+POST /api/eventos/:eventId/marketing/audiences
+POST /api/eventos/:eventId/marketing/creatives
+POST /api/eventos/:eventId/marketing/tracking/test-event
+POST /api/eventos/:eventId/marketing/sync
+GET /api/eventos/:eventId/marketing/diagnostics
+GET /api/eventos/:eventId/marketing/logs
+POST /api/eventos/:eventId/marketing/exports
+POST /api/eventos/:eventId/marketing/utm
+POST /api/eventos/:eventId/marketing/utm/:id/qr

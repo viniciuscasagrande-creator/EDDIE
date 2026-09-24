@@ -55,6 +55,9 @@ import {
 import { useProducerEvent } from '../ProducerEventContext';
 import { ModuleNavigation } from '../navigation/ModuleNavigation';
 import { CompactOperationalAlert } from '../navigation/CompactOperationalAlert';
+import { useMarketingAction } from './useMarketingAction';
+import { MarketingActionModal } from './MarketingActionModal';
+import type { MarketingAction, Provider } from '../../lib/marketing-actions/action-types';
 
 export type MarketingVideoTab =
   | 'dashboard'
@@ -85,7 +88,7 @@ const formatBRL = (cents = 0) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
 
 export default function MarketingWorkspace({ initialTab = 'dashboard', contextEventoId, eventoId }: MarketingWorkspaceProps) {
-  const { api, eventoId: globalEventoId, evento } = useProducerEvent();
+  const { api, produtorId, eventoId: globalEventoId, evento } = useProducerEvent();
   const effectiveEventoId = contextEventoId || eventoId || globalEventoId;
   const isContextual = Boolean(effectiveEventoId && effectiveEventoId !== 'todos');
 
@@ -216,13 +219,44 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
     carregarDados();
   }, [carregarDados]);
 
+  const {
+    phase: actionPhase,
+    currentAction,
+    lastResult: actionResult,
+    errorMsg: actionError,
+    triggerAction,
+    confirmPendingAction,
+    cancelPendingAction,
+    reset: resetAction,
+  } = useMarketingAction({
+    onSuccess: (res) => {
+      setFeedback({ tipo: 'success', texto: res.message });
+      void carregarDados();
+    },
+    onError: (err) => {
+      setFeedback({ tipo: 'error', texto: err.message });
+    },
+  });
+
   // Sincronizar Status Real
   const handleSincronizarStatusReal = () => {
-    setFeedback({ tipo: 'success', texto: 'Sincronização com Meta, Google, TikTok e Spotify executada com sucesso!' });
+    triggerAction('SYNC', {
+      produtorId,
+      eventoId: effectiveEventoId,
+      provider: 'META',
+    });
   };
 
   // Disparo de teste CAPI
   const handleEnviarPingCAPI = (canal: string) => {
+    const providerMap: Record<string, Provider> = {
+      'Meta Ads': 'META',
+      'Meta Ads CAPI': 'META',
+      'Spotify Ads': 'SPOTIFY',
+      'Google Analytics': 'GOOGLE',
+      'TikTok Ads': 'TIKTOK',
+    };
+    const provider: Provider = providerMap[canal] || 'META';
     const payload = {
       event_name: 'Purchase',
       event_time: Math.floor(Date.now() / 1000),
@@ -241,7 +275,12 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
       action_source: 'website',
     };
     setTestPayloadResult(JSON.stringify(payload, null, 2));
-    setFeedback({ tipo: 'success', texto: `Ping de teste CAPI enviado com sucesso para ${canal} (HTTP 200 OK)!` });
+    triggerAction('TEST_EVENT', {
+      produtorId,
+      eventoId: effectiveEventoId,
+      provider,
+      payload,
+    });
   };
 
   const urlGerada = useMemo(() => {
@@ -1334,7 +1373,7 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                   </svg>
                 </div>
                 <button
-                  onClick={() => alert('Download do arquivo SVG do QR Code iniciado.')}
+                  onClick={() => triggerAction('GENERATE_QR', { produtorId, eventoId: effectiveEventoId, payload: { url: urlGerada } })}
                   className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-semibold border border-slate-700"
                 >
                   <Download size={12} /> Baixar QR Code (SVG)
@@ -1490,7 +1529,7 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
               <p className="text-slate-400 text-xs">Consolidação de investimento, conversão, CPA, CAC e receita por evento.</p>
             </div>
             <button
-              onClick={() => alert('Download do Relatório de Marketing em CSV concluído.')}
+              onClick={() => triggerAction('EXPORT', { produtorId, eventoId: effectiveEventoId })}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700"
             >
               <Download size={13} /> Exportar Relatório CSV
@@ -1516,6 +1555,17 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
           </div>
         </div>
       )}
+
+      {/* Modal Operacional Padronizado */}
+      <MarketingActionModal
+        phase={actionPhase}
+        action={currentAction}
+        result={actionResult}
+        errorMsg={actionError}
+        onConfirm={confirmPendingAction}
+        onCancel={cancelPendingAction}
+        onCloseResult={resetAction}
+      />
     </div>
   );
 }

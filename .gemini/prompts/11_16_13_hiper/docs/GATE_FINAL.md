@@ -1,0 +1,12 @@
+# Gate
+- [ ] zero botão morto
+- [ ] zero segredo browser/log
+- [ ] zero status remoto falsamente confirmado
+- [ ] RBAC/ownership
+- [ ] idempotência/auditoria/correlationId
+- [ ] Meta/Google/TikTok/Spotify
+- [ ] WhatsApp/E-mail
+- [ ] jobs/webhooks/Status Real
+- [ ] conversões/atribuição/UTM
+- [ ] falha/retry testados
+- [ ] typecheck/lint/test/build

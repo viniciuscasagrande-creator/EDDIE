@@ -44,6 +44,9 @@ import {
 import { useProducerEvent } from '../ProducerEventContext';
 import { ModuleNavigation } from '../navigation/ModuleNavigation';
 import { CompactOperationalAlert } from '../navigation/CompactOperationalAlert';
+import { useMarketingAction } from '../marketing/useMarketingAction';
+import { MarketingActionModal } from '../marketing/MarketingActionModal';
+import type { MarketingAction, Provider } from '../../lib/marketing-actions/action-types';
 
 export type RemarketingTab =
   | 'dashboard'
@@ -263,25 +266,50 @@ export default function RemarketingWorkspace({
     carregarRemarketing();
   }, [carregarRemarketing]);
 
+  const {
+    phase: actionPhase,
+    currentAction,
+    lastResult: actionResult,
+    errorMsg: actionError,
+    triggerAction,
+    confirmPendingAction,
+    cancelPendingAction,
+    reset: resetAction,
+  } = useMarketingAction({
+    onSuccess: (res) => {
+      setFeedback({ tipo: 'success', texto: res.message });
+      void carregarRemarketing();
+    },
+    onError: (err) => {
+      setFeedback({ tipo: 'error', texto: err.message });
+    },
+  });
+
   // Disparo de recuperação manual
   const dispararRecuperacao = (carrinhoId: string, canal: 'whatsapp' | 'email') => {
+    triggerAction('RECOVER_CART', {
+      produtorId,
+      eventoId: activeEventoId,
+      carrinhoId,
+      canal,
+      channel: canal === 'whatsapp' ? 'WHATSAPP' : 'EMAIL',
+      provider: canal === 'whatsapp' ? 'WHATSAPP' : 'EMAIL',
+    });
     setCarrinhos((prev) =>
       prev.map((c) => (c.id === carrinhoId ? { ...c, status: 'DISPARADO' } : c))
     );
-    setFeedback({
-      tipo: 'success',
-      texto: `Disparo de recuperação via ${canal.toUpperCase()} enviado com sucesso para o carrinho #${carrinhoId}!`,
-    });
   };
 
   const dispararTodosAbertos = () => {
+    triggerAction('RECOVER_CART', {
+      produtorId,
+      eventoId: activeEventoId,
+      batch: true,
+      provider: 'WHATSAPP',
+    });
     setCarrinhos((prev) =>
       prev.map((c) => (c.status === 'ABERTO' ? { ...c, status: 'DISPARADO' } : c))
     );
-    setFeedback({
-      tipo: 'success',
-      texto: 'Régua de resgate automático disparada para todos os carrinhos abertos!',
-    });
   };
 
   const carrinhosFiltrados = useMemo(() => {
@@ -549,7 +577,14 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Audiências dinâmicas geradas a partir de eventos do checkout e navegação</p>
               </div>
               <button
-                onClick={() => alert('Público comportamental criado e sincronizado.')}
+                onClick={() =>
+                  triggerAction('CREATE_AUDIENCE', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    audienceName: 'Públicos Comportamentais Sincronizados',
+                    provider: 'META',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <Plus size={14} /> Criar Novo Público
@@ -619,7 +654,14 @@ export default function RemarketingWorkspace({
                   <div className="pt-2 border-t border-slate-800/80 flex justify-between items-center text-xs">
                     <span className="text-slate-400 text-[11px]">Sincronização: <b className="text-emerald-400">{pub.taxaAtivacao}</b></span>
                     <button
-                      onClick={() => alert(`Público "${pub.nome}" sincronizado com Meta CAPI e Google Ads.`)}
+                      onClick={() =>
+                        triggerAction('SYNC', {
+                          produtorId,
+                          eventoId: activeEventoId,
+                          audienceName: pub.nome,
+                          provider: 'META',
+                        })
+                      }
                       className="text-orange-400 hover:text-orange-300 font-semibold"
                     >
                       Sincronizar
@@ -644,7 +686,14 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Agrupamentos dinâmicos por propensão de compra, ticket médio e comportamento</p>
               </div>
               <button
-                onClick={() => alert('Segmento criado com sucesso.')}
+                onClick={() =>
+                  triggerAction('CREATE_AUDIENCE', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    segmentName: 'Novo Segmento Dinâmico',
+                    provider: 'GOOGLE',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <Plus size={14} /> Novo Segmento
@@ -726,7 +775,14 @@ export default function RemarketingWorkspace({
                       <div className="text-[10px] text-slate-400">Ticket médio: {brl(seg.ticketMedio)}</div>
                     </div>
                     <button
-                      onClick={() => alert(`Audiência do segmento "${seg.nome}" exportada com sucesso.`)}
+                      onClick={() =>
+                        triggerAction('EXPORT', {
+                          produtorId,
+                          eventoId: activeEventoId,
+                          format: 'CSV',
+                          segment: seg.nome,
+                        })
+                      }
                       className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500"
                     >
                       Exportar Base
@@ -934,7 +990,14 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Usuários que navegaram pelas páginas do evento sem iniciar carrinho nos últimos 7 dias</p>
               </div>
               <button
-                onClick={() => alert('Audiência de retargeting para visitantes criada no Meta Ads e Google Ads.')}
+                onClick={() =>
+                  triggerAction('CREATE_AUDIENCE', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    audienceType: 'VISITORS_RETARGETING',
+                    provider: 'META',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <Target size={14} /> Criar Audiência de Retargeting
@@ -1000,7 +1063,14 @@ export default function RemarketingWorkspace({
                         <div className="text-[10px] text-emerald-400">Checkout: {p.iniciaramCheckout}</div>
                       </div>
                       <button
-                        onClick={() => alert(`Campanha de anúncio criada para ${p.url}.`)}
+                        onClick={() =>
+                          triggerAction('CREATE_CAMPAIGN', {
+                            produtorId,
+                            eventoId: activeEventoId,
+                            targetUrl: p.url,
+                            provider: 'META',
+                          })
+                        }
                         className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-sans text-slate-200 hover:border-slate-500"
                       >
                         Ativar Anúncio
@@ -1026,7 +1096,15 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Base própria autorizada pelo produtor com consentimento LGPD ativo para pré-venda</p>
               </div>
               <button
-                onClick={() => alert('Disparo de pré-venda VIP enviado para compradores anteriores.')}
+                onClick={() =>
+                  triggerAction('SEND_WHATSAPP', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    audience: 'COMPRADORES_ANTERIORES',
+                    template: 'VIP_PRE_SALE',
+                    provider: 'WHATSAPP',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <Sparkles size={14} /> Disparar Convite VIP
@@ -1091,7 +1169,15 @@ export default function RemarketingWorkspace({
                       <div className="text-[10px] text-emerald-400">Opt-in: {ed.optinPct}</div>
                     </div>
                     <button
-                      onClick={() => alert(`Lote de convite VIP criado para ${ed.edicao}.`)}
+                      onClick={() =>
+                        triggerAction('CREATE_CAMPAIGN', {
+                          produtorId,
+                          eventoId: activeEventoId,
+                          edition: ed.edicao,
+                          type: 'VIP_INVITE',
+                          provider: 'WHATSAPP',
+                        })
+                      }
                       className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-sans text-slate-200 hover:border-slate-500"
                     >
                       Criar Pré-venda VIP
@@ -1116,7 +1202,14 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Compradores com 2 ou mais compras nos últimos 24 meses (LTV Elevado)</p>
               </div>
               <button
-                onClick={() => alert('Campanha de fidelidade ativada para clientes recorrentes.')}
+                onClick={() =>
+                  triggerAction('PUBLISH', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    audience: 'RECURRENT_VIP',
+                    provider: 'WHATSAPP',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <Zap size={14} /> Ativar Clube VIP
@@ -1288,7 +1381,14 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Jornadas e campanhas com contagem regressiva de reserva e cupons exclusivos</p>
               </div>
               <button
-                onClick={() => alert('Campanha de e-mail criada com sucesso.')}
+                onClick={() =>
+                  triggerAction('CREATE_CAMPAIGN', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    channel: 'EMAIL',
+                    provider: 'EMAIL',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <Plus size={14} /> Novo E-mail de Resgate
@@ -1358,7 +1458,14 @@ export default function RemarketingWorkspace({
                       <div className="text-[10px] text-emerald-400">Cliques: {mail.cliques}</div>
                     </div>
                     <button
-                      onClick={() => alert(`Editor de template aberto para "${mail.assunto}".`)}
+                      onClick={() =>
+                        triggerAction('EDIT', {
+                          produtorId,
+                          eventoId: activeEventoId,
+                          templateSubject: mail.assunto,
+                          provider: 'EMAIL',
+                        })
+                      }
                       className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-sans text-slate-200 hover:border-slate-500"
                     >
                       Editar HTML
@@ -1383,7 +1490,14 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Tráfego pago e disparos voltados exclusivamente para quem já conhece o evento</p>
               </div>
               <button
-                onClick={() => alert('Nova campanha de remarketing iniciada.')}
+                onClick={() =>
+                  triggerAction('CREATE_CAMPAIGN', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    category: 'REMARKETING_ADS',
+                    provider: 'META',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <Plus size={14} /> Nova Campanha Remarketing
@@ -1443,7 +1557,14 @@ export default function RemarketingWorkspace({
                       </td>
                       <td className="py-3.5 px-4 text-right font-sans">
                         <button
-                          onClick={() => alert(`Ajustando campanha "${cmp.nome}".`)}
+                          onClick={() =>
+                            triggerAction('EDIT', {
+                              produtorId,
+                              eventoId: activeEventoId,
+                              campaignName: cmp.nome,
+                              provider: cmp.canal === 'Meta Ads' ? 'META' : cmp.canal === 'Google Ads' ? 'GOOGLE' : 'WHATSAPP',
+                            })
+                          }
                           className="px-2.5 py-1 rounded border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500"
                         >
                           Gerenciar
@@ -1470,7 +1591,14 @@ export default function RemarketingWorkspace({
                 <p className="text-xs text-slate-400">Integrações de eventos em tempo real, webhooks e filas de processamento</p>
               </div>
               <button
-                onClick={() => alert('Webhook de teste disparado com sucesso.')}
+                onClick={() =>
+                  triggerAction('TEST_EVENT', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    eventName: 'cart_abandoned_ping',
+                    provider: 'META',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
               >
                 <RefreshCcw size={14} /> Testar Webhook
@@ -1537,7 +1665,14 @@ export default function RemarketingWorkspace({
               </div>
 
               <button
-                onClick={() => alert('Extrato de auditoria exportado com sucesso.')}
+                onClick={() =>
+                  triggerAction('EXPORT', {
+                    produtorId,
+                    eventoId: activeEventoId,
+                    format: 'CSV',
+                    reportType: 'AUDITORIA_CONVERSOES',
+                  })
+                }
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-slate-500 transition"
               >
                 <FileText size={14} /> Exportar Auditoria CSV
@@ -1678,7 +1813,15 @@ export default function RemarketingWorkspace({
                   <div className="pt-2 flex justify-between items-center text-xs border-t border-slate-800">
                     <span className="text-slate-500">Chave PIX Ativa</span>
                     <button
-                      onClick={() => alert(`Lembrete de PIX enviado para ${p.cliente} via SMS/WhatsApp.`)}
+                      onClick={() =>
+                        triggerAction('RECOVER_CART', {
+                          produtorId,
+                          eventoId: activeEventoId,
+                          pixId: p.id,
+                          cliente: p.cliente,
+                          provider: 'WHATSAPP',
+                        })
+                      }
                       className="text-emerald-400 hover:underline font-semibold"
                     >
                       Reenviar QR PIX
@@ -1690,6 +1833,17 @@ export default function RemarketingWorkspace({
           </div>
         </div>
       )}
+
+      {/* Modal Operacional Padronizado */}
+      <MarketingActionModal
+        phase={actionPhase}
+        action={currentAction}
+        result={actionResult}
+        errorMsg={actionError}
+        onConfirm={confirmPendingAction}
+        onCancel={cancelPendingAction}
+        onCloseResult={resetAction}
+      />
     </div>
   );
 }
