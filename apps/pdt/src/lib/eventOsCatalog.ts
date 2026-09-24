@@ -1,6 +1,7 @@
-import { LayoutDashboard, TicketCheck, Map, Wallet, Megaphone, RotateCcw, FileBarChart, Settings2, BarChart3, Tags, Radio, Link2, Activity, ScanLine, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, TicketCheck, Map, Wallet, Megaphone, RotateCcw, FileBarChart, Settings2, BarChart3, Tags, Radio, Link2, Activity, ScanLine, ShieldAlert, Sparkles } from 'lucide-react';
 export const eventOsMenu = [
  {slug:'operacao',label:'Centro de Operações (Ao Vivo)',icon:Activity},
+ {slug:'inteligencia',label:'Inteligência Operacional',icon:Sparkles},
  {slug:'dashboard',label:'Dashboard do Evento',icon:LayoutDashboard},
  {slug:'ingressos',label:'Ingressos & Pedidos',icon:TicketCheck},
  {slug:'portaria',label:'Portaria & Check-in',icon:ScanLine},
