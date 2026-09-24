@@ -61,6 +61,7 @@ const targetRoutes = [
   { path: '/eventos/evento-operacao/financeiro', name: 'evento_financeiro', label: 'Evento: Financeiro' },
   { path: '/eventos/evento-operacao/marketing', name: 'evento_marketing', label: 'Evento: Marketing' },
   { path: '/eventos/evento-operacao/remarketing', name: 'evento_remarketing', label: 'Evento: Remarketing' },
+  { path: '/eventos/evento-operacao/comercial', name: 'evento_comercial', label: 'Evento: Comercial B2B' },
   { path: '/eventos/evento-operacao/sala-situacao', name: 'evento_sala_situacao', label: 'Evento: Sala de Situação' },
   { path: '/eventos/evento-operacao/hardening', name: 'evento_hardening', label: 'Evento: Hardening' },
   { path: '/eventos/evento-operacao/e2e', name: 'evento_e2e', label: 'Evento: Ciclo E2E' },

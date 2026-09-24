@@ -12,6 +12,8 @@ export async function GET() {
     uiVersion: EDDIE_BUILD.uiVersion,
     release: EDDIE_BUILD.release,
     eventOs: true,
+    marker1117: 'EDDIE-11.17-COMERCIAL-ENTERPRISE',
+    marker111611: 'EDDIE-11.16.11-VIDEO-RECOVERY',
     marker1116: 'EDDIE-11.16-MARKETING-UI',
     marker11155: 'EDDIE-11.15.5-RELEASE-GATE',
     marker11154: 'EDDIE-11.15.4-DADOS-REAIS',

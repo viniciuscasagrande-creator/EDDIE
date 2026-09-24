@@ -564,6 +564,183 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     ]);
   }
 
+  // 3.11.1 Remarketing Segmentos
+  if (fullPath.endsWith('remarketing/segmentos')) {
+    return NextResponse.json([
+      { id: 'seg-1', nome: 'Compradores VIP & Camarotes', leads: 1420, ticketMedioCents: 58000, canais: ['WhatsApp', 'Meta CAPI'] },
+      { id: 'seg-2', nome: 'Abandonadores Recorrentes', leads: 3820, ticketMedioCents: 22000, canais: ['Cupom 5%', 'WhatsApp 1-Clique'] },
+      { id: 'seg-3', nome: 'Fãs do Gênero / Edições Passadas', leads: 5200, ticketMedioCents: 34000, canais: ['E-mail', 'Push'] },
+      { id: 'seg-4', nome: 'Carrinho Alto Valor (> R$ 500)', leads: 2400, ticketMedioCents: 74000, canais: ['Comercial'] },
+    ]);
+  }
+
+  // 3.11.2 Remarketing Visitou e Não Comprou
+  if (fullPath.endsWith('remarketing/visitou-nao-comprou')) {
+    return NextResponse.json({
+      visitantesUnicos: 28420,
+      visualizacoesPagina: 118420,
+      taxaRejeicao: 68.4,
+      retornaramRetargeting: 4210,
+      roasEstimado: 5.82,
+    });
+  }
+
+  // 3.11.3 Remarketing Compradores Anteriores
+  if (fullPath.endsWith('remarketing/compradores')) {
+    return NextResponse.json([
+      { edicao: 'Festival DiskIngressos Live 2025', compradores: 4820, optinPct: '88.4%', volumeCents: 98000000 },
+      { edicao: 'Turnê Acústica 2024', compradores: 2410, optinPct: '91.2%', volumeCents: 52000000 },
+      { edicao: 'Festival de Verão 2024', compradores: 1710, optinPct: '84.0%', volumeCents: 34000000 },
+    ]);
+  }
+
+  // 3.11.4 Remarketing Clientes Recorrentes
+  if (fullPath.endsWith('remarketing/recorrentes')) {
+    return NextResponse.json({
+      clientesVip: 2140,
+      ltvMedioCents: 94000,
+      recompraDias: 42,
+      churnAnualPct: 3.8,
+    });
+  }
+
+  // 3.11.5 Remarketing WhatsApp
+  if (fullPath.endsWith('remarketing/whatsapp')) {
+    return NextResponse.json({
+      statusApi: 'CONECTADO',
+      disparosHoje: 1420,
+      entregabilidadePct: 99.4,
+      taxaLeituraPct: 84.2,
+      taxaConversaoPct: 32.4,
+    });
+  }
+
+  // 3.11.6 Remarketing E-mail
+  if (fullPath.endsWith('remarketing/email')) {
+    return NextResponse.json({
+      statusDominio: 'AUTENTICADO_DKIM_SPF',
+      disparos30d: 84500,
+      entregabilidadePct: 99.2,
+      taxaAberturaPct: 34.8,
+      taxaCliquesCtorPct: 14.2,
+      receitaRecuperadaCents: 9840000,
+    });
+  }
+
+  // 3.11.7 Remarketing Campanhas
+  if (fullPath.endsWith('remarketing/campanhas')) {
+    return NextResponse.json([
+      { nome: 'Retargeting Reels', canal: 'Meta Ads', gastoCents: 45000, receitaCents: 284000, roas: 6.31, status: 'ATIVA' },
+      { nome: 'Google Search Retorno', canal: 'Google Ads', gastoCents: 32000, receitaCents: 196000, roas: 6.12, status: 'ATIVA' },
+      { nome: 'WhatsApp Massa Lote 1', canal: 'WhatsApp', gastoCents: 14200, receitaCents: 420000, roas: 29.57, status: 'CONCLUIDA' },
+    ]);
+  }
+
+  // 3.11.8 Remarketing Automações
+  if (fullPath.endsWith('remarketing/automacoes')) {
+    return NextResponse.json([
+      { nome: 'Webhook Abandono Storefront', latencia: '42ms', sucesso: '100%', processados: 382, status: 'OPERACIONAL' },
+      { nome: 'Gatilho Expiração PIX', latencia: '18ms', sucesso: '99.8%', processados: 124, status: 'OPERACIONAL' },
+      { nome: 'Sincronização CAPI RabbitMQ', latencia: '65ms', sucesso: '100%', processados: 4820, status: 'OPERACIONAL' },
+    ]);
+  }
+
+  // 3.11.9 Remarketing Relatórios
+  if (fullPath.endsWith('remarketing/relatorios')) {
+    return NextResponse.json({
+      custoTotalCents: 24850,
+      receitaTotalRecuperadaCents: 5845000,
+      pedidosSalvos: 164,
+      roi: '235.2x',
+    });
+  }
+
+  // 3.12 EDDIE 11.16.11 — Endpoints de Recuperação Integral do Vídeo
+  if (fullPath.endsWith('marketing/status-real')) {
+    return NextResponse.json([
+      { canal: 'Meta Ads', nome: 'Carrossel Line-up Atrações (ID: 849201)', statusPlat: 'ATIVA', statusReal: 'ENTREGANDO', imp: 14200, cli: 642, gasto: 15000, diag: 'Entrega saudável; CPM estável a R$ 10,50' },
+      { canal: 'Google Ads', nome: 'Search Palavras-Chave Nome Artista', statusPlat: 'ATIVA', statusReal: 'ENTREGANDO', imp: 5800, cli: 410, gasto: 12000, diag: 'Índice de qualidade 9/10; parcela de impressões 84%' },
+      { canal: 'Spotify Ads', nome: 'Retargeting Ouvintes Música (ID: 9812)', statusPlat: 'EM_ANALISE', statusReal: 'EM_ANALISE', imp: 0, cli: 0, gasto: 0, diag: 'Áudio em fila de moderação pela equipe do Spotify' },
+      { canal: 'TikTok Ads', nome: 'Spark Ads Vídeo Teaser Oficial', statusPlat: 'ATIVA', statusReal: 'ENTREGANDO', imp: 22400, cli: 890, gasto: 18000, diag: 'Taxa de conclusão de 6 segundos em 42%' },
+    ]);
+  }
+
+  if (fullPath.startsWith('marketing/google-analytics/')) {
+    if (fullPath.endsWith('funnel')) {
+      return NextResponse.json([
+        { step: 'page_view', qtd: 42850, pct: '100%' },
+        { step: 'view_item', qtd: 24200, pct: '56.4%' },
+        { step: 'add_to_cart', qtd: 8400, pct: '19.6%' },
+        { step: 'begin_checkout', qtd: 4100, pct: '9.5%' },
+        { step: 'purchase', qtd: 1840, pct: '4.2%' },
+      ]);
+    }
+    return NextResponse.json({
+      usuariosAtivos: 42850,
+      visualizacoes: 118420,
+      taxaEngajamento: 64.2,
+      receitaEcommerceCents: 4800000,
+    });
+  }
+
+  if (fullPath.startsWith('marketing/tiktok/')) {
+    return NextResponse.json({
+      investimentoCents: 120000,
+      videoViews: 84200,
+      roas: 4.2,
+      ingressosVendidos: 36,
+      cpaCents: 3333,
+    });
+  }
+
+  if (fullPath.startsWith('marketing/spotify/')) {
+    return NextResponse.json({
+      investimentoCents: 120000,
+      ouvintesUnicos: 28400,
+      conclusaoAudioPercentual: 94.2,
+      receitaAtribuidaCents: 680000,
+      roas: 5.66,
+      eventosCapi: [
+        { tipo: 'VIEW', timestamp: new Date(Date.now() - 60000).toISOString(), status: '200 OK' },
+        { tipo: 'CHECKOUT', timestamp: new Date(Date.now() - 300000).toISOString(), status: '200 OK' },
+        { tipo: 'PURCHASE', timestamp: new Date(Date.now() - 600000).toISOString(), status: '200 OK' },
+      ],
+    });
+  }
+
+  if (fullPath.startsWith('marketing/email/')) {
+    return NextResponse.json({
+      emailsDisparados: 84500,
+      entregabilidadePercentual: 99.2,
+      taxaAberturaPercentual: 34.8,
+      cliquesCtorPercentual: 14.2,
+      receitaCents: 980000,
+    });
+  }
+
+  if (fullPath.startsWith('marketing/utm')) {
+    return NextResponse.json({
+      totalUrls: 14,
+      visitas: 42850,
+      vendas: 240,
+      receitaCents: 4800000,
+      ticketMedioCents: 20000,
+      conversaoPercentual: 4.52,
+    });
+  }
+
+  if (fullPath.startsWith('marketing/attribution/')) {
+    return NextResponse.json({
+      modelos: [
+        { modelo: 'Último Clique', roasMeta: '5.68x', roasGoogle: '6.53x' },
+        { modelo: 'Primeiro Clique', roasMeta: '6.42x', roasGoogle: '4.80x' },
+        { modelo: 'Linear', roasMeta: '6.10x', roasGoogle: '5.85x' },
+        { modelo: 'Data-Driven', roasMeta: '6.25x', roasGoogle: '6.20x' },
+      ],
+    });
+  }
+
+
   // 3.12 Marketing / Remarketing legado de vídeo screen
   if (fullPath.startsWith('marketing/video/')) {
     const isMkt = fullPath.includes('/marketing/');
@@ -704,6 +881,109 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
       },
     });
   }
+
+  if (fullPath === 'comercial/advanced') {
+    return NextResponse.json([
+      {
+        id: 'adv-1',
+        produtorId: '00000000-0000-0000-0000-000000000002',
+        produtorNome: 'Live Nation Brasil',
+        eventoId: 'evento-operacao',
+        eventoNome: 'Festival DiskIngressos Live 2026',
+        valorSolicitadoCents: 5000000,
+        taxaSpreadMensal: 1.8,
+        reservaContingenciaPercent: 15,
+        justificativa: 'Adiantamento de bilheteria para montagem do palco principal',
+        status: 'APROVADO',
+        aprovadoPor: 'Comitê de Crédito e Risco',
+        aprovadoEm: '2026-09-18T10:00:00Z',
+      },
+      {
+        id: 'adv-2',
+        produtorId: 'prod-02',
+        produtorNome: 'Opus Entretenimento',
+        eventoId: 'evento-turne-rock',
+        eventoNome: 'Turnê Nacional Rock Fest 2026',
+        valorSolicitadoCents: 2500000,
+        taxaSpreadMensal: 1.8,
+        reservaContingenciaPercent: 15,
+        justificativa: 'Adiantamento de cachê internacional',
+        status: 'EM_ANALISE',
+      },
+    ]);
+  }
+
+  if (fullPath === 'comercial/propostas') {
+    return NextResponse.json([
+      {
+        id: 'prop-1',
+        codigo: 'PROP-2026-084',
+        versao: 'v1.2',
+        produtorId: '00000000-0000-0000-0000-000000000002',
+        produtorNome: 'Live Nation Brasil',
+        eventoNome: 'Festival DiskIngressos Live 2026',
+        taxaNegociada: 10.0,
+        validadeAte: '2026-10-31',
+        aprovacaoInterna: 'Homologada',
+        status: 'ASSINADO',
+      },
+      {
+        id: 'prop-2',
+        codigo: 'PROP-2026-092',
+        versao: 'v1.0',
+        produtorId: 'prod-02',
+        produtorNome: 'Opus Entretenimento',
+        eventoNome: 'Turnê Nacional Rock Fest 2026',
+        taxaNegociada: 9.5,
+        validadeAte: '2026-11-15',
+        aprovacaoInterna: 'Em Análise',
+        status: 'ENVIADO',
+      },
+    ]);
+  }
+
+  if (fullPath === 'comercial/parceiros-agencias') {
+    return NextResponse.json([
+      {
+        id: 'agc-1',
+        nome: 'CVC Brasil Operadora e Agência de Viagens',
+        cnpj: '10.762.983/0001-21',
+        cadastur: '26.012345.10.0001-8',
+        contatoNome: 'Luciana Martins',
+        email: 'eventos@cvc.com.br',
+        telefone: '(11) 2191-8000',
+        cotaIngressos: 500,
+        vouchersEmitidos: 215,
+        comissaoPercentual: 12.0,
+        status: 'Ativo',
+      },
+      {
+        id: 'agc-2',
+        nome: 'Receptivo Curitiba Turismo & Eventos',
+        cnpj: '04.892.112/0001-90',
+        cadastur: '18.998231.10.0001-2',
+        contatoNome: 'Eduardo Guimarães',
+        email: 'contato@receptivocuritiba.com.br',
+        telefone: '(41) 3012-9900',
+        cotaIngressos: 300,
+        vouchersEmitidos: 110,
+        comissaoPercentual: 10.0,
+        status: 'Ativo',
+      },
+    ]);
+  }
+
+  if (fullPath === 'comercial/dashboard') {
+    return NextResponse.json({
+      produtoresAtivos: 2,
+      eventosContratados: 4,
+      totalGMVPipelineCents: 43000000,
+      totalGMVPonderadoCents: 28500000,
+      taxaMediaPercentual: 10.0,
+      contratosVigentes: 2,
+    });
+  }
+
 
   // 5. CONTABILIDADE
   if (fullPath.startsWith('contabilidade/dre')) {

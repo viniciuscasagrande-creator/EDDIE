@@ -1,0 +1,15 @@
+# Gate final 11.16.12
+- [ ] 17 telas Marketing
+- [ ] 14 telas Remarketing
+- [ ] matriz de paridade preenchida
+- [ ] nenhuma função útil perdida
+- [ ] contexto Produtor → Evento
+- [ ] RBAC/isolamento
+- [ ] providers com status real
+- [ ] sem mock rotulado como real
+- [ ] sem tela branca
+- [ ] sem erro JS bloqueante
+- [ ] sem overflow global
+- [ ] desktop/mobile
+- [ ] typecheck/lint/test/build
+- [ ] relatório final

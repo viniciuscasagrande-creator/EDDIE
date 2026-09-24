@@ -1,2 +1,13 @@
-import { notFound } from 'next/navigation'; import MarketingVideoScreen from '../../../components/MarketingVideoScreen'; import { findVideoScreen } from '../../../lib/marketingVideoCatalog';
-export default async function Page({params}:{params:Promise<{slug:string}>}){const {slug}=await params; const c=findVideoScreen('remarketing',slug); if(!c)notFound(); return <MarketingVideoScreen config={c}/>;}
+'use client';
+
+import React, { use } from 'react';
+import RemarketingWorkspace from '../../../components/remarketing/RemarketingWorkspace';
+
+export default function RemarketingSlugPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const resolvedParams = use(params);
+  return <RemarketingWorkspace initialTab={resolvedParams.slug} />;
+}

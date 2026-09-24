@@ -1,0 +1,18 @@
+# QA das 17 telas
+- [ ] Dashboard Marketing: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Campanhas Multicanais: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Campanhas Prontas: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Status Real: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Meta Ads & Pixel: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Google Analytics: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] TikTok Ads: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Spotify Ads: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] WhatsApp Marketing: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] E-mail Marketing: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Automações & Jornadas: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Cupons & Descontos: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Central UTM & Links: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Afiliados & Promoters: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Pixels & Conversões: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Atribuição Multicanal: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida
+- [ ] Relatórios de Marketing: rota abre, conteúdo funcional, estados, responsivo, sem erro JS, fonte de dados válida

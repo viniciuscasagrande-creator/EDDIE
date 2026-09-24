@@ -32,21 +32,40 @@ import {
   Smartphone,
   ChevronRight,
   Search,
+  SlidersHorizontal,
+  Layers,
+  Lock,
+  Share2,
+  FileText,
+  Sparkles,
+  CheckCheck,
+  Globe,
 } from 'lucide-react';
 import { useProducerEvent } from '../ProducerEventContext';
+import { ModuleNavigation } from '../navigation/ModuleNavigation';
+import { CompactOperationalAlert } from '../navigation/CompactOperationalAlert';
 
 export type RemarketingTab =
   | 'dashboard'
-  | 'carrinhos'
-  | 'jornadas'
   | 'publicos'
-  | 'whatsapp_email'
-  | 'pix_pendente'
-  | 'conversoes_auditoria'
-  | 'relatorios';
+  | 'segmentos'
+  | 'jornadas'
+  | 'carrinho'
+  | 'visitou-nao-comprou'
+  | 'compradores'
+  | 'recorrentes'
+  | 'whatsapp'
+  | 'email'
+  | 'campanhas'
+  | 'automacoes'
+  | 'conversoes'
+  | 'relatorios'
+  | 'pix_pendente';
 
 interface RemarketingWorkspaceProps {
-  eventoId?: string;
+  initialTab?: string;
+  contextEventoId?: string | null;
+  eventoId?: string | null;
 }
 
 const brl = (v: number | string | null | undefined) =>
@@ -55,12 +74,53 @@ const brl = (v: number | string | null | undefined) =>
 const fmtNum = (v: number | string | null | undefined) =>
   new Intl.NumberFormat('pt-BR').format(Number(v || 0));
 
-export default function RemarketingWorkspace({ eventoId: propEventoId }: RemarketingWorkspaceProps) {
+const normalizeTab = (t?: string): RemarketingTab => {
+  if (!t) return 'dashboard';
+  if (t === 'carrinhos' || t === 'carrinho-abandonado') return 'carrinho';
+  if (t === 'compradores-anteriores') return 'compradores';
+  if (t === 'clientes-recorrentes') return 'recorrentes';
+  if (t === 'recuperacao-whatsapp' || t === 'whatsapp_email') return 'whatsapp';
+  if (t === 'recuperacao-email') return 'email';
+  if (t === 'conversoes_auditoria' || t === 'conversoes-recuperadas') return 'conversoes';
+  if (t === 'painel') return 'dashboard';
+  if (t === 'pix-pagamentos') return 'pix_pendente';
+  const valid: RemarketingTab[] = [
+    'dashboard',
+    'publicos',
+    'segmentos',
+    'jornadas',
+    'carrinho',
+    'visitou-nao-comprou',
+    'compradores',
+    'recorrentes',
+    'whatsapp',
+    'email',
+    'campanhas',
+    'automacoes',
+    'conversoes',
+    'relatorios',
+    'pix_pendente',
+  ];
+  return valid.includes(t as RemarketingTab) ? (t as RemarketingTab) : 'dashboard';
+};
+
+export default function RemarketingWorkspace({
+  initialTab = 'dashboard',
+  contextEventoId,
+  eventoId: propEventoId,
+}: RemarketingWorkspaceProps) {
   const { api, produtorId, eventoId: ctxEventoId, evento, eventos } = useProducerEvent();
-  const activeEventoId = propEventoId || ctxEventoId || 'evento-operacao';
+  const activeEventoId = contextEventoId || propEventoId || ctxEventoId || 'evento-operacao';
   const activeEvento = eventos.find((e) => e.id === activeEventoId) || evento;
 
-  const [tab, setTab] = useState<RemarketingTab>('dashboard');
+  const [tab, setTab] = useState<RemarketingTab>(() => normalizeTab(initialTab));
+
+  useEffect(() => {
+    if (initialTab) {
+      setTab(normalizeTab(initialTab));
+    }
+  }, [initialTab]);
+
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [feedback, setFeedback] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
@@ -236,6 +296,23 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
     });
   }, [carrinhos, filtroStatusCarrinho, buscaCarrinho]);
 
+  const REMARKETING_NAV_ITEMS = [
+    { id: 'dashboard', label: 'Dashboard Remarketing', icon: <TrendingUp size={16} /> },
+    { id: 'publicos', label: 'Públicos', icon: <Users size={16} /> },
+    { id: 'segmentos', label: 'Segmentos', icon: <Target size={16} /> },
+    { id: 'jornadas', label: 'Jornadas de Remarketing', icon: <Workflow size={16} /> },
+    { id: 'carrinho', label: 'Carrinho Abandonado', icon: <ShoppingCart size={16} /> },
+    { id: 'visitou-nao-comprou', label: 'Visitou e Não Comprou', icon: <Eye size={16} /> },
+    { id: 'compradores', label: 'Compradores Anteriores', icon: <Users size={16} /> },
+    { id: 'recorrentes', label: 'Clientes Recorrentes', icon: <RotateCcw size={16} /> },
+    { id: 'whatsapp', label: 'Recuperação WhatsApp', icon: <MessageCircle size={16} /> },
+    { id: 'email', label: 'Recuperação E-mail', icon: <Mail size={16} /> },
+    { id: 'campanhas', label: 'Campanhas de Remarketing', icon: <Zap size={16} /> },
+    { id: 'automacoes', label: 'Automações de Remarketing', icon: <Workflow size={16} /> },
+    { id: 'conversoes', label: 'Conversões Recuperadas', icon: <ShieldCheck size={16} /> },
+    { id: 'relatorios', label: 'Relatórios de Remarketing', icon: <FileBarChart size={16} /> },
+  ];
+
   return (
     <div className="space-y-6 max-w-[1800px] mx-auto text-slate-100 pb-16">
       {/* CABEÇALHO DA CENTRAL DE REMARKETING */}
@@ -251,9 +328,9 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 RÉGUA AUTOMATIZADA EM TEMPO REAL
               </span>
-              {propEventoId ? (
+              {activeEventoId && activeEventoId !== 'todos' ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs font-medium text-purple-300 border border-purple-500/20">
-                  Evento Específico: <b>{activeEvento?.nome}</b>
+                  Evento: <b>{activeEvento?.nome || activeEventoId}</b>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-2.5 py-0.5 text-xs font-medium text-slate-300 border border-slate-700">
@@ -263,7 +340,7 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
             </div>
 
             <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight">
-              Central de Remarketing {propEventoId ? `· ${activeEvento?.nome}` : ''}
+              Central de Remarketing {activeEvento?.nome ? `· ${activeEvento.nome}` : ''}
             </h1>
             <p className="text-xs lg:text-sm text-slate-400 max-w-3xl">
               Recupere carrinhos abandonados, PIX expirando e reative clientes de edições anteriores sem pagar por novos cliques de tráfego pago.
@@ -310,36 +387,13 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
         </div>
       )}
 
-      {/* BARRA DE NAVEGAÇÃO DE ABAS */}
-      <div className="flex border-b border-slate-800 overflow-x-auto gap-2 text-xs scrollbar-none pb-1">
-        {[
-          { id: 'dashboard', label: 'Dashboard de Resgate', icon: TrendingUp },
-          { id: 'carrinhos', label: 'Carrinhos Abandonados', icon: ShoppingCart },
-          { id: 'jornadas', label: 'Construtor de Jornada', icon: Workflow },
-          { id: 'publicos', label: 'Públicos Comportamentais', icon: Users },
-          { id: 'whatsapp_email', label: 'Resgate WhatsApp & E-mail', icon: MessageCircle },
-          { id: 'pix_pendente', label: 'PIX & Pagamentos Pendentes', icon: CreditCard },
-          { id: 'conversoes_auditoria', label: 'Conversões & Auditoria', icon: ShieldCheck },
-          { id: 'relatorios', label: 'Relatórios de Retenção', icon: FileBarChart },
-        ].map((t) => {
-          const Icon = t.icon;
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id as RemarketingTab)}
-              className={`flex items-center gap-2 px-4 py-3 font-semibold rounded-t-xl transition whitespace-nowrap border-b-2 ${
-                active
-                  ? 'border-orange-500 bg-orange-500/10 text-white'
-                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-              }`}
-            >
-              <Icon size={16} className={active ? 'text-orange-400' : 'text-slate-500'} />
-              <span>{t.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* BARRA DE NAVEGAÇÃO COMPLETA (14 DESTINOS PARIDADE EDDIE 11.16.12) */}
+      <ModuleNavigation
+        items={REMARKETING_NAV_ITEMS}
+        activeItem={tab}
+        onSelect={(id) => setTab(id as RemarketingTab)}
+        ariaLabel="Navegação de Remarketing e Resgate"
+      />
 
       {/* 1. ABA DASHBOARD */}
       {tab === 'dashboard' && (
@@ -399,82 +453,83 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
                   <h2 className="text-base font-bold text-white flex items-center gap-2">
                     <TrendingUp size={18} className="text-orange-400" /> Funil de Eficiência de Resgate
                   </h2>
-                  <p className="text-xs text-slate-400">
-                    Conversão em cada estágio da régua multicanal de remarketing.
-                  </p>
+                  <p className="text-xs text-slate-400">Progresso do cliente desde o abandono até a liquidação no Ledger</p>
                 </div>
+                <span className="text-xs text-slate-400 font-mono">Últimas 24 horas</span>
               </div>
 
-              <div className="space-y-3.5">
+              <div className="space-y-3">
                 {[
-                  {
-                    etapa: '1. Carrinho Abandonado no Checkout',
-                    qtd: 382,
-                    taxa: '100%',
-                    bar: 'w-full bg-slate-700',
-                  },
-                  {
-                    etapa: '2. Disparo Automático (WhatsApp / E-mail)',
-                    qtd: 360,
-                    taxa: '94.2% entrega',
-                    bar: 'w-[94%] bg-sky-600',
-                  },
-                  {
-                    etapa: '3. Sessão Reaberta pelo Link de 1-Clique',
-                    qtd: 238,
-                    taxa: '62.3% abertura',
-                    bar: 'w-[62%] bg-purple-600',
-                  },
-                  {
-                    etapa: '4. Pedido Concluído e Pago com Sucesso',
-                    qtd: 164,
-                    taxa: '42.9% conversão',
-                    bar: 'w-[43%] bg-emerald-500',
-                  },
-                ].map((f) => (
-                  <div key={f.etapa} className="space-y-1.5">
+                  { etapa: '1. Carrinho Abandonado no Checkout', qtd: 382, pct: '100%', cor: 'bg-slate-700' },
+                  { etapa: '2. Disparo de WhatsApp / E-mail', qtd: 348, pct: '91.1%', cor: 'bg-sky-600' },
+                  { etapa: '3. Link Aberto pelo Cliente (1-Clique)', qtd: 242, pct: '63.3%', cor: 'bg-amber-600' },
+                  { etapa: '4. Pagamento Confirmado & Liquidado', qtd: 164, pct: '42.9%', cor: 'bg-emerald-600' },
+                ].map((item) => (
+                  <div key={item.etapa} className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-300 font-medium">{f.etapa}</span>
+                      <span className="text-slate-300 font-medium">{item.etapa}</span>
                       <span className="text-white font-mono font-bold">
-                        {f.qtd} pedidos ({f.taxa})
+                        {fmtNum(item.qtd)} <span className="text-slate-500 font-normal">({item.pct})</span>
                       </span>
                     </div>
-                    <div className="w-full bg-slate-900 rounded-full h-3 overflow-hidden">
-                      <div className={`h-3 rounded-full ${f.bar}`} />
+                    <div className="h-2 w-full bg-slate-800/80 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${item.cor}`} style={{ width: item.pct }} />
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Acesso rápido às Jornadas */}
-            <div className="rounded-2xl border border-slate-800 bg-[#121620] p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Workflow size={18} className="text-orange-400" /> Status da Régua
-                </h2>
-                <span className="inline-flex rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                  ATIVA
-                </span>
+            {/* STATUS DOS DISPARADORES AUTOMÁTICOS */}
+            <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <ShieldCheck size={18} className="text-emerald-400" /> Canais Oficiais de Resgate
+              </h2>
+
+              <div className="space-y-3">
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-white flex items-center gap-1.5">
+                      <MessageCircle size={14} className="text-emerald-400" /> WhatsApp Oficial (Cloud API)
+                    </span>
+                    <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                      CONECTADO
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">Régua: 15m após abandono com botão 1-clique</div>
+                </div>
+
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-white flex items-center gap-1.5">
+                      <Mail size={14} className="text-sky-400" /> E-mail Transacional de Urgência
+                    </span>
+                    <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                      CONECTADO
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">Régua: 2h após abandono com cupom reserva</div>
+                </div>
+
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-white flex items-center gap-1.5">
+                      <CreditCard size={14} className="text-purple-400" /> Monitor de PIX Expirando
+                    </span>
+                    <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                      ATIVO
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">Reenvio de QR PIX faltando 5 minutos</div>
+                </div>
               </div>
 
-              <div className="space-y-3 text-xs">
-                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-1">
-                  <div className="text-slate-400">Jornada Principal</div>
-                  <div className="font-bold text-white">Resgate de Carrinho em 3 Estágios</div>
-                  <div className="text-[11px] text-emerald-400 mt-1">48 conversões nas últimas 24h</div>
-                </div>
-
-                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-1">
-                  <div className="text-slate-400">Canais Ativos</div>
-                  <div className="font-bold text-white">WhatsApp Oficial + E-mail + Meta Retargeting</div>
-                </div>
-
+              <div className="pt-2">
                 <button
-                  onClick={() => setTab('jornadas')}
-                  className="w-full py-2.5 rounded-xl bg-orange-600/20 border border-orange-500/30 text-orange-300 hover:bg-orange-600/30 font-bold transition text-center block"
+                  onClick={() => setTab('carrinho')}
+                  className="w-full text-center text-xs font-semibold text-orange-400 hover:text-orange-300 py-2 border border-orange-500/20 rounded-xl hover:bg-orange-500/5 transition"
                 >
-                  Abrir Construtor de Jornada →
+                  Ver Fila de Carrinhos em Tempo Real →
                 </button>
               </div>
             </div>
@@ -482,321 +537,1016 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
         </div>
       )}
 
-      {/* 2. ABA CARRINHOS ABANDONADOS */}
-      {tab === 'carrinhos' && (
+      {/* 2. ABA PÚBLICOS COMPORTAMENTAIS */}
+      {tab === 'publicos' && (
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-3 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Buscar por comprador, e-mail ou pedido..."
-                  value={buscaCarrinho}
-                  onChange={(e) => setBuscaCarrinho(e.target.value)}
-                  className="rounded-xl border border-slate-700 bg-slate-900 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-orange-500 w-72"
-                />
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Users size={18} className="text-sky-400" /> Públicos Comportamentais Sincronizados
+                </h2>
+                <p className="text-xs text-slate-400">Audiências dinâmicas geradas a partir de eventos do checkout e navegação</p>
               </div>
-
-              <div className="flex rounded-xl border border-slate-700 bg-slate-900 p-1 text-xs">
-                {(['TODOS', 'ABERTO', 'DISPARADO', 'RECUPERADO'] as const).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setFiltroStatusCarrinho(st)}
-                    className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                      filtroStatusCarrinho === st
-                        ? 'bg-orange-600 text-white'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {st === 'TODOS' ? 'Todos' : st === 'ABERTO' ? 'Abertos' : st === 'DISPARADO' ? 'Disparados' : 'Recuperados'}
-                  </button>
-                ))}
-              </div>
+              <button
+                onClick={() => alert('Público comportamental criado e sincronizado.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <Plus size={14} /> Criar Novo Público
+              </button>
             </div>
 
-            <button
-              onClick={dispararTodosAbertos}
-              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
-            >
-              <Send size={14} /> Disparar para Todos os Abertos
-            </button>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-[#121620] overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase text-slate-500 border-b border-slate-800 bg-slate-950/40">
-                <tr>
-                  <th className="py-3 px-4">Comprador</th>
-                  <th className="py-3 px-4">Contato</th>
-                  <th className="py-3 px-4">Setor / Itens</th>
-                  <th className="py-3 px-4">Valor</th>
-                  <th className="py-3 px-4">Tempo</th>
-                  <th className="py-3 px-4">Canal Origem</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Ação de Resgate</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {carrinhosFiltrados.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-800/40">
-                    <td className="py-3.5 px-4 font-bold text-white">
-                      <div>{c.clienteNome}</div>
-                      <div className="text-[10px] text-slate-500 font-mono">ID: {c.id}</div>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-300">
-                      <div>{c.email}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">{c.telefone}</div>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-300">{c.setor}</td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-white">{brl(c.valorCents)}</td>
-                    <td className="py-3.5 px-4 text-slate-400">{c.tempoAbandono}</td>
-                    <td className="py-3.5 px-4 text-slate-400">{c.canalEntrada}</td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold border ${
-                          c.status === 'RECUPERADO'
-                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                            : c.status === 'DISPARADO'
-                            ? 'bg-sky-500/20 text-sky-400 border-sky-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                        }`}
-                      >
-                        {c.status}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+              {[
+                {
+                  nome: 'Carrinho Abandonado (Últimas 24h)',
+                  tamanho: 382,
+                  canais: ['WhatsApp Cloud', 'Meta Ads CAPI', 'Google Ads'],
+                  origem: 'Pixel do Checkout',
+                  taxaAtivacao: '92%',
+                },
+                {
+                  nome: 'PIX Gerado e Não Pago (< 15 min)',
+                  tamanho: 48,
+                  canais: ['WhatsApp 1-Clique', 'SMS Transacional'],
+                  origem: 'Gateway Pagamentos',
+                  taxaAtivacao: '98%',
+                },
+                {
+                  nome: 'Visitou Página do Evento sem Comprar (7d)',
+                  tamanho: 2840,
+                  canais: ['Meta Ads (Instagram/FB)', 'TikTok Ads'],
+                  origem: 'Pixel DiskIngressos',
+                  taxaAtivacao: '74%',
+                },
+                {
+                  nome: 'Compradores de Edições Anteriores',
+                  tamanho: 1420,
+                  canais: ['E-mail Marketing VIP', 'WhatsApp Pré-venda'],
+                  origem: 'CRM Produtor',
+                  taxaAtivacao: '61%',
+                },
+                {
+                  nome: 'Tentativa de Cartão Recusada',
+                  tamanho: 64,
+                  canais: ['WhatsApp Recuperação Pagamento'],
+                  origem: 'Antifraude / Adquirente',
+                  taxaAtivacao: '88%',
+                },
+                {
+                  nome: 'Leads de Alta Intensidade (> 3 visitas)',
+                  tamanho: 512,
+                  canais: ['Meta Ads Lookalike', 'Google Search'],
+                  origem: 'GA4 / Pixel',
+                  taxaAtivacao: '81%',
+                },
+              ].map((pub) => (
+                <div key={pub.nome} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <span className="text-xs font-bold text-white">{pub.nome}</span>
+                    <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-mono font-bold">
+                      {fmtNum(pub.tamanho)} pessoas
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">Origem: <b className="text-slate-200">{pub.origem}</b></div>
+                  <div className="flex flex-wrap gap-1">
+                    {pub.canais.map((c) => (
+                      <span key={c} className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300 font-medium">
+                        {c}
                       </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      {c.status !== 'RECUPERADO' ? (
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => dispararRecuperacao(c.id, 'whatsapp')}
-                            className="px-2.5 py-1 rounded-lg bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30 font-semibold"
-                            title="Disparar WhatsApp Oficial"
-                          >
-                            WhatsApp
-                          </button>
-                          <button
-                            onClick={() => dispararRecuperacao(c.id, 'email')}
-                            className="px-2.5 py-1 rounded-lg bg-sky-600/20 border border-sky-500/30 text-sky-300 hover:bg-sky-600/30 font-semibold"
-                            title="Disparar E-mail com reserva"
-                          >
-                            E-mail
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-[11px] text-emerald-400 font-bold flex items-center justify-end gap-1">
-                          <CheckCircle2 size={13} /> Venda Concluída
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    ))}
+                  </div>
+                  <div className="pt-2 border-t border-slate-800/80 flex justify-between items-center text-xs">
+                    <span className="text-slate-400 text-[11px]">Sincronização: <b className="text-emerald-400">{pub.taxaAtivacao}</b></span>
+                    <button
+                      onClick={() => alert(`Público "${pub.nome}" sincronizado com Meta CAPI e Google Ads.`)}
+                      className="text-orange-400 hover:text-orange-300 font-semibold"
+                    >
+                      Sincronizar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {/* 3. ABA CONSTRUTOR DE JORNADA (JOURNEY BUILDER) */}
+      {/* 3. ABA SEGMENTOS */}
+      {tab === 'segmentos' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Target size={18} className="text-orange-400" /> Segmentos de Remarketing
+                </h2>
+                <p className="text-xs text-slate-400">Agrupamentos dinâmicos por propensão de compra, ticket médio e comportamento</p>
+              </div>
+              <button
+                onClick={() => alert('Segmento criado com sucesso.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <Plus size={14} /> Novo Segmento
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Segmentos Ativos</div>
+                <div className="text-2xl font-bold text-white">4</div>
+                <div className="text-[11px] text-emerald-400">Atualização em tempo real</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Total de Leads Qualificados</div>
+                <div className="text-2xl font-bold text-white">12.840</div>
+                <div className="text-[11px] text-sky-400">Sem duplicatas de CPF</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Ticket Médio Projetado</div>
+                <div className="text-2xl font-bold text-white">R$ 412,00</div>
+                <div className="text-[11px] text-emerald-400">+28% vs média geral</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Taxa Média de Ativação</div>
+                <div className="text-2xl font-bold text-emerald-400">31.8%</div>
+                <div className="text-[11px] text-slate-400">Conversão pós-resgate</div>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {[
+                {
+                  nome: 'Compradores VIP & Camarotes (Últimos 12 meses)',
+                  criterio: 'Ticket > R$ 400 em eventos de grande porte',
+                  alcance: 1420,
+                  ticketMedio: 58000,
+                  canais: 'WhatsApp VIP + Meta Ads CAPI',
+                  status: 'ATIVO',
+                },
+                {
+                  nome: 'Abandonadores Recorrentes de Checkout',
+                  criterio: 'Iniciou compra 2+ vezes sem pagar nos últimos 30 dias',
+                  alcance: 3820,
+                  ticketMedio: 22000,
+                  canais: 'Cupom 5% + WhatsApp 1-Clique',
+                  status: 'ATIVO',
+                },
+                {
+                  nome: 'Fãs do Gênero / Edições Passadas',
+                  criterio: 'Compraram ingressos para artistas similares na DiskIngressos',
+                  alcance: 5200,
+                  ticketMedio: 34000,
+                  canais: 'E-mail Marketing Pré-venda + Push',
+                  status: 'ATIVO',
+                },
+                {
+                  nome: 'Carrinho Alto Valor (> R$ 500)',
+                  criterio: 'Carrinho com múltiplos ingressos aguardando pagamento',
+                  alcance: 2400,
+                  ticketMedio: 74000,
+                  canais: 'Atendimento Comercial DiskIngressos',
+                  status: 'ATIVO',
+                },
+              ].map((seg) => (
+                <div key={seg.nome} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <Target size={14} className="text-orange-400" /> {seg.nome}
+                      <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                        {seg.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400">Regra: {seg.criterio}</p>
+                    <div className="text-[11px] text-slate-500">Canais vinculados: {seg.canais}</div>
+                  </div>
+                  <div className="flex items-center gap-6 shrink-0">
+                    <div className="text-right">
+                      <div className="text-xs font-mono font-bold text-white">{fmtNum(seg.alcance)} leads</div>
+                      <div className="text-[10px] text-slate-400">Ticket médio: {brl(seg.ticketMedio)}</div>
+                    </div>
+                    <button
+                      onClick={() => alert(`Audiência do segmento "${seg.nome}" exportada com sucesso.`)}
+                      className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500"
+                    >
+                      Exportar Base
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. ABA CONSTRUTOR DE JORNADAS */}
       {tab === 'jornadas' && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Workflow size={20} className="text-orange-400" /> Construtor de Jornada de Remarketing
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Workflow size={18} className="text-orange-400" /> Régua Automatizada de Remarketing
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Fluxo automatizado que orquestra canais (WhatsApp, E-mail, Mídia Paga) com base no comportamento do usuário.
+                  Fluxo sequencial de eventos, gatilhos, esperas e ações multicanais até a conversão.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setJornadaAtiva(!jornadaAtiva)}
-                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
                     jornadaAtiva
                       ? 'bg-emerald-600 text-white hover:bg-emerald-500'
                       : 'bg-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
-                  {jornadaAtiva ? <Play size={14} /> : <Pause size={14} />}
-                  {jornadaAtiva ? 'Jornada Ativa em Produção' : 'Jornada Pausada'}
+                  {jornadaAtiva ? <Pause size={14} /> : <Play size={14} />}
+                  {jornadaAtiva ? 'Jornada Ativa' : 'Jornada Pausada'}
                 </button>
               </div>
             </div>
 
-            {/* VISUAL DA JORNADA PASSO A PASSO */}
-            <div className="max-w-3xl mx-auto space-y-3 py-4">
-              {jornadaSteps.map((step, idx) => {
-                const isDecision = step.kind === 'DECISAO';
-                const isAction = step.kind === 'ACAO' || step.kind === 'ACAO_REMARKETING';
-                return (
-                  <div key={step.id} className="relative">
-                    <div
-                      className={`rounded-2xl border p-4.5 transition relative shadow-lg ${
-                        step.kind === 'GATILHO'
-                          ? 'border-purple-500/40 bg-purple-950/20'
-                          : step.kind === 'CONDICAO'
-                          ? 'border-amber-500/40 bg-amber-950/20'
-                          : step.kind === 'ACAO'
-                          ? 'border-emerald-500/40 bg-emerald-950/20'
-                          : step.kind === 'ESPERA'
-                          ? 'border-sky-500/40 bg-sky-950/20'
-                          : step.kind === 'DECISAO'
-                          ? 'border-indigo-500/40 bg-indigo-950/30'
-                          : step.kind === 'ACAO_REMARKETING'
-                          ? 'border-orange-500/40 bg-orange-950/20'
-                          : 'border-emerald-500/60 bg-emerald-950/30'
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                                step.kind === 'GATILHO'
-                                  ? 'bg-purple-500/20 text-purple-300'
-                                  : step.kind === 'CONDICAO'
-                                  ? 'bg-amber-500/20 text-amber-300'
-                                  : step.kind === 'ACAO'
-                                  ? 'bg-emerald-500/20 text-emerald-300'
-                                  : step.kind === 'ESPERA'
-                                  ? 'bg-sky-500/20 text-sky-300'
-                                  : step.kind === 'DECISAO'
-                                  ? 'bg-indigo-500/20 text-indigo-300'
-                                  : 'bg-orange-500/20 text-orange-300'
-                              }`}
-                            >
-                              {step.kind}
-                            </span>
-                            <span className="text-xs text-slate-400">Passo {idx + 1}</span>
-                          </div>
-                          <h4 className="text-sm font-bold text-white">{step.titulo}</h4>
-                          <p className="text-xs text-slate-400">{step.detalhes}</p>
-                        </div>
+            {/* FLUXO VISUAL DOS PASSOS DA JORNADA */}
+            <div className="relative pl-6 space-y-4 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-800">
+              {jornadaSteps.map((step, idx) => (
+                <div key={step.id} className="relative group">
+                  <div className="absolute -left-[27px] top-4 h-4 w-4 rounded-full border-2 border-slate-900 bg-orange-500 flex items-center justify-center">
+                    <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                  </div>
 
-                        <div className="text-right sm:shrink-0 bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-xl">
-                          <div className="text-xs font-mono font-bold text-sky-400">{step.pessoasNoNo}</div>
-                          <div className="text-[10px] text-slate-500">processados</div>
-                        </div>
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 space-y-1.5 hover:border-slate-700 transition">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 text-[10px] font-bold text-orange-400 font-mono">
+                          PASSO {idx + 1} · {step.kind}
+                        </span>
+                        <h3 className="text-xs font-bold text-white">{step.titulo}</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] font-mono font-semibold text-emerald-400">
+                          {fmtNum(step.pessoasNoNo)} no nó agora
+                        </span>
                       </div>
                     </div>
-
-                    {/* Seta conectora entre nós */}
-                    {idx < jornadaSteps.length - 1 && (
-                      <div className="flex flex-col items-center justify-center my-1 text-slate-500">
-                        <div className="h-4 w-0.5 bg-slate-700" />
-                        <span className="text-xs font-bold text-slate-400">↓</span>
-                      </div>
-                    )}
+                    <p className="text-xs text-slate-400">{step.detalhes}</p>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       )}
 
-      {/* 4. ABA PÚBLICOS DE REMARKETING */}
-      {tab === 'publicos' && (
+      {/* 5. ABA CARRINHOS ABANDONADOS */}
+      {tab === 'carrinho' && (
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Users size={18} className="text-orange-400" /> Segmentos Comportamentais de Retenção
-              </h2>
-              <p className="text-xs text-slate-400">
-                Públicos atualizados dinamicamente a cada nova interação com a plataforma.
-              </p>
-            </div>
-            <button
-              onClick={() => alert('Sincronização iniciada com canais de mídia e CRM.')}
-              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
-            >
-              <RefreshCcw size={14} /> Sincronizar Públicos
-            </button>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                nome: 'Visitou e Não Comprou (30d)',
-                tamanho: 3410,
-                conversaoEsperada: '18.4%',
-                descricao: 'Usuários com alta intenção que navegaram pelo evento.',
-                prioridade: 'ALTA',
-              },
-              {
-                nome: 'Abandono na Etapa de Pagamento',
-                tamanho: 382,
-                conversaoEsperada: '42.9%',
-                descricao: 'Chegaram ao checkout mas não concluíram Pix/Cartão.',
-                prioridade: 'CRÍTICA',
-              },
-              {
-                nome: 'Compradores de Edições Anteriores',
-                tamanho: 4820,
-                conversaoEsperada: '28.5%',
-                descricao: 'Base histórica do produtor para este mesmo festival.',
-                prioridade: 'ALTA',
-              },
-              {
-                nome: 'Clientes Recorrentes (VIPs)',
-                tamanho: 950,
-                conversaoEsperada: '35.0%',
-                descricao: 'Mais de 3 eventos comprados no último ano.',
-                prioridade: 'VIP',
-              },
-            ].map((p) => (
-              <div key={p.nome} className="rounded-2xl border border-slate-800 bg-[#121620] p-5 space-y-3 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${
-                        p.prioridade === 'CRÍTICA'
-                          ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                          : p.prioridade === 'VIP'
-                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                      }`}
-                    >
-                      {p.prioridade}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-mono">Conv: {p.conversaoEsperada}</span>
-                  </div>
-                  <h3 className="text-sm font-bold text-white">{p.nome}</h3>
-                  <p className="text-xs text-slate-400 mt-1">{p.descricao}</p>
-                </div>
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                  <span className="text-xl font-black text-white font-mono">{fmtNum(p.tamanho)}</span>
-                  <button
-                    onClick={() => alert(`Criando campanha de remarketing para o público "${p.nome}".`)}
-                    className="text-xs text-orange-400 hover:underline font-semibold"
-                  >
-                    Ativar Campanha →
-                  </button>
-                </div>
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <ShoppingCart size={18} className="text-amber-400" /> Fila Operacional de Carrinhos Abandonados
+                </h2>
+                <p className="text-xs text-slate-400">Sessões iniciadas que não concluíram o pagamento dentro do prazo de reserva</p>
               </div>
-            ))}
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={dispararTodosAbertos}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+                >
+                  <Zap size={14} /> Disparar Todos os Abertos
+                </button>
+              </div>
+            </div>
+
+            {/* BARRA DE FILTROS E BUSCA */}
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between pt-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {(['TODOS', 'ABERTO', 'DISPARADO', 'RECUPERADO'] as const).map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setFiltroStatusCarrinho(st)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      filtroStatusCarrinho === st
+                        ? 'bg-slate-700 text-white'
+                        : 'bg-slate-800/40 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {st === 'TODOS' ? 'Todos' : st === 'ABERTO' ? 'Abertos (Sem Envio)' : st === 'DISPARADO' ? 'Em Resgate' : 'Recuperados'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search size={14} className="absolute left-3 top-3 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nome, e-mail ou ID..."
+                  value={buscaCarrinho}
+                  onChange={(e) => setBuscaCarrinho(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
+                />
+              </div>
+            </div>
+
+            {/* TABELA DE CARRINHOS */}
+            <div className="overflow-x-auto rounded-xl border border-slate-800">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/80 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">ID Carrinho</th>
+                    <th className="py-3 px-4">Cliente</th>
+                    <th className="py-3 px-4">Setor & Ingressos</th>
+                    <th className="py-3 px-4">Valor</th>
+                    <th className="py-3 px-4">Tempo</th>
+                    <th className="py-3 px-4">Origem UTM</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Ação de Resgate</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-mono">
+                  {carrinhosFiltrados.map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-800/40 transition">
+                      <td className="py-3.5 px-4 font-bold text-sky-400">{c.id}</td>
+                      <td className="py-3.5 px-4 font-sans">
+                        <div className="font-semibold text-white">{c.clienteNome}</div>
+                        <div className="text-[11px] text-slate-400">{c.telefone}</div>
+                      </td>
+                      <td className="py-3.5 px-4 font-sans text-slate-300">{c.setor}</td>
+                      <td className="py-3.5 px-4 text-white font-bold">{brl(c.valorCents)}</td>
+                      <td className="py-3.5 px-4 font-sans text-slate-400">{c.tempoAbandono}</td>
+                      <td className="py-3.5 px-4 font-sans">
+                        <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300">
+                          {c.canalEntrada}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 font-sans">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            c.status === 'ABERTO'
+                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              : c.status === 'DISPARADO'
+                              ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          }`}
+                        >
+                          {c.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-sans">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => dispararRecuperacao(c.id, 'whatsapp')}
+                            className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:border-emerald-500 text-emerald-400"
+                            title="Disparar WhatsApp 1-Clique"
+                          >
+                            <MessageCircle size={14} />
+                          </button>
+                          <button
+                            onClick={() => dispararRecuperacao(c.id, 'email')}
+                            className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:border-sky-500 text-sky-400"
+                            title="Disparar E-mail com Cupom"
+                          >
+                            <Mail size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 5. ABA CONVERSÕES & AUDITORIA */}
-      {tab === 'conversoes_auditoria' && (
+      {/* 6. ABA VISITOU E NÃO COMPROU */}
+      {tab === 'visitou-nao-comprou' && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <ShieldCheck size={18} className="text-emerald-400" /> Registro Auditável de Vendas Resgatadas
-            </h2>
-            <p className="text-xs text-slate-400">
-              Cada pedido recuperado possui correlação com a régua e liquidação correspondente no Ledger.
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Eye size={18} className="text-sky-400" /> Visitou e Não Comprou (Topo/Meio de Funil)
+                </h2>
+                <p className="text-xs text-slate-400">Usuários que navegaram pelas páginas do evento sem iniciar carrinho nos últimos 7 dias</p>
+              </div>
+              <button
+                onClick={() => alert('Audiência de retargeting para visitantes criada no Meta Ads e Google Ads.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <Target size={14} /> Criar Audiência de Retargeting
+              </button>
+            </div>
 
-            <div className="overflow-x-auto pt-2">
+            <div className="grid md:grid-cols-4 gap-4 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Visitantes Únicos (7d)</div>
+                <div className="text-2xl font-bold text-white">28.420</div>
+                <div className="text-[11px] text-sky-400">118.420 visualizações de página</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Taxa de Rejeição (Bounce)</div>
+                <div className="text-2xl font-bold text-amber-400">68.4%</div>
+                <div className="text-[11px] text-slate-400">Saíram sem interagir</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Retornaram via Retargeting</div>
+                <div className="text-2xl font-bold text-emerald-400">4.210</div>
+                <div className="text-[11px] text-emerald-400">14.8% taxa de retorno</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">ROAS Estimado do Retargeting</div>
+                <div className="text-2xl font-bold text-white">5.82x</div>
+                <div className="text-[11px] text-slate-400">Anúncios no Instagram & Search</div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 overflow-hidden">
+              <div className="bg-slate-900/80 px-4 py-3 border-b border-slate-800 text-xs font-bold text-white">
+                Páginas com Maior Volume de Abandono de Navegação
+              </div>
+              <div className="divide-y divide-slate-800/60 text-xs">
+                {[
+                  {
+                    url: '/evento/festival-live-2026/ingressos',
+                    visitas: 18420,
+                    iniciaramCheckout: '2.840 (15.4%)',
+                    acaoSugerida: 'Disparar Carrossel Dinâmico de Lotes no Instagram',
+                  },
+                  {
+                    url: '/evento/festival-live-2026/setores-camarote',
+                    visitas: 6800,
+                    iniciaramCheckout: '820 (12.0%)',
+                    acaoSugerida: 'Vídeo Teaser Exclusivo com benefícios do Camarote',
+                  },
+                  {
+                    url: '/evento/festival-live-2026/lineup-atracoes',
+                    visitas: 3200,
+                    iniciaramCheckout: '450 (14.1%)',
+                    acaoSugerida: 'Anúncio Reels focado na playlist dos artistas',
+                  },
+                ].map((p) => (
+                  <div key={p.url} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-800/30">
+                    <div className="space-y-1">
+                      <div className="font-mono text-sky-400 font-semibold">{p.url}</div>
+                      <div className="text-slate-400">Ação recomendada: <span className="text-slate-200">{p.acaoSugerida}</span></div>
+                    </div>
+                    <div className="flex items-center gap-6 shrink-0 font-mono">
+                      <div className="text-right">
+                        <div className="text-white font-bold">{fmtNum(p.visitas)} visitas</div>
+                        <div className="text-[10px] text-emerald-400">Checkout: {p.iniciaramCheckout}</div>
+                      </div>
+                      <button
+                        onClick={() => alert(`Campanha de anúncio criada para ${p.url}.`)}
+                        className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-sans text-slate-200 hover:border-slate-500"
+                      >
+                        Ativar Anúncio
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. ABA COMPRADORES ANTERIORES */}
+      {tab === 'compradores' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Users size={18} className="text-purple-400" /> Base de Compradores de Edições Anteriores
+                </h2>
+                <p className="text-xs text-slate-400">Base própria autorizada pelo produtor com consentimento LGPD ativo para pré-venda</p>
+              </div>
+              <button
+                onClick={() => alert('Disparo de pré-venda VIP enviado para compradores anteriores.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <Sparkles size={14} /> Disparar Convite VIP
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Compradores Qualificados</div>
+                <div className="text-2xl font-bold text-white">8.940</div>
+                <div className="text-[11px] text-emerald-400">100% com Opt-in verificado</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Volume Histórico Comprado</div>
+                <div className="text-2xl font-bold text-white">R$ 1.840.000</div>
+                <div className="text-[11px] text-sky-400">Em edições anteriores</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Taxa de Recompra Projetada</div>
+                <div className="text-2xl font-bold text-emerald-400">48.2%</div>
+                <div className="text-[11px] text-slate-400">Estimada para Lote Zero</div>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {[
+                {
+                  edicao: 'Festival DiskIngressos Live 2025',
+                  publico: 4820,
+                  optinPct: '88.4%',
+                  status: 'Base Homologada',
+                  canal: 'WhatsApp Oficial + E-mail',
+                },
+                {
+                  edicao: 'Turnê Acústica Especial 2024',
+                  publico: 2410,
+                  optinPct: '91.2%',
+                  status: 'Base Homologada',
+                  canal: 'E-mail com Cupom Exclusivo',
+                },
+                {
+                  edicao: 'Festival de Verão 2024',
+                  publico: 1710,
+                  optinPct: '84.0%',
+                  status: 'Base Homologada',
+                  canal: 'SMS Transacional + WhatsApp',
+                },
+              ].map((ed) => (
+                <div key={ed.edicao} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <Lock size={14} className="text-emerald-400" /> {ed.edicao}
+                      <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                        {ed.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-400">Canal preferencial: {ed.canal}</div>
+                  </div>
+                  <div className="flex items-center gap-6 shrink-0 font-mono">
+                    <div className="text-right">
+                      <div className="text-xs font-bold text-white">{fmtNum(ed.publico)} compradores</div>
+                      <div className="text-[10px] text-emerald-400">Opt-in: {ed.optinPct}</div>
+                    </div>
+                    <button
+                      onClick={() => alert(`Lote de convite VIP criado para ${ed.edicao}.`)}
+                      className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-sans text-slate-200 hover:border-slate-500"
+                    >
+                      Criar Pré-venda VIP
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. ABA CLIENTES RECORRENTES */}
+      {tab === 'recorrentes' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <RotateCcw size={18} className="text-emerald-400" /> Clientes Recorrentes & Fidelidade
+                </h2>
+                <p className="text-xs text-slate-400">Compradores com 2 ou mais compras nos últimos 24 meses (LTV Elevado)</p>
+              </div>
+              <button
+                onClick={() => alert('Campanha de fidelidade ativada para clientes recorrentes.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <Zap size={14} /> Ativar Clube VIP
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-4 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Clientes VIP Ativos</div>
+                <div className="text-2xl font-bold text-white">2.140</div>
+                <div className="text-[11px] text-emerald-400">2+ compras realizadas</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">LTV Médio por Cliente</div>
+                <div className="text-2xl font-bold text-white">R$ 940,00</div>
+                <div className="text-[11px] text-sky-400">Receita consolidada</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Intervalo Médio de Recompra</div>
+                <div className="text-2xl font-bold text-amber-400">42 dias</div>
+                <div className="text-[11px] text-slate-400">Alta frequência</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Taxa de Churn Anual</div>
+                <div className="text-2xl font-bold text-emerald-400">&lt; 3.8%</div>
+                <div className="text-[11px] text-emerald-400">Altíssima retenção</div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+              <h3 className="text-xs font-bold text-white">Vantagens Automáticas do Clube DiskIngressos VIP</h3>
+              <div className="grid md:grid-cols-3 gap-3">
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 space-y-1">
+                  <div className="text-xs font-bold text-emerald-400">Acesso Antecipado</div>
+                  <p className="text-[11px] text-slate-400">2 horas antes da abertura geral de qualquer lote</p>
+                </div>
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 space-y-1">
+                  <div className="text-xs font-bold text-sky-400">Fila Prioritária Portaria</div>
+                  <p className="text-[11px] text-slate-400">Check-in expresso nas catracas com QR Code dourado</p>
+                </div>
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 space-y-1">
+                  <div className="text-xs font-bold text-purple-400">Cashback de 5%</div>
+                  <p className="text-[11px] text-slate-400">Crédito automático para o próximo evento do produtor</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 9. ABA RECUPERAÇÃO WHATSAPP */}
+      {tab === 'whatsapp' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <MessageCircle size={18} className="text-emerald-400" /> Central de Recuperação por WhatsApp Oficial
+                </h2>
+                <p className="text-xs text-slate-400">Templates homologados pela Meta com link de reserva 1-clique</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 text-xs font-bold flex items-center gap-1.5">
+                  <CheckCheck size={14} /> Cloud API Meta Homologada
+                </span>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6 pt-2">
+              <div className="lg:col-span-2 space-y-3">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider">Templates Homologados Meta</h3>
+                {[
+                  {
+                    nome: 'carrinho_resgate_15m',
+                    gatilho: '15 minutos após abandono',
+                    corpo: 'Olá {{1}}, vimos que seus ingressos para o {{2}} ficaram reservados! Garanta agora com 1-clique antes do lote virar: {{3}}',
+                    botoes: ['Finalizar Pedido Agora', 'Falar com Suporte'],
+                    taxaConversao: '32.4%',
+                  },
+                  {
+                    nome: 'pix_lembrete_expirando',
+                    gatilho: '10 minutos antes da chave expirar',
+                    corpo: 'Atenção {{1}}, seu código PIX para {{2}} expira em 10 minutos. Copie e pague para garantir seu lugar: {{3}}',
+                    botoes: ['Copiar Chave PIX'],
+                    taxaConversao: '44.8%',
+                  },
+                  {
+                    nome: 'prevenda_vip_edicao',
+                    gatilho: 'Abertura de lote zero',
+                    corpo: 'Exclusivo {{1}}! Como você esteve na última edição, seu acesso ao Lote 0 já está liberado por 24 horas: {{2}}',
+                    botoes: ['Comprar Ingressos VIP'],
+                    taxaConversao: '28.1%',
+                  },
+                ].map((tpl) => (
+                  <div key={tpl.nome} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono text-xs font-bold text-sky-400">{tpl.nome}</span>
+                      <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300">
+                        Gatilho: {tpl.gatilho}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 bg-slate-950/60 p-3 rounded-lg font-sans border border-slate-800/80">
+                      {tpl.corpo}
+                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                      <div className="flex gap-1.5">
+                        {tpl.botoes.map((b) => (
+                          <span key={b} className="rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
+                            CTA: {b}
+                          </span>
+                        ))}
+                      </div>
+                      <span className="text-xs font-bold text-emerald-400 font-mono">
+                        Conversão: {tpl.taxaConversao}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* PREVIEW DO WHATSAPP NO CELULAR */}
+              <div className="rounded-2xl border border-slate-800 bg-[#0d1418] p-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+                    <div className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white text-xs">
+                      DI
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1">
+                        DiskIngressos Oficial <CheckCheck size={12} className="text-emerald-400" />
+                      </div>
+                      <div className="text-[10px] text-slate-400">Conta Comercial Verificada</div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#1f2c34] rounded-lg p-3 text-xs text-slate-100 space-y-2 shadow">
+                    <p>
+                      Olá Mariana, vimos que seus 2 ingressos para o <b>Festival DiskIngressos Live 2026</b> ficaram reservados!
+                    </p>
+                    <p>
+                      Garanta agora antes do Lote virar em menos de 1 hora.
+                    </p>
+                    <div className="pt-1 border-t border-slate-700/60">
+                      <button className="w-full text-center text-xs font-bold text-emerald-400 py-1 hover:underline">
+                        👉 Finalizar em 1-Clique
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-400 text-center">
+                  Preview em tempo real do renderizador WhatsApp
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 10. ABA RECUPERAÇÃO EMAIL */}
+      {tab === 'email' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Mail size={18} className="text-sky-400" /> Recuperação por E-mail Transacional
+                </h2>
+                <p className="text-xs text-slate-400">Jornadas e campanhas com contagem regressiva de reserva e cupons exclusivos</p>
+              </div>
+              <button
+                onClick={() => alert('Campanha de e-mail criada com sucesso.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <Plus size={14} /> Novo E-mail de Resgate
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-4 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">E-mails Disparados (30d)</div>
+                <div className="text-2xl font-bold text-white">84.500</div>
+                <div className="text-[11px] text-sky-400">Entregabilidade: 99.2%</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Taxa de Abertura Única</div>
+                <div className="text-2xl font-bold text-emerald-400">34.8%</div>
+                <div className="text-[11px] text-emerald-400">+12% vs mercado de eventos</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Taxa de Cliques (CTOR)</div>
+                <div className="text-2xl font-bold text-white">14.2%</div>
+                <div className="text-[11px] text-slate-400">Cliques no botão de checkout</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase">Receita Atribuída</div>
+                <div className="text-2xl font-bold text-emerald-400">R$ 98.400,00</div>
+                <div className="text-[11px] text-slate-400">Resgates confirmados</div>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {[
+                {
+                  assunto: '⏰ Seus ingressos estão quase expirando! Finalize agora',
+                  gatilho: '2 horas após abandono de carrinho',
+                  abertura: '38.4%',
+                  cliques: '16.2%',
+                  status: 'ATIVA',
+                },
+                {
+                  assunto: '🎁 Reservamos seu lugar com 5% de incentivo especial',
+                  gatilho: '12 horas após abandono (com cupom exclusivo)',
+                  abertura: '32.1%',
+                  cliques: '13.8%',
+                  status: 'ATIVA',
+                },
+                {
+                  assunto: '⚠️ Última chamada: Virada de lote confirmada para hoje à noite',
+                  gatilho: '6 horas antes da virada de preço do lote',
+                  abertura: '41.2%',
+                  cliques: '19.4%',
+                  status: 'ATIVA',
+                },
+              ].map((mail) => (
+                <div key={mail.assunto} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <Mail size={14} className="text-sky-400" /> {mail.assunto}
+                      <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                        {mail.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400">Disparo: {mail.gatilho}</p>
+                  </div>
+                  <div className="flex items-center gap-6 shrink-0 font-mono">
+                    <div className="text-right">
+                      <div className="text-xs font-bold text-white">Abertura: {mail.abertura}</div>
+                      <div className="text-[10px] text-emerald-400">Cliques: {mail.cliques}</div>
+                    </div>
+                    <button
+                      onClick={() => alert(`Editor de template aberto para "${mail.assunto}".`)}
+                      className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-sans text-slate-200 hover:border-slate-500"
+                    >
+                      Editar HTML
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 11. ABA CAMPANHAS DE REMARKETING */}
+      {tab === 'campanhas' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Zap size={18} className="text-amber-400" /> Campanhas de Remarketing Ativas
+                </h2>
+                <p className="text-xs text-slate-400">Tráfego pago e disparos voltados exclusivamente para quem já conhece o evento</p>
+              </div>
+              <button
+                onClick={() => alert('Nova campanha de remarketing iniciada.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <Plus size={14} /> Nova Campanha Remarketing
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-800">
               <table className="w-full text-left text-xs">
-                <thead className="text-[11px] uppercase text-slate-500 border-b border-slate-800 bg-slate-950/40">
+                <thead className="bg-slate-900/80 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Campanha</th>
+                    <th className="py-3 px-4">Canal</th>
+                    <th className="py-3 px-4">Investimento</th>
+                    <th className="py-3 px-4">Receita Atribuída</th>
+                    <th className="py-3 px-4">ROAS</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-mono">
+                  {[
+                    {
+                      nome: 'Retargeting Abandonadores Instagram Reels',
+                      canal: 'Meta Ads',
+                      gasto: 45000,
+                      receita: 284000,
+                      roas: '6.31x',
+                      status: 'ATIVA',
+                    },
+                    {
+                      nome: 'Palavras-chave de Retorno (Google Search)',
+                      canal: 'Google Ads',
+                      gasto: 32000,
+                      receita: 196000,
+                      roas: '6.12x',
+                      status: 'ATIVA',
+                    },
+                    {
+                      nome: 'WhatsApp Massa Resgate Lote 1',
+                      canal: 'WhatsApp Cloud API',
+                      gasto: 14200,
+                      receita: 420000,
+                      roas: '29.57x',
+                      status: 'CONCLUÍDA',
+                    },
+                  ].map((cmp) => (
+                    <tr key={cmp.nome} className="hover:bg-slate-800/40">
+                      <td className="py-3.5 px-4 font-sans font-bold text-white">{cmp.nome}</td>
+                      <td className="py-3.5 px-4 font-sans text-slate-300">{cmp.canal}</td>
+                      <td className="py-3.5 px-4 text-slate-300">{brl(cmp.gasto)}</td>
+                      <td className="py-3.5 px-4 text-emerald-400 font-bold">{brl(cmp.receita)}</td>
+                      <td className="py-3.5 px-4 text-white font-bold">{cmp.roas}</td>
+                      <td className="py-3.5 px-4 font-sans">
+                        <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                          {cmp.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-sans">
+                        <button
+                          onClick={() => alert(`Ajustando campanha "${cmp.nome}".`)}
+                          className="px-2.5 py-1 rounded border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500"
+                        >
+                          Gerenciar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 12. ABA AUTOMAÇÕES DE REMARKETING */}
+      {tab === 'automacoes' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Workflow size={18} className="text-sky-400" /> Automações & Webhooks de Resgate
+                </h2>
+                <p className="text-xs text-slate-400">Integrações de eventos em tempo real, webhooks e filas de processamento</p>
+              </div>
+              <button
+                onClick={() => alert('Webhook de teste disparado com sucesso.')}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+              >
+                <RefreshCcw size={14} /> Testar Webhook
+              </button>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {[
+                {
+                  nome: 'Webhook de Abandono de Carrinho (Storefront BFF)',
+                  latencia: '42ms',
+                  sucesso: '100%',
+                  processados: 382,
+                  status: 'OPERACIONAL',
+                },
+                {
+                  nome: 'Gatilho de Expiração de PIX (Módulo Pagamentos)',
+                  latencia: '18ms',
+                  sucesso: '99.8%',
+                  processados: 124,
+                  status: 'OPERACIONAL',
+                },
+                {
+                  nome: 'Sincronização Server-Side CAPI Meta/Google (RabbitMQ)',
+                  latencia: '65ms',
+                  sucesso: '100%',
+                  processados: 4820,
+                  status: 'OPERACIONAL',
+                },
+              ].map((aut) => (
+                <div key={aut.nome} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <CheckCircle2 size={14} className="text-emerald-400" /> {aut.nome}
+                      <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                        {aut.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-400">Latência média: <b className="text-slate-200">{aut.latencia}</b> • Taxa de Sucesso: <b className="text-emerald-400">{aut.sucesso}</b></div>
+                  </div>
+                  <div className="text-right font-mono shrink-0">
+                    <div className="text-xs font-bold text-white">{fmtNum(aut.processados)} eventos</div>
+                    <div className="text-[10px] text-slate-500">Últimas 24h</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 13. ABA CONVERSÕES RECUPERADAS */}
+      {tab === 'conversoes' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-emerald-400" /> Auditoria de Pedidos e Conversões Recuperadas
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Histórico de pedidos resgatados com correlação imutável entre a ação de remarketing e a liquidação no Ledger.
+                </p>
+              </div>
+
+              <button
+                onClick={() => alert('Extrato de auditoria exportado com sucesso.')}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-slate-500 transition"
+              >
+                <FileText size={14} /> Exportar Auditoria CSV
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-800">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/80 text-slate-400 uppercase font-semibold border-b border-slate-800">
                   <tr>
                     <th className="py-3 px-4">Pedido</th>
                     <th className="py-3 px-4">Comprador</th>
@@ -832,6 +1582,14 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
                       tempo: '1h 12m após abandono',
                       correlation: 'corr_mkt_984102711',
                     },
+                    {
+                      numero: 'PED-849052',
+                      comprador: 'Rodrigo Alves',
+                      canal: 'WhatsApp Oficial Reenvio QR PIX',
+                      valor: 17500,
+                      tempo: '12 minutos após abandono',
+                      correlation: 'corr_mkt_984102604',
+                    },
                   ].map((row) => (
                     <tr key={row.numero} className="hover:bg-slate-800/40">
                       <td className="py-3.5 px-4 font-bold text-sky-400">{row.numero}</td>
@@ -849,7 +1607,39 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
         </div>
       )}
 
-      {/* 6. ABA PIX PENDENTE */}
+      {/* 14. ABA RELATÓRIOS DE REMARKETING */}
+      {tab === 'relatorios' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <FileBarChart size={18} className="text-orange-400" /> Relatório Analítico de Retenção & ROI
+            </h2>
+            <p className="text-xs text-slate-400">
+              Comparativo de retorno financeiro e custo operacional de cada canal de resgate.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-4 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-xs text-slate-400">Custo Total de Disparos</div>
+                <div className="text-xl font-bold text-white font-mono">R$ 248,50</div>
+                <div className="text-[11px] text-slate-500">WhatsApp Cloud API & E-mails</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-xs text-slate-400">Receita Total Recuperada</div>
+                <div className="text-xl font-bold text-emerald-400 font-mono">R$ 58.450,00</div>
+                <div className="text-[11px] text-emerald-400 font-medium">164 pedidos salvos</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-xs text-slate-400">ROI do Motor de Remarketing</div>
+                <div className="text-xl font-bold text-purple-300 font-mono">235.2x</div>
+                <div className="text-[11px] text-slate-400">Para cada R$ 1 gasto, R$ 235 retornaram</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 15. ABA PIX PENDENTE (SUPORTE EXTRA) */}
       {tab === 'pix_pendente' && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
@@ -896,94 +1686,6 @@ export default function RemarketingWorkspace({ eventoId: propEventoId }: Remarke
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 7. ABA WHATSAPP & EMAIL */}
-      {tab === 'whatsapp_email' && (
-        <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <MessageCircle size={18} className="text-emerald-400" /> Réguas Automáticas de Resgate
-          </h2>
-          <p className="text-xs text-slate-400">
-            Cadência programada de recuperação por canal oficial para maximizar conversão sem incomodar o cliente.
-          </p>
-
-          <div className="space-y-3 pt-2">
-            {[
-              {
-                etapa: 'Régua 1 · WhatsApp Amigável (15 minutos)',
-                descricao: 'Notifica o comprador de que o ingresso ainda está reservado no carrinho com link direto.',
-                status: 'ATIVA',
-                conversao: '32.4%',
-              },
-              {
-                etapa: 'Régua 2 · E-mail de Urgência (2 horas)',
-                descricao: 'Avisa que o lote atual está com alta demanda e pode virar de preço a qualquer momento.',
-                status: 'ATIVA',
-                conversao: '18.1%',
-              },
-              {
-                etapa: 'Régua 3 · WhatsApp com Incentivo (12 horas)',
-                descricao: 'Envia cupom exclusivo de 5% válido por 6 horas para fechar a compra imediatamente.',
-                status: 'ATIVA',
-                conversao: '12.8%',
-              },
-            ].map((r) => (
-              <div key={r.etapa} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="text-xs font-bold text-white flex items-center gap-2">
-                    <CheckCircle2 size={14} className="text-emerald-400" /> {r.etapa}
-                  </div>
-                  <p className="text-xs text-slate-400">{r.descricao}</p>
-                </div>
-                <div className="flex items-center gap-4 shrink-0">
-                  <div className="text-right">
-                    <div className="text-xs font-mono font-bold text-emerald-400">{r.conversao}</div>
-                    <div className="text-[10px] text-slate-500">conversão direta</div>
-                  </div>
-                  <button
-                    onClick={() => alert(`Configurações de ${r.etapa} abertas para edição.`)}
-                    className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500"
-                  >
-                    Editar Mensagem
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 8. ABA RELATÓRIOS */}
-      {tab === 'relatorios' && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <FileBarChart size={18} className="text-orange-400" /> Relatório Analítico de Retenção & ROI
-            </h2>
-            <p className="text-xs text-slate-400">
-              Comparativo de retorno financeiro e custo operacional de cada canal de resgate.
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-4 pt-2">
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-                <div className="text-xs text-slate-400">Custo Total de Disparos</div>
-                <div className="text-xl font-bold text-white font-mono">R$ 248,50</div>
-                <div className="text-[11px] text-slate-500">WhatsApp Cloud API & E-mails</div>
-              </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-                <div className="text-xs text-slate-400">Receita Total Recuperada</div>
-                <div className="text-xl font-bold text-emerald-400 font-mono">R$ 58.450,00</div>
-                <div className="text-[11px] text-emerald-400 font-medium">164 pedidos salvos</div>
-              </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-                <div className="text-xs text-slate-400">ROI do Motor de Remarketing</div>
-                <div className="text-xl font-bold text-purple-300 font-mono">235.2x</div>
-                <div className="text-[11px] text-slate-400">Para cada R$ 1 gasto, R$ 235 retornaram</div>
-              </div>
             </div>
           </div>
         </div>
