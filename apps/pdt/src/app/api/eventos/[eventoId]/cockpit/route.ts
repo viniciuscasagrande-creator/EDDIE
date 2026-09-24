@@ -2,11 +2,37 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+function getBackendBase() {
+  const raw = process.env.API_INTERNAL_URL || process.env.BACKEND_URL || process.env.API_URL || '';
+  if (!raw || !/^https?:\/\//i.test(raw)) return '';
+  const clean = raw.replace(/\/$/, '');
+  return clean.endsWith('/api') ? clean : `${clean}/api`;
+}
+
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   ctx: { params: Promise<{ eventoId: string }> }
 ) {
   const { eventoId } = await ctx.params;
+  const base = getBackendBase();
+
+  if (base) {
+    try {
+      const abortCtrl = new AbortController();
+      const timer = setTimeout(() => abortCtrl.abort(), 4000);
+      const upstream = await fetch(`${base}/eventos/${eventoId}/cockpit`, {
+        headers: {
+          'x-tenant-id': process.env.TENANT_ID || '00000000-0000-0000-0000-000000000001',
+          'x-producer-id': process.env.PRODUTOR_ID || '00000000-0000-0000-0000-000000000002',
+        },
+        signal: abortCtrl.signal,
+        cache: 'no-store',
+      });
+      clearTimeout(timer);
+      if (upstream.ok) return NextResponse.json(await upstream.json());
+    } catch {}
+  }
+
   const agora = new Date().toISOString();
 
   return NextResponse.json({

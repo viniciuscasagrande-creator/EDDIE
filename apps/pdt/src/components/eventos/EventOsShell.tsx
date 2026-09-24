@@ -40,7 +40,7 @@ export function EventOsShell({
     { href: `/eventos/${eventoId}/mapa`, label: 'Mapa', icon: Map, priority: true },
     { href: `/eventos/${eventoId}/financeiro`, label: 'Financeiro', icon: Wallet, priority: true },
 
-    // Itens Secundários (agrupados sob o menu "Mais" sem scrollbar horizontal)
+    { href: `/eventos/${eventoId}/sala-situacao`, label: 'Sala de Situação', icon: ShieldAlert, priority: false },
     { href: `/eventos/${eventoId}/marketing`, label: 'Marketing', icon: Megaphone, priority: false },
     { href: `/eventos/${eventoId}/remarketing`, label: 'Remarketing', icon: RefreshCcw, priority: false },
     { href: `/eventos/${eventoId}/cortesias`, label: 'Cortesias', icon: Gift, priority: false },

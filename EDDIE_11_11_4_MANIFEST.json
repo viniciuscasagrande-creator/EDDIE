@@ -1,0 +1,12 @@
+{
+  "fase": "EDDIE 11.11.4 — Integração Real, Endpoints e QA Operacional",
+  "baseline": "EDDIE_11_11_3_COCKPIT_EXECUTIVO_EVENTO.zip",
+  "routes": [
+    "/api/automacoes/regras",
+    "/api/automacoes/execucoes",
+    "/api/automacoes/aprovacoes",
+    "/api/operacao/alertas",
+    "/api/eventos/:eventoId/cockpit"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_11_4.md"
+}

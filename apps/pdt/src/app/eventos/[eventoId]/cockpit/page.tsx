@@ -23,6 +23,7 @@ import {
   RefreshCcw,
 } from 'lucide-react';
 import { useProducerEvent } from '../../../../components/ProducerEventContext';
+import { EventOsShell } from '../../../../components/eventos/EventOsShell';
 
 export default function CockpitExecutivoPage({
   params,
@@ -76,38 +77,47 @@ export default function CockpitExecutivoPage({
   };
 
   return (
-    <div className="space-y-6 max-w-full text-slate-100">
-      {/* Cabeçalho do Cockpit Executivo */}
-      <div className="rounded-2xl border border-slate-700/80 bg-gradient-to-r from-[#171a22] via-[#14161c] to-[#121418] p-5 shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-purple-500/10 px-2.5 py-0.5 text-xs font-bold text-purple-300 border border-purple-500/20">
-                <Compass size={14} />
-                COCKPIT EXECUTIVO
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-400 border border-emerald-500/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                AO VIVO
-              </span>
+    <EventOsShell eventoId={eventoId || 'evento-operacao'}>
+      <div className="space-y-6 max-w-full text-slate-100">
+        {/* Cabeçalho do Cockpit Executivo */}
+        <div className="rounded-2xl border border-slate-700/80 bg-gradient-to-r from-[#171a22] via-[#14161c] to-[#121418] p-5 shadow-2xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-purple-500/10 px-2.5 py-0.5 text-xs font-bold text-purple-300 border border-purple-500/20">
+                  <Compass size={14} />
+                  COCKPIT EXECUTIVO
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-400 border border-emerald-500/30">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  AO VIVO
+                </span>
+              </div>
+
+              <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-white truncate">
+                {dados?.nome || `Festival DiskIngressos Live · ${eventoId}`}
+              </h1>
+              <p className="text-xs text-slate-400">
+                Visão consolidada para produtores e diretoria: metas, projeções, faturamento e saúde global.
+              </p>
             </div>
 
-            <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-white truncate">
-              {dados?.nome || `Festival DiskIngressos Live · ${eventoId}`}
-            </h1>
-            <p className="text-xs text-slate-400">
-              Visão consolidada para produtores e diretoria: metas, projeções, faturamento e saúde global.
-            </p>
-          </div>
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <Link
+                href={`/eventos/${eventoId}/cockpit/comparativos`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-2 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition"
+              >
+                <BarChart3 size={13} />
+                <span>Comparativos</span>
+              </Link>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button
-              onClick={carregarCockpit}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-[#202228] px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white transition"
-            >
-              <RefreshCcw size={13} className={loading ? 'animate-spin' : ''} />
-              <span>Sincronizar</span>
-            </button>
+              <button
+                onClick={carregarCockpit}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-[#202228] px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white transition"
+              >
+                <RefreshCcw size={13} className={loading ? 'animate-spin' : ''} />
+                <span>Sincronizar</span>
+              </button>
 
             <Link
               href={`/eventos/${eventoId}/operacao`}
@@ -346,5 +356,6 @@ export default function CockpitExecutivoPage({
         </div>
       </div>
     </div>
+    </EventOsShell>
   );
 }

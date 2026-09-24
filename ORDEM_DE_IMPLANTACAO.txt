@@ -1,0 +1,6 @@
+1. EDDIE 11.11.1 — Automação Operacional Enterprise
+2. EDDIE 11.11.2 — Central de Alertas, Incidentes e Sala de Situação
+3. EDDIE 11.11.3 — Cockpit Executivo do Evento
+4. EDDIE 11.11.4 — Integração Real, Endpoints e QA Operacional
+
+Aplicar sequencialmente. Cada pacote carrega a baseline do anterior.

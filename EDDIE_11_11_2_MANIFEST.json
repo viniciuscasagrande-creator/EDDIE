@@ -1,0 +1,10 @@
+{
+  "fase": "EDDIE 11.11.2 — Central de Alertas, Incidentes e Sala de Situação",
+  "baseline": "EDDIE_11_11_1_AUTOMACAO_OPERACIONAL_ENTERPRISE.zip",
+  "routes": [
+    "/operacao/alertas",
+    "/operacao/incidentes",
+    "/eventos/:eventoId/sala-situacao"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_11_2.md"
+}

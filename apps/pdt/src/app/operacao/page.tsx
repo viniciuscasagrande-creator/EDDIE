@@ -12,6 +12,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   Radio,
+  Bell,
+  ShieldAlert,
+  AlertOctagon,
+  Flame,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 
@@ -39,6 +43,26 @@ export default function OperacaoEnterprise() {
       icon: Radio,
       desc: 'Sala de controle em tempo real (NOC): vendas, portaria, pagamentos, ocupação, saúde e incidentes.',
       badge: 'AO VIVO',
+    },
+    {
+      title: 'Central de Alertas Operacionais',
+      href: '/operacao/alertas',
+      icon: Bell,
+      desc: 'Fila consolidada de alertas com severidades, SLAs, atribuição de operador e reconhecimento.',
+      badge: 'SLA REAL',
+    },
+    {
+      title: 'Gestão de Incidentes & Ocorrências',
+      href: '/operacao/incidentes',
+      icon: ShieldAlert,
+      desc: 'Orquestração de crise ITIL, triagem P1-P4, SLA de resposta e resolução técnica.',
+    },
+    {
+      title: 'Sala de Situação (War Room)',
+      href: `/eventos/${activeEventId}/sala-situacao`,
+      icon: Flame,
+      desc: 'Sala de crise do evento correlacionando portaria, gateway, vendas e contenção de falhas.',
+      badge: 'WAR ROOM',
     },
     {
       title: 'Financeiro',

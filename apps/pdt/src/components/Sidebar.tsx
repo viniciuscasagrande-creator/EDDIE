@@ -168,6 +168,26 @@ export function Sidebar() {
                   </span>
                 )}
               </Link>
+              {item.href === '/operacao' && isActive && (
+                <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-emerald-900/60 pl-2">
+                  <Link
+                    href="/operacao/alertas"
+                    className={`block px-2 py-1 text-xs rounded transition ${
+                      pathname === '/operacao/alertas' ? 'text-rose-400 font-bold bg-rose-950/30' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    • Alertas Operacionais
+                  </Link>
+                  <Link
+                    href="/operacao/incidentes"
+                    className={`block px-2 py-1 text-xs rounded transition ${
+                      pathname === '/operacao/incidentes' ? 'text-amber-400 font-bold bg-amber-950/30' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    • Gestão de Incidentes
+                  </Link>
+                </div>
+              )}
               {item.href === '/eventos' && (isActive || activeEventId) && (
                 <div className="ml-8 mt-1 mb-2 space-y-0.5 border-l border-sky-900 pl-2">
                   {activeEventId && (

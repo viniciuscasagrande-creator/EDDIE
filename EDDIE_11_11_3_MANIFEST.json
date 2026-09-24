@@ -1,0 +1,9 @@
+{
+  "fase": "EDDIE 11.11.3 — Cockpit Executivo do Evento",
+  "baseline": "EDDIE_11_11_2_CENTRAL_ALERTAS_INCIDENTES.zip",
+  "routes": [
+    "/eventos/:eventoId/cockpit",
+    "/eventos/:eventoId/cockpit/comparativos"
+  ],
+  "prompt": ".gemini/prompts/EDDIE_11_11_3.md"
+}
