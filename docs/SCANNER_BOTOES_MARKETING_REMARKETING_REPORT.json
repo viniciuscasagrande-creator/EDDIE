@@ -1,0 +1,4726 @@
+{
+  "timestamp": "2026-09-24T20:58:19.021Z",
+  "versao": "EDDIE-11.16.14",
+  "totais": {
+    "totalBotoes": 744,
+    "totalFuncionais": 744,
+    "totalBloqueadosPermissao": 0,
+    "totalIndisponiveisIntegracao": 0,
+    "totalMortos": 0
+  },
+  "conformidade": "APROVADO_100%",
+  "rotas": [
+    {
+      "rota": "/marketing",
+      "modulo": "Marketing",
+      "nome": "Dashboard",
+      "totalBotoesNaRota": 28,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real & Entrega",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads & CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/campanhas",
+      "modulo": "Marketing",
+      "nome": "Campanhas Multicanais",
+      "totalBotoesNaRota": 35,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Todas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ativas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Agendadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Finalizadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Rascunhos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Campanha no Wizard",
+          "title": "Editar Campanha no Wizard",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausar Campanha",
+          "title": "Pausar Campanha",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar Campanha",
+          "title": "Duplicar Campanha",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Campanha no Wizard",
+          "title": "Editar Campanha no Wizard",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausar Campanha",
+          "title": "Pausar Campanha",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar Campanha",
+          "title": "Duplicar Campanha",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/campanhas-prontas",
+      "modulo": "Marketing",
+      "nome": "Campanhas Prontas",
+      "totalBotoesNaRota": 27,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/status-real",
+      "modulo": "Marketing",
+      "nome": "Status Real",
+      "totalBotoesNaRota": 27,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar Agora",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/meta",
+      "modulo": "Marketing",
+      "nome": "Meta Ads & CAPI",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar Evento CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/google-analytics",
+      "modulo": "Marketing",
+      "nome": "Google Analytics GA4",
+      "totalBotoesNaRota": 28,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Enviar Ping DebugView",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visão Geral & Desempenho",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Funil de Compras E-commerce",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Canais de Aquisição",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "DebugView em Tempo Real",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configuração & Consent Mode",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/tiktok",
+      "modulo": "Marketing",
+      "nome": "TikTok Ads",
+      "totalBotoesNaRota": 24,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar Conexão TikTok",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Spark Ad",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/spotify",
+      "modulo": "Marketing",
+      "nome": "Spotify Ads",
+      "totalBotoesNaRota": 24,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar CAPI Áudio",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Credenciais",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/whatsapp",
+      "modulo": "Marketing",
+      "nome": "WhatsApp Marketing",
+      "totalBotoesNaRota": 22,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/email",
+      "modulo": "Marketing",
+      "nome": "E-mail Marketing",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Novo Disparo de E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/automacoes",
+      "modulo": "Marketing",
+      "nome": "Automações & Jornadas",
+      "totalBotoesNaRota": 22,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/cupons",
+      "modulo": "Marketing",
+      "nome": "Cupons & Descontos",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Novo Cupom",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/utm",
+      "modulo": "Marketing",
+      "nome": "Central UTM & Links / QR",
+      "totalBotoesNaRota": 34,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Comparar URLs (2)",
+          "title": "Comparar URLs selecionadas lado a lado",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar CSV",
+          "title": "Exportar dados de UTM para CSV",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "URLs Rastreáveis1",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerador Rápido & QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Comparativo de URLs",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Funil & Ranking",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Copiar URL Parametrizada Completa",
+          "title": "Copiar URL Parametrizada Completa",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar e Baixar QR Code SVG",
+          "title": "Visualizar e Baixar QR Code SVG",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Parâmetros da UTM",
+          "title": "Editar Parâmetros da UTM",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar URL UTM",
+          "title": "Duplicar URL UTM",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Arquivar URL",
+          "title": "Arquivar URL",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/afiliados",
+      "modulo": "Marketing",
+      "nome": "Afiliados & Promoters",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Convidar Promoter",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/pixels",
+      "modulo": "Marketing",
+      "nome": "Pixels & Conversões",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar Ping Geral",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/atribuicao",
+      "modulo": "Marketing",
+      "nome": "Atribuição Multicanal",
+      "totalBotoesNaRota": 22,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/relatorios",
+      "modulo": "Marketing",
+      "nome": "Relatórios de Marketing",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Relatório CSV",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing",
+      "modulo": "Remarketing",
+      "nome": "Dashboard",
+      "totalBotoesNaRota": 20,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Fila de Carrinhos em Tempo Real →",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/publicos",
+      "modulo": "Remarketing",
+      "nome": "Públicos",
+      "totalBotoesNaRota": 26,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Novo Público",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/segmentos",
+      "modulo": "Remarketing",
+      "nome": "Segmentos",
+      "totalBotoesNaRota": 24,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Novo Segmento",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/jornadas",
+      "modulo": "Remarketing",
+      "nome": "Jornadas",
+      "totalBotoesNaRota": 20,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornada Ativa",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/carrinho",
+      "modulo": "Remarketing",
+      "nome": "Carrinho Abandonado",
+      "totalBotoesNaRota": 32,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar Todos os Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Todos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Abertos (Sem Envio)",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Em Resgate",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperados",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar WhatsApp 1-Clique",
+          "title": "Disparar WhatsApp 1-Clique",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar E-mail com Cupom",
+          "title": "Disparar E-mail com Cupom",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar WhatsApp 1-Clique",
+          "title": "Disparar WhatsApp 1-Clique",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar E-mail com Cupom",
+          "title": "Disparar E-mail com Cupom",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar WhatsApp 1-Clique",
+          "title": "Disparar WhatsApp 1-Clique",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar E-mail com Cupom",
+          "title": "Disparar E-mail com Cupom",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar WhatsApp 1-Clique",
+          "title": "Disparar WhatsApp 1-Clique",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar E-mail com Cupom",
+          "title": "Disparar E-mail com Cupom",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/visitou-nao-comprou",
+      "modulo": "Remarketing",
+      "nome": "Visitou e Não Comprou",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Audiência de Retargeting",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ativar Anúncio",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ativar Anúncio",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ativar Anúncio",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/compradores",
+      "modulo": "Remarketing",
+      "nome": "Compradores Anteriores",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Disparar Convite VIP",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Pré-venda VIP",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Pré-venda VIP",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Pré-venda VIP",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/recorrentes",
+      "modulo": "Remarketing",
+      "nome": "Clientes Recorrentes",
+      "totalBotoesNaRota": 20,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ativar Clube VIP",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/whatsapp",
+      "modulo": "Remarketing",
+      "nome": "Recuperação WhatsApp",
+      "totalBotoesNaRota": 20,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "👉 Finalizar em 1-Clique",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/email",
+      "modulo": "Remarketing",
+      "nome": "Recuperação E-mail",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Novo E-mail de Resgate",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar HTML",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar HTML",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar HTML",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/campanhas",
+      "modulo": "Remarketing",
+      "nome": "Campanhas",
+      "totalBotoesNaRota": 23,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerenciar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerenciar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerenciar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/automacoes",
+      "modulo": "Remarketing",
+      "nome": "Automações",
+      "totalBotoesNaRota": 20,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar Webhook",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/conversoes",
+      "modulo": "Remarketing",
+      "nome": "Conversões Recuperadas",
+      "totalBotoesNaRota": 20,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Auditoria CSV",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/remarketing/relatorios",
+      "modulo": "Remarketing",
+      "nome": "Relatórios de Remarketing",
+      "totalBotoesNaRota": 19,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperar Carrinhos Abertos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor de Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recarregar Métricas",
+          "title": "Recarregar Métricas",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Públicos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Segmentos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Jornadas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Carrinho Abandonado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visitou e Não Comprou",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Compradores Anteriores",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Clientes Recorrentes",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação WhatsApp",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recuperação E-mail",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Conversões Recuperadas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios de Remarketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    }
+  ]
+}
