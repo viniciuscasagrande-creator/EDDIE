@@ -18,6 +18,8 @@ import {
   Loader2,
   RefreshCcw,
   FileBarChart,
+  Activity,
+  CheckCircle2,
 } from 'lucide-react';
 import { useProducerEvent } from '../components/ProducerEventContext';
 import { EDDIE_BUILD } from '../lib/buildInfo';
@@ -238,6 +240,110 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Central Operacional */}
+          <Link
+            href="/operacao"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-emerald-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Activity size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-emerald-400 transition" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white text-base group-hover:text-emerald-400 transition">
+                  Central Operacional
+                </h3>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  Ao Vivo
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Centro de Operações, alertas em tempo real, gestão de incidentes e sala de situação.
+              </p>
+            </div>
+          </Link>
+
+          {/* Automações & Regras */}
+          <Link
+            href="/automacoes"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-amber-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <Zap size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-amber-400 transition" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white text-base group-hover:text-amber-400 transition">
+                  Automações & Regras
+                </h3>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                  Motor
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Motor de regras SE → ENTÃO, auditoria de execuções e aprovações financeiras pendentes.
+              </p>
+            </div>
+          </Link>
+
+          {/* Hardening & Segurança */}
+          <Link
+            href="/operacao/hardening"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-sky-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+                <ShieldCheck size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-sky-400 transition" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white text-base group-hover:text-sky-400 transition">
+                  Hardening & Escala
+                </h3>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                  v11.15
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Segurança Enterprise, RBAC, auditoria, concorrência de alta escala e resiliência.
+              </p>
+            </div>
+          </Link>
+
+          {/* Ciclo E2E & Go-Live */}
+          <Link
+            href="/operacao/e2e"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-emerald-500/50 rounded-xl p-6 transition-all space-y-4 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <CheckCircle2 size={24} />
+              </div>
+              <ArrowUpRight size={20} className="text-slate-500 group-hover:text-emerald-400 transition" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white text-base group-hover:text-emerald-400 transition">
+                  Ciclo E2E & Go-Live
+                </h3>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  Gate
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Homologação de ponta a ponta: do cadastro do evento ao repasse e auditoria final.
+              </p>
+            </div>
+          </Link>
+
           {/* Eventos */}
           <Link
             href="/eventos"

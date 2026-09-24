@@ -6,7 +6,51 @@ export async function GET(){
  const started=Date.now(); const checks:any[]=[]; const base=backendBase();
  const produtorId=process.env.PRODUTOR_ID||process.env.NEXT_PUBLIC_PRODUTOR_ID||''; let tenantId=process.env.TENANT_ID||process.env.NEXT_PUBLIC_TENANT_ID||''; const preferred=process.env.EVENTO_ID||process.env.NEXT_PUBLIC_EVENTO_ID||'';
  if(!base) {
-   const demoEventoId = preferred || 'evento-1';
+   const demoEventoId = preferred || 'evento-operacao';
+   const eventosMock = [
+     {
+       id: 'evento-operacao',
+       nome: 'Festival DiskIngressos Live 2026',
+       status: 'PUBLICADO',
+       slug: 'festival-diskingressos-live',
+       capacidadeTotal: 5000,
+       ingressosVendidos: 4120,
+       cortesias: 150,
+       receita: 482500,
+       gmv: 482500,
+       local: { nome: 'Pedreira Paulo Leminski - Curitiba/PR' },
+       sessoes: [
+         {
+           id: 'sessao-1',
+           nome: 'Sessão Principal',
+           inicioEm: '2026-11-14T20:00:00Z',
+           capacidadeTotal: 5000,
+           local: { nome: 'Pedreira Paulo Leminski - Curitiba/PR' },
+         },
+       ],
+     },
+     {
+       id: 'evento-1',
+       nome: 'Turnê Nacional Rock Fest 2026',
+       status: 'PUBLICADO',
+       slug: 'turne-nacional-rock-fest',
+       capacidadeTotal: 3000,
+       ingressosVendidos: 2450,
+       cortesias: 80,
+       receita: 312000,
+       gmv: 312000,
+       local: { nome: 'Teatro Positivo - Curitiba/PR' },
+       sessoes: [
+         {
+           id: 'sessao-2',
+           nome: 'Abertura de Portões',
+           inicioEm: '2026-12-05T19:00:00Z',
+           capacidadeTotal: 3000,
+           local: { nome: 'Teatro Positivo - Curitiba/PR' },
+         },
+       ],
+     },
+   ];
    return NextResponse.json({
      ok: true,
      stage: 'operacional',
@@ -16,15 +60,8 @@ export async function GET(){
      tenantId: tenantId || '00000000-0000-0000-0000-000000000001',
      tenantAutocorrected: false,
      eventoId: demoEventoId,
-     eventos: [
-       {
-         id: demoEventoId,
-         nome: 'Festival DiskIngressos Live 2026',
-         status: 'PUBLICADO',
-         slug: 'festival-diskingressos-live',
-       },
-     ],
-     totalEventos: 1,
+     eventos: eventosMock,
+     totalEventos: eventosMock.length,
      checks: [{ name: 'backend-config', ok: true }],
      durationMs: Date.now() - started,
    });

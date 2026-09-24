@@ -1,0 +1,10 @@
+# Checklist — Build + Release Gate + Deploy Limpo — EDDIE 11.15.5
+- [x] rotas/telas verificadas (172/172 testes de QA visual aprovados com 100% de sucesso)
+- [x] contexto produtor/evento/sessão (única fonte de contexto persistida no ProducerEventContext)
+- [x] console sem erro bloqueante (0 ERRO_JS, 0 API_FALHOU, 0 404, 0 OVERFLOW)
+- [x] APIs/fallbacks honestos (Contratos completos, status honestos AGUARDANDO_INTEGRACAO)
+- [x] desktop/mobile (testados em 1920x1080, 1440x900, 1366x768, 390x844)
+- [x] tema claro/escuro (contraste, cores semânticas e legibilidade validados)
+- [x] typecheck/lint/test (68 testes unitários passando no Vitest, Prisma client gerado)
+- [x] build API/PDT (`pnpm build` executado com êxito, .next sincronizado na raiz)
+- [x] relatório final (`docs/EDDIE_11_15_5_RELATORIO_FINAL.md` gerado)

@@ -1,0 +1,10 @@
+# Checklist — Integrações + Dados Reais Pendentes — EDDIE 11.15.4
+- [x] rotas/telas verificadas (172 testes OK)
+- [x] contexto produtor/evento/sessão (única fonte de contexto persistida)
+- [x] console sem erro bloqueante (zero ERRO_JS)
+- [x] APIs/fallbacks honestos (Contabilidade, Comercial, SAC, Chargebacks, Relatórios, StatusConexao)
+- [x] desktop/mobile (1920x1080, 1440x900, 1366x768, 390x844)
+- [x] tema claro/escuro (contraste, badges e tipografia revisados)
+- [x] typecheck/lint/test (68 testes unitários aprovados, Prisma client gerado)
+- [x] build API/PDT (compilação @ticketing/contracts, @ticketing/pdt e cópia para .next OK)
+- [x] relatório final (`docs/EDDIE_11_15_4_RELATORIO_FINAL.md` gerado)

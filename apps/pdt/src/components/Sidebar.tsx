@@ -42,7 +42,7 @@ const menuItems = [
     label: 'Hardening & Segurança',
     href: '/operacao/hardening',
     icon: ShieldCheck,
-    badge: 'v11.13',
+    badge: 'v11.15',
   },
   {
     label: 'Ciclo E2E & Go-Live',

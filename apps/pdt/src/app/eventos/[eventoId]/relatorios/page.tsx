@@ -44,7 +44,8 @@ export default function Page() {
         setResumo(await resumoRes.json());
       }
       if (pedidosRes.ok) {
-        setPedidos(await pedidosRes.json());
+        const d = await pedidosRes.json();
+        setPedidos(Array.isArray(d) ? d : (d?.items || d?.pedidos || []));
       }
     } catch (e: any) {
       setError(e.message || 'Falha ao consolidar relatórios do evento.');
@@ -58,8 +59,9 @@ export default function Page() {
   }, [eventoId]);
 
   // Derived metrics
+  const safePedidos = Array.isArray(pedidos) ? pedidos : [];
   const totalVendas = Number(resumo?.gmv || resumo?.totalVendas || 0);
-  const totalPedidos = pedidos.length;
+  const totalPedidos = safePedidos.length;
   const ingressosVendidos = Number(resumo?.ingressosVendidos || 0);
   const totalCortesias = Number(resumo?.cortesias || 0);
   const capacidade = Number(resumo?.capacidadeTotal || 0);
@@ -67,9 +69,9 @@ export default function Page() {
   const ticketMedio = ingressosVendidos ? totalVendas / ingressosVendidos : 0;
 
   const exportarCsv = () => {
-    if (!pedidos.length) return;
+    if (!safePedidos.length) return;
     const header = ['NumeroPedido', 'Data', 'Comprador', 'Documento', 'Status', 'Total', 'TaxaDisk'];
-    const rows = pedidos.map((p) => [
+    const rows = safePedidos.map((p) => [
       p.numero,
       p.createdAt ? new Date(p.createdAt).toISOString() : '',
       `"${p.compradorNome || ''}"`,
@@ -119,7 +121,7 @@ export default function Page() {
 
           <button
             onClick={exportarCsv}
-            disabled={pedidos.length === 0}
+            disabled={safePedidos.length === 0}
             className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:border-sky-500 transition disabled:opacity-40"
           >
             <Download size={14} /> Exportar CSV
@@ -250,14 +252,14 @@ export default function Page() {
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
             <div className="text-xs text-slate-400">Taxa de Serviço DiskIngressos</div>
             <div className="text-xl font-bold text-sky-400 mt-1">
-              {brl(pedidos.reduce((acc, p) => acc + Number(p.taxaDisk || 0), 0))}
+              {brl(safePedidos.reduce((acc, p) => acc + Number(p.taxaDisk || 0), 0))}
             </div>
             <div className="text-[11px] text-slate-500 mt-1">Condição comercial por evento</div>
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
             <div className="text-xs text-slate-400">Repasse Estimado ao Produtor</div>
             <div className="text-xl font-bold text-emerald-400 mt-1">
-              {brl(pedidos.reduce((acc, p) => acc + Number(p.repasseProdutor || p.subtotal || 0), 0))}
+              {brl(safePedidos.reduce((acc, p) => acc + Number(p.repasseProdutor || p.subtotal || 0), 0))}
             </div>
             <div className="text-[11px] text-slate-500 mt-1">Líquido de face apurado</div>
           </div>

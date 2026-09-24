@@ -44,7 +44,8 @@ export default function AntifraudePage({ params }: { params: Promise<{ eventoId:
     try {
       const res = await fetch(`${api}/eventos/${eventoId}/antifraude/alertas`);
       if (res.ok) {
-        setAlertas(await res.json());
+        const d = await res.json();
+        setAlertas(Array.isArray(d) ? d : (d?.items || d?.alertas || []));
       }
     } catch {
       setFeedback({
@@ -84,21 +85,22 @@ export default function AntifraudePage({ params }: { params: Promise<{ eventoId:
     }
   };
 
-  const alertasFiltrados = alertas.filter((a) => {
+  const safeAlertas = Array.isArray(alertas) ? alertas : [];
+  const alertasFiltrados = safeAlertas.filter((a) => {
     if (tab === 'criticos' && !['ALTA', 'CRITICA'].includes(a.severidade)) return false;
     if (tab === 'revisados' && a.status === 'ABERTO') return false;
     if (tab === 'todos' && a.status !== 'ABERTO') return true;
     if (busca) {
-      const txt = `${a.codigoSinal} ${a.descricao} ${a.origem}`.toLowerCase();
+      const txt = `${a.codigoSinal || ''} ${a.descricao || ''} ${a.origem || ''}`.toLowerCase();
       if (!txt.includes(busca.toLowerCase())) return false;
     }
     return true;
   });
 
-  const abertos = alertas.filter((a) => a.status === 'ABERTO');
+  const abertos = safeAlertas.filter((a) => a.status === 'ABERTO');
   const criticos = abertos.filter((a) => ['ALTA', 'CRITICA'].includes(a.severidade));
-  const duplicidades = abertos.filter((a) => a.codigoSinal.includes('JA_UTILIZADO') || a.codigoSinal.includes('SIMULTANEA'));
-  const dispositivosSuspeitos = abertos.filter((a) => a.origem === 'DISPOSITIVO');
+  const duplicidades = abertos.filter((a) => (a.codigoSinal || '').includes('JA_UTILIZADO') || (a.codigoSinal || '').includes('SIMULTANEA'));
+  const dispositivosSuspeitos = safeAlertas.filter((a) => a.origem === 'DISPOSITIVO');
 
   return (
     <div className="space-y-6 max-w-[1550px] mx-auto">

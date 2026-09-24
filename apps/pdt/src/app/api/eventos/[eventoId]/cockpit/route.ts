@@ -41,7 +41,7 @@ export async function GET(
     local: 'Arena Central de Eventos',
     sessaoAtiva: 'Sessão 1 (Noturna)',
     dataEvento: agora,
-    statusExecutivo: 'EM_ANDAMENTO',
+    statusExecutivo: 'AGUARDANDO_INTEGRACAO',
     ultimaSincronizacao: agora,
     kpis: {
       receitaRealCents: 4895000,

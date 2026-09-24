@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   CalendarDays,
@@ -23,14 +23,37 @@ const brl = (v: any) =>
 
 export default function EventosPage() {
   const { api, produtorId, eventos: ctx, recarregarEventos } = useProducerEvent();
-  const [lista, setLista] = useState<any[]>([]);
+  const [lista, setLista] = useState<any[]>(Array.isArray(ctx) && ctx.length ? ctx : []);
   const [filtro, setFiltro] = useState<'ATIVOS' | 'INATIVOS' | 'TODOS'>('ATIVOS');
   const [busca, setBusca] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const carregar = useCallback(async () => {
+    if (!api || !produtorId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${api}/eventos/produtor/${produtorId}`);
+      if (res.ok) {
+        const data = await res.json();
+        const items = Array.isArray(data) ? data : data.items || data.eventos || [];
+        if (items.length > 0) {
+          setLista(items);
+          return;
+        }
+      }
+    } catch {
+      // Fallback
+    } finally {
+      setLoading(false);
+    }
+    if (Array.isArray(ctx) && ctx.length > 0) {
+      setLista(ctx);
+    }
+  }, [api, produtorId, ctx]);
+
   useEffect(() => {
-    setLista(Array.isArray(ctx) ? ctx : []);
-  }, [ctx]);
+    void carregar();
+  }, [carregar]);
 
   const dados = useMemo(
     () =>
@@ -49,6 +72,7 @@ export default function EventosPage() {
   const refresh = async () => {
     setLoading(true);
     await recarregarEventos();
+    await carregar();
     setLoading(false);
   };
 
@@ -107,9 +131,14 @@ export default function EventosPage() {
         </div>
       </div>
 
-      {dados.length === 0 ? (
+      {loading ? (
+        <div className="rounded-xl border border-slate-800 bg-[#111827] p-12 text-center text-slate-400 flex flex-col items-center gap-3">
+          <RefreshCw size={24} className="animate-spin text-sky-400" />
+          <span>Consultando eventos do produtor...</span>
+        </div>
+      ) : dados.length === 0 ? (
         <div className="rounded-xl border border-slate-800 bg-[#111827] p-12 text-center text-slate-400">
-          Nenhum evento encontrado neste filtro. Os dados são carregados da API do produtor.
+          Nenhum evento encontrado para os filtros selecionados.
         </div>
       ) : (
         <div className="grid xl:grid-cols-2 gap-5">

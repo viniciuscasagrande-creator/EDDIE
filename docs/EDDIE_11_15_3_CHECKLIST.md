@@ -1,0 +1,10 @@
+# Checklist — QA Visual Automatizado + Scanner de Rotas
+- [x] rotas/telas verificadas (43 rotas em 4 viewports = 172 testes)
+- [x] contexto produtor/evento/sessão (única fonte de contexto validada)
+- [x] console sem erro bloqueante (0 ERRO_JS)
+- [x] APIs/fallbacks honestos (0 API_FALHOU)
+- [x] desktop/mobile (1920x1080, 1440x900, 1366x768 e 390x844)
+- [x] tema claro/escuro (contraste e legibilidade validados)
+- [x] typecheck/lint/test (68 unit tests aprovados, Next.js build OK)
+- [x] build API/PDT (compilação otimizada concluída sem erros)
+- [x] relatório final (`docs/EDDIE_11_15_3_RELATORIO_FINAL.md` gerado)

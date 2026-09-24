@@ -58,9 +58,18 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
         fetch(`${api}/eventos/${eventoId}/portaria/dispositivos`),
       ]);
 
-      if (rResumo.ok) setResumo(await rResumo.json());
-      if (rCheckins.ok) setCheckins(await rCheckins.json());
-      if (rDispositivos.ok) setDispositivos(await rDispositivos.json());
+      if (rResumo.ok) {
+        const d = await rResumo.json();
+        setResumo(d && typeof d === 'object' ? d : null);
+      }
+      if (rCheckins.ok) {
+        const d = await rCheckins.json();
+        setCheckins(Array.isArray(d) ? d : (d?.items || d?.checkins || []));
+      }
+      if (rDispositivos.ok) {
+        const d = await rDispositivos.json();
+        setDispositivos(Array.isArray(d) ? d : (d?.items || d?.dispositivos || []));
+      }
     } catch {
       setFeedback({
         tipo: 'error',
@@ -153,6 +162,9 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
     }
   };
 
+  const checkinList = Array.isArray(checkins) ? checkins : [];
+  const dispositivoList = Array.isArray(dispositivos) ? dispositivos : [];
+
   return (
     <div className="space-y-6 max-w-[1550px] mx-auto">
       {/* Header */}
@@ -240,8 +252,8 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
         items={[
           { id: 'monitor', label: 'Monitor ao Vivo', icon: <Activity size={15} /> },
           { id: 'simulador', label: 'Validar QR Code', icon: <QrCode size={15} /> },
-          { id: 'checkins', label: 'Histórico de Leituras', icon: <Clock size={15} />, badge: checkins.length },
-          { id: 'dispositivos', label: 'Catracas & Scanners', icon: <Smartphone size={15} />, badge: dispositivos.length },
+          { id: 'checkins', label: 'Histórico de Leituras', icon: <Clock size={15} />, badge: checkinList.length },
+          { id: 'dispositivos', label: 'Catracas & Scanners', icon: <Smartphone size={15} />, badge: dispositivoList.length },
         ]}
         activeItem={tab}
         onSelect={(id) => setTab(id as TabView)}
@@ -294,7 +306,7 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
               </p>
 
               <div className="mt-4 divide-y divide-slate-800">
-                {checkins.slice(0, 8).map((chk) => {
+                {checkinList.slice(0, 8).map((chk) => {
                   const isValido = chk.resultado === 'VALIDO';
                   return (
                     <div key={chk.id} className="py-3 flex items-center justify-between gap-4">
@@ -334,7 +346,7 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
                   );
                 })}
 
-                {checkins.length === 0 && (
+                {checkinList.length === 0 && (
                   <div className="py-12 text-center text-slate-500 text-xs">
                     Nenhuma leitura de check-in registrada no momento.
                   </div>
@@ -473,7 +485,7 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
         <div className="rounded-xl border border-slate-700/80 bg-[#25272c] overflow-hidden">
           <div className="p-4 border-b border-slate-700 flex justify-between items-center">
             <h3 className="font-bold text-white text-sm">Histórico Completo de Leituras</h3>
-            <span className="text-xs text-slate-400">{checkins.length} registros recentes</span>
+            <span className="text-xs text-slate-400">{checkinList.length} registros recentes</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -489,7 +501,7 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {checkins.map((c) => (
+                {checkinList.map((c) => (
                   <tr key={c.id} className="hover:bg-[#202227] transition">
                     <td className="py-3 px-4 font-mono font-bold text-white">{c.numeroIngresso}</td>
                     <td className="py-3 px-4 text-slate-300">{c.portaria}</td>
@@ -525,11 +537,11 @@ export default function PortariaPage({ params }: { params: Promise<{ eventoId: s
               <div className="rounded-xl border border-slate-700/80 bg-[#25272c] overflow-hidden">
                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
                   <h3 className="font-bold text-white text-sm">Dispositivos Autorizados</h3>
-                  <span className="text-xs text-slate-400">{dispositivos.length} configurados</span>
+                  <span className="text-xs text-slate-400">{dispositivoList.length} configurados</span>
                 </div>
 
                 <div className="divide-y divide-slate-800">
-                  {dispositivos.map((d) => {
+                  {dispositivoList.map((d) => {
                     const isAtivo = d.status === 'ATIVO';
                     return (
                       <div key={d.id} className="p-4 flex items-center justify-between gap-4">

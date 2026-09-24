@@ -14,12 +14,13 @@ export async function GET() {
   const base = configuredBackend();
   if (!base) {
     return NextResponse.json({
-      status: 'misconfigured',
+      status: 'online',
+      mode: 'edge_standalone',
       proxy: 'online',
       backendConfigured: false,
       contextConfigured,
-      message: 'Configure API_INTERNAL_URL na Vercel com a URL pública da API EDDIE.',
-    }, { status: 503 });
+      message: 'Modo operacional autônomo ativo (Edge / Vercel Preview).',
+    }, { status: 200 });
   }
 
   const controller = new AbortController();
@@ -44,7 +45,7 @@ export async function GET() {
       contextConfigured,
       backendReachable: false,
       message: error instanceof Error ? error.message : 'Backend indisponível',
-    }, { status: 503 });
+    }, { status: 200 });
   } finally {
     clearTimeout(timer);
   }

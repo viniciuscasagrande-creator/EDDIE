@@ -1,0 +1,11 @@
+# Critérios globais
+- Zero barra contextual duplicada.
+- Zero conteúdo escondido por header/nav.
+- Zero tela branca nas rotas principais.
+- Zero overflow horizontal global.
+- Uma fonte de contexto Produtor→Evento→Sessão.
+- Uma fonte de navegação Event OS.
+- Zero mock rotulado como real/confirmado/ao vivo.
+- UI 100% pt-BR.
+- Tema claro/escuro legível.
+- Sem regressão em venda, pagamento, ingresso, check-in, financeiro e Ledger.
