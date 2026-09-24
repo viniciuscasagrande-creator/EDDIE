@@ -125,7 +125,7 @@ export default function EventosPage() {
             return (
               <div
                 key={e.id}
-                className="group overflow-hidden rounded-xl border border-slate-700 bg-[#292b31] hover:border-sky-500/60 transition flex flex-col justify-between"
+                className="group overflow-hidden rounded-xl border border-slate-800 bg-[#131722] hover:border-sky-500/50 transition flex flex-col justify-between shadow-sm"
               >
                 <div className="grid sm:grid-cols-[230px_1fr] min-h-[200px]">
                   <div className="bg-[#15171b] relative">

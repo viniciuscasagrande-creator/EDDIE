@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { EventOsShell } from '@/components/eventos/EventOsShell';
 import {
   ShieldCheck,
   Zap,
@@ -52,8 +51,7 @@ export default function EventHardeningPage() {
   }
 
   return (
-    <EventOsShell eventoId={eventoId}>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Banner do Evento */}
         <div className="bg-[#111317] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -163,6 +161,5 @@ export default function EventHardeningPage() {
           </div>
         </div>
       </div>
-    </EventOsShell>
   );
 }

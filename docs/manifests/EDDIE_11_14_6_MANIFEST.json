@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.14.6 — Relatórios, Auditoria e Rastreabilidade",
+  "baseline": "EDDIE_11_14_5_ESTORNO_CHARGEBACK_REVERSOES_E2E.zip",
+  "evidenceRequired": true,
+  "productionDestructiveTestsAllowed": false,
+  "prompt": ".gemini/prompts/EDDIE_11_14_6.md"
+}

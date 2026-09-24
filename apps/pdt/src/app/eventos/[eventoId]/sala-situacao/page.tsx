@@ -26,7 +26,6 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import { EventOsShell } from '../../../../components/eventos/EventOsShell';
 import { useProducerEvent } from '../../../../components/ProducerEventContext';
 
 export default function SalaSituacaoPage({
@@ -117,8 +116,7 @@ export default function SalaSituacaoPage({
   const isCrise = data?.statusGeral === 'CRISE_P1';
 
   return (
-    <EventOsShell eventoId={eventoId || 'evento-operacao'}>
-      <div className="space-y-6 text-slate-100 pb-12">
+    <div className="space-y-6 text-slate-100 pb-12">
         {/* WAR ROOM TOP BANNER */}
         <div
           className={`rounded-2xl border p-5 md:p-6 transition shadow-xl ${
@@ -494,6 +492,5 @@ export default function SalaSituacaoPage({
           </div>
         )}
       </div>
-    </EventOsShell>
   );
 }

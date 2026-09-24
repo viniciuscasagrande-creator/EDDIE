@@ -25,7 +25,6 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
-import { EventOsShell } from '../../../../../components/eventos/EventOsShell';
 
 export default function CockpitComparativosPage({
   params,
@@ -97,8 +96,7 @@ export default function CockpitComparativosPage({
   ];
 
   return (
-    <EventOsShell eventoId={eventoId || 'evento-operacao'}>
-      <div className="space-y-6 max-w-full text-slate-100 pb-12">
+    <div className="space-y-6 max-w-full text-slate-100 pb-12">
         {/* CABEÇALHO */}
         <div className="rounded-2xl border border-slate-700/80 bg-gradient-to-r from-[#171a22] via-[#14161c] to-[#121418] p-5 shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -391,6 +389,5 @@ export default function CockpitComparativosPage({
           </Link>
         </div>
       </div>
-    </EventOsShell>
   );
 }

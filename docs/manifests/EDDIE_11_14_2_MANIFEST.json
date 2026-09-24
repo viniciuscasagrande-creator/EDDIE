@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.14.2 — Venda, Pagamento e Ingresso",
+  "baseline": "EDDIE_11_14_1_CADASTRO_CONFIGURACAO_EVENTO_E2E.zip",
+  "evidenceRequired": true,
+  "productionDestructiveTestsAllowed": false,
+  "prompt": ".gemini/prompts/EDDIE_11_14_2.md"
+}

@@ -12,6 +12,8 @@ export async function GET() {
     uiVersion: EDDIE_BUILD.uiVersion,
     release: EDDIE_BUILD.release,
     eventOs: true,
+    marker1115: 'EDDIE-11.15.1-REVISAO-GLOBAL',
+    marker1114: 'EDDIE-11.14-E2E-GOLIVE',
     marker1113: 'EDDIE-11.13-HARDENING',
     marker1112: 'EDDIE-11.12-INTELIGENCIA',
     marker1111: 'EDDIE-11.11-AUTOMACAO',

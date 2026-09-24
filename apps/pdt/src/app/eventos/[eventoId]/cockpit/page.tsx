@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Compass,
@@ -23,7 +23,6 @@ import {
   RefreshCcw,
 } from 'lucide-react';
 import { useProducerEvent } from '../../../../components/ProducerEventContext';
-import { EventOsShell } from '../../../../components/eventos/EventOsShell';
 
 export default function CockpitExecutivoPage({
   params,
@@ -40,7 +39,7 @@ export default function CockpitExecutivoPage({
     });
   }, [params]);
 
-  const carregarCockpit = async () => {
+  const carregarCockpit = useCallback(async () => {
     if (!eventoId) return;
     setLoading(true);
     try {
@@ -51,73 +50,68 @@ export default function CockpitExecutivoPage({
     } catch {} finally {
       setLoading(false);
     }
-  };
+  }, [eventoId]);
 
   useEffect(() => {
     if (eventoId) carregarCockpit();
-  }, [eventoId]);
+  }, [eventoId, carregarCockpit]);
 
   const formatBRL = (cents = 0) =>
     (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const kpis = dados?.kpis || {
-    receitaRealCents: 4895000,
-    receitaMetaCents: 6000000,
-    atingimentoMetaPercentual: 81.6,
-    projecaoFechamentoCents: 5850000,
-    ticketMedioCents: 15015,
-    ingressosVendidos: 580,
-    capacidadeTotal: 1200,
-    ocupacaoPercentual: 48.3,
-    pessoasDentro: 312,
-    ritmoEntradaMinuto: 8.5,
-    liquidoProdutorCents: 4405500,
-    taxasDiskCents: 489500,
-    disponivelRepasseCents: 3405500,
-  };
+  const kpis = dados?.kpis;
 
   return (
-    <EventOsShell eventoId={eventoId || 'evento-operacao'}>
-      <div className="space-y-6 max-w-full text-slate-100">
-        {/* Cabeçalho do Cockpit Executivo */}
-        <div className="rounded-2xl border border-slate-700/80 bg-gradient-to-r from-[#171a22] via-[#14161c] to-[#121418] p-5 shadow-2xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-purple-500/10 px-2.5 py-0.5 text-xs font-bold text-purple-300 border border-purple-500/20">
-                  <Compass size={14} />
-                  COCKPIT EXECUTIVO
-                </span>
+    <div className="space-y-6 max-w-full text-slate-100 pb-12">
+      {/* Cabeçalho do Cockpit Executivo */}
+      <div className="rounded-2xl border border-slate-700/80 bg-gradient-to-r from-[#171a22] via-[#14161c] to-[#121418] p-5 shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-purple-500/10 px-2.5 py-0.5 text-xs font-bold text-purple-300 border border-purple-500/20">
+                <Compass size={14} />
+                COCKPIT EXECUTIVO
+              </span>
+              {dados?.statusExecutivo === 'EM_ANDAMENTO' ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-400 border border-emerald-500/30">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
                   AO VIVO
                 </span>
-              </div>
-
-              <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-white truncate">
-                {dados?.nome || `Festival DiskIngressos Live · ${eventoId}`}
-              </h1>
-              <p className="text-xs text-slate-400">
-                Visão consolidada para produtores e diretoria: metas, projeções, faturamento e saúde global.
-              </p>
+              ) : loading ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/15 px-2.5 py-0.5 text-xs font-bold text-sky-400 border border-sky-500/30">
+                  CARREGANDO...
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-400 border border-amber-500/30">
+                  AGUARDANDO INTEGRAÇÃO
+                </span>
+              )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-              <Link
-                href={`/eventos/${eventoId}/cockpit/comparativos`}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-2 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition"
-              >
-                <BarChart3 size={13} />
-                <span>Comparativos</span>
-              </Link>
+            <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-white truncate mt-1">
+              {dados?.nome || `Festival DiskIngressos Live · ${eventoId}`}
+            </h1>
+            <p className="text-xs text-slate-400">
+              Visão consolidada para produtores e diretoria: metas, projeções, faturamento e saúde global.
+            </p>
+          </div>
 
-              <button
-                onClick={carregarCockpit}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-[#202228] px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white transition"
-              >
-                <RefreshCcw size={13} className={loading ? 'animate-spin' : ''} />
-                <span>Sincronizar</span>
-              </button>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <Link
+              href={`/eventos/${eventoId}/cockpit/comparativos`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-2 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition"
+            >
+              <BarChart3 size={13} />
+              <span>Comparativos</span>
+            </Link>
+
+            <button
+              onClick={carregarCockpit}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-[#202228] px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white transition"
+            >
+              <RefreshCcw size={13} className={loading ? 'animate-spin' : ''} />
+              <span>Sincronizar</span>
+            </button>
 
             <Link
               href={`/eventos/${eventoId}/operacao`}
@@ -139,16 +133,16 @@ export default function CockpitExecutivoPage({
             <DollarSign size={16} className="text-emerald-400" />
           </div>
           <div className="text-2xl lg:text-3xl font-black text-white font-mono">
-            {formatBRL(kpis.receitaRealCents)}
+            {kpis?.receitaRealCents != null ? formatBRL(kpis.receitaRealCents) : loading ? 'Carregando...' : 'Dados indisponíveis'}
           </div>
           <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
-            <span>Meta: {formatBRL(kpis.receitaMetaCents)}</span>
-            <span className="text-emerald-400 font-bold">{kpis.atingimentoMetaPercentual}%</span>
+            <span>Meta: {kpis?.receitaMetaCents != null ? formatBRL(kpis.receitaMetaCents) : '—'}</span>
+            <span className="text-emerald-400 font-bold">{kpis?.atingimentoMetaPercentual != null ? `${kpis.atingimentoMetaPercentual}%` : '—'}</span>
           </div>
           <div className="w-full bg-slate-800 rounded-full h-1.5 mt-1">
             <div
               className="bg-emerald-400 h-1.5 rounded-full"
-              style={{ width: `${Math.min(100, kpis.atingimentoMetaPercentual)}%` }}
+              style={{ width: `${Math.min(100, kpis?.atingimentoMetaPercentual || 0)}%` }}
             />
           </div>
         </div>
@@ -163,7 +157,7 @@ export default function CockpitExecutivoPage({
             <Target size={16} className="text-sky-400" />
           </div>
           <div className="text-2xl lg:text-3xl font-black text-sky-400 font-mono">
-            {formatBRL(kpis.projecaoFechamentoCents)}
+            {kpis?.projecaoFechamentoCents != null ? formatBRL(kpis.projecaoFechamentoCents) : loading ? 'Calculando...' : 'Dados indisponíveis'}
           </div>
           <div className="text-xs text-slate-400 pt-1">
             Estimativa calculada via curva de aceleração de lote
@@ -180,12 +174,12 @@ export default function CockpitExecutivoPage({
             <Wallet size={16} className="text-purple-400" />
           </div>
           <div className="text-2xl lg:text-3xl font-black text-emerald-400 font-mono">
-            {formatBRL(kpis.liquidoProdutorCents)}
+            {kpis?.liquidoProdutorCents != null ? formatBRL(kpis.liquidoProdutorCents) : loading ? 'Carregando...' : 'Dados indisponíveis'}
           </div>
           <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
             <span>Disponível para Repasse:</span>
             <span className="font-bold text-white font-mono">
-              {formatBRL(kpis.disponivelRepasseCents)}
+              {kpis?.disponivelRepasseCents != null ? formatBRL(kpis.disponivelRepasseCents) : '—'}
             </span>
           </div>
           <div className="text-[10px] text-slate-500">
@@ -202,9 +196,9 @@ export default function CockpitExecutivoPage({
             <span className="font-semibold uppercase tracking-wider">Ocupação do Espaço</span>
             <Users size={16} className="text-sky-400" />
           </div>
-          <div className="mt-2 text-2xl font-black text-white">{kpis.ocupacaoPercentual}%</div>
+          <div className="mt-2 text-2xl font-black text-white">{kpis?.ocupacaoPercentual != null ? `${kpis.ocupacaoPercentual}%` : '—'}</div>
           <div className="text-xs text-slate-400 mt-1">
-            {kpis.ingressosVendidos} de {kpis.capacidadeTotal} ingressos
+            {kpis?.ingressosVendidos != null ? `${kpis.ingressosVendidos} de ${kpis.capacidadeTotal || 0} ingressos` : 'Aguardando apuração'}
           </div>
         </div>
 
@@ -214,9 +208,9 @@ export default function CockpitExecutivoPage({
             <span className="font-semibold uppercase tracking-wider">Pessoas Dentro</span>
             <ScanLine size={16} className="text-emerald-400" />
           </div>
-          <div className="mt-2 text-2xl font-black text-emerald-400">{kpis.pessoasDentro}</div>
+          <div className="mt-2 text-2xl font-black text-emerald-400">{kpis?.pessoasDentro != null ? kpis.pessoasDentro : '—'}</div>
           <div className="text-xs text-slate-400 mt-1">
-            Fluxo atual: <b>{kpis.ritmoEntradaMinuto}</b> entradas/min
+            Fluxo atual: <b>{kpis?.ritmoEntradaMinuto != null ? kpis.ritmoEntradaMinuto : '—'}</b> entradas/min
           </div>
         </div>
 
@@ -226,105 +220,28 @@ export default function CockpitExecutivoPage({
             <span className="font-semibold uppercase tracking-wider">Ticket Médio</span>
             <TrendingUp size={16} className="text-purple-400" />
           </div>
-          <div className="mt-2 text-2xl font-black text-white font-mono">
-            {formatBRL(kpis.ticketMedioCents)}
+          <div className="mt-2 text-2xl font-black text-white">
+            {kpis?.ticketMedioCents != null ? formatBRL(kpis.ticketMedioCents) : '—'}
           </div>
-          <div className="text-xs text-slate-400 mt-1">Média por comprador confirmado</div>
-        </div>
-      </div>
-
-      {/* Grid 3: Radar de Saúde Executiva + Vendas por Canal */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Radar de Saúde dos Subsistemas */}
-        <div className="lg:col-span-6 rounded-xl border border-slate-700/80 bg-[#16181d] p-5 shadow-lg space-y-3">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-emerald-400" />
-              <h3 className="font-bold text-white text-base">Radar de Saúde Operacional</h3>
-            </div>
-            <span className="text-xs text-slate-400">Score global: 93/100</span>
-          </div>
-
-          <div className="space-y-2.5 pt-1">
-            {(dados?.radarSaude || []).map((r: any, idx: number) => (
-              <div
-                key={idx}
-                className="p-2.5 rounded-lg bg-[#1f2228] border border-slate-800/80 flex items-center justify-between text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      r.status === 'NORMAL' ? 'bg-emerald-400 shadow-sm' : 'bg-amber-400 shadow-sm'
-                    }`}
-                  />
-                  <span className="font-medium text-slate-200">{r.subsistema}</span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="w-24 bg-slate-800 rounded-full h-1.5 hidden sm:block">
-                    <div
-                      className={`h-1.5 rounded-full ${
-                        r.status === 'NORMAL' ? 'bg-emerald-400' : 'bg-amber-400'
-                      }`}
-                      style={{ width: `${r.score}%` }}
-                    />
-                  </div>
-                  <span className="font-mono text-slate-400 font-bold">{r.score}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Canais de Origem de Receita */}
-        <div className="lg:col-span-6 rounded-xl border border-slate-700/80 bg-[#16181d] p-5 shadow-lg space-y-3">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <div className="flex items-center gap-2">
-              <Megaphone size={16} className="text-purple-400" />
-              <h3 className="font-bold text-white text-base">Origem das Vendas por Canal</h3>
-            </div>
-            <Link
-              href={`/eventos/${eventoId}/marketing`}
-              className="text-xs text-purple-400 hover:underline inline-flex items-center gap-1"
-            >
-              Marketing <ArrowRight size={13} />
-            </Link>
-          </div>
-
-          <div className="space-y-2.5 pt-1">
-            {(dados?.canaisVendas || []).map((c: any, idx: number) => (
-              <div key={idx} className="p-2.5 rounded-lg bg-[#1f2228] border border-slate-800/80 space-y-1.5 text-xs">
-                <div className="flex justify-between">
-                  <span className="font-semibold text-slate-200">{c.canal}</span>
-                  <span className="font-mono text-emerald-400 font-bold">{formatBRL(c.receitaCents)}</span>
-                </div>
-                <div className="flex justify-between text-[11px] text-slate-400">
-                  <span>{c.ingressos} ingressos emitidos</span>
-                  <span>{c.share}% do total</span>
-                </div>
-                <div className="w-full bg-slate-800 rounded-full h-1">
-                  <div className="bg-purple-500 h-1 rounded-full" style={{ width: `${c.share}%` }} />
-                </div>
-              </div>
-            ))}
+          <div className="text-xs text-slate-400 mt-1">
+            Taxas Disk: {kpis?.taxasDiskCents != null ? formatBRL(kpis.taxasDiskCents) : '—'}
           </div>
         </div>
       </div>
 
-      {/* Ações Recomendadas & Atalhos Executivos */}
-      <div className="rounded-xl border border-slate-700/80 bg-[#16181d] p-5 shadow-lg">
-        <h3 className="font-bold text-white text-base pb-3 border-b border-slate-800">
-          Atalhos de Gestão & Decisão
+      {/* Grid 3: Atalhos Estratégicos & Executivos */}
+      <div className="rounded-xl border border-slate-800 bg-[#14161c] p-5 shadow-sm space-y-3">
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          Módulos Integrados do Event OS
         </h3>
-
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <Link
-            href={`/eventos/${eventoId}/operacao`}
-            className="p-3 rounded-lg bg-[#1f2228] border border-slate-800 hover:border-emerald-500/50 transition flex flex-col justify-between"
+            href={`/eventos/${eventoId}/inteligencia`}
+            className="p-3 rounded-lg bg-[#1f2228] border border-slate-800 hover:border-purple-500/50 transition flex flex-col justify-between"
           >
-            <Radio size={16} className="text-emerald-400" />
-            <div className="mt-2 font-bold text-white">Sala de Controle (NOC)</div>
-            <span className="text-[11px] text-slate-400">Tempo real</span>
+            <Sparkles size={16} className="text-purple-400" />
+            <div className="mt-2 font-bold text-white">Central de Inteligência</div>
+            <span className="text-[11px] text-slate-400">Preditivo & Risco</span>
           </Link>
 
           <Link
@@ -356,6 +273,5 @@ export default function CockpitExecutivoPage({
         </div>
       </div>
     </div>
-    </EventOsShell>
   );
 }

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, LucideIcon } from 'lucide-react';
+import { ChevronDown, type LucideIcon } from 'lucide-react';
 
 export type NavItem = {
   label: string;
@@ -19,6 +19,12 @@ export function EventContextNav({ items }: { items: NavItem[] }) {
 
   const primary = items.filter((i) => i.priority);
   const secondary = items.filter((i) => !i.priority);
+
+  const isItemActive = (href: string) => {
+    return pathname === href || pathname.startsWith(href + '/');
+  };
+
+  const isSecondaryActive = secondary.some((s) => isItemActive(s.href));
 
   // Fecha o dropdown se clicar fora
   useEffect(() => {
@@ -36,7 +42,7 @@ export function EventContextNav({ items }: { items: NavItem[] }) {
       {/* Itens Prioritários Visíveis */}
       <div className="flex min-w-0 flex-wrap items-center gap-1">
         {primary.map((item) => {
-          const active = pathname === item.href || (item.href.endsWith('/operacao') && pathname.includes('/operacao'));
+          const active = isItemActive(item.href);
           const Icon = item.icon;
           return (
             <Link
@@ -46,7 +52,7 @@ export function EventContextNav({ items }: { items: NavItem[] }) {
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                 active
                   ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-[#1e2026]'
+                  : 'text-slate-300 hover:text-white hover:bg-[#1e2026] border border-transparent'
               }`}
             >
               {Icon && <Icon size={14} className={active ? 'text-sky-400' : 'text-slate-400'} />}
@@ -64,9 +70,11 @@ export function EventContextNav({ items }: { items: NavItem[] }) {
             onClick={() => setDropdownOpen((prev) => !prev)}
             aria-expanded={dropdownOpen}
             className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition border ${
-              dropdownOpen || secondary.some((s) => pathname.startsWith(s.href))
+              isSecondaryActive
+                ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+                : dropdownOpen
                 ? 'bg-slate-700/80 text-white border-slate-600'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-[#1e2026] border-transparent'
+                : 'text-slate-300 hover:text-white hover:bg-[#1e2026] border-slate-700/60'
             }`}
           >
             <span>Mais</span>
@@ -74,30 +82,32 @@ export function EventContextNav({ items }: { items: NavItem[] }) {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 z-50 mt-2 min-w-56 rounded-xl border border-slate-700/80 bg-[#181a20] p-1.5 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95">
-              <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <div className="absolute right-0 z-50 mt-2 min-w-56 max-h-[75vh] overflow-y-auto rounded-xl border border-slate-700/80 bg-[#161820] p-1.5 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95">
+              <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Módulos do Evento
               </div>
-              {secondary.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(item.href);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setDropdownOpen(false)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                      active
-                        ? 'bg-sky-500/15 text-sky-400'
-                        : 'text-slate-300 hover:bg-[#252830] hover:text-white'
-                    }`}
-                  >
-                    {Icon && <Icon size={14} className={active ? 'text-sky-400' : 'text-slate-400'} />}
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
+              <div className="space-y-0.5 mt-1">
+                {secondary.map((item) => {
+                  const active = isItemActive(item.href);
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setDropdownOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
+                        active
+                          ? 'bg-sky-500/15 text-sky-400 font-semibold'
+                          : 'text-slate-200 hover:bg-[#232733] hover:text-white'
+                      }`}
+                    >
+                      {Icon && <Icon size={14} className={active ? 'text-sky-400' : 'text-slate-400'} />}
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

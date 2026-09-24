@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.14.3 — Portaria, Check-in e Antifraude",
+  "baseline": "EDDIE_11_14_2_VENDA_PAGAMENTO_INGRESSO_E2E.zip",
+  "evidenceRequired": true,
+  "productionDestructiveTestsAllowed": false,
+  "prompt": ".gemini/prompts/EDDIE_11_14_3.md"
+}

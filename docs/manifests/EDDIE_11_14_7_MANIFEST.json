@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.14.7 — Go-Live Final + Release Gate",
+  "baseline": "EDDIE_11_14_6_RELATORIOS_AUDITORIA_RASTREABILIDADE_E2E.zip",
+  "evidenceRequired": true,
+  "productionDestructiveTestsAllowed": false,
+  "prompt": ".gemini/prompts/EDDIE_11_14_7.md"
+}

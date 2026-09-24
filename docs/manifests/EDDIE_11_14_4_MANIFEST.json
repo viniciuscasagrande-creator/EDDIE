@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.14.4 — Financeiro, Ledger, Conciliação e Repasse",
+  "baseline": "EDDIE_11_14_3_PORTARIA_CHECKIN_ANTIFRAUDE_E2E.zip",
+  "evidenceRequired": true,
+  "productionDestructiveTestsAllowed": false,
+  "prompt": ".gemini/prompts/EDDIE_11_14_4.md"
+}

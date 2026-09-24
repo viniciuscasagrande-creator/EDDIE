@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.14.1 — Cadastro e Configuração do Evento",
+  "baseline": "EDDIE_11_13_5_STRESS_TEST_HOMOLOGACAO_ENTERPRISE.zip",
+  "evidenceRequired": true,
+  "productionDestructiveTestsAllowed": false,
+  "prompt": ".gemini/prompts/EDDIE_11_14_1.md"
+}

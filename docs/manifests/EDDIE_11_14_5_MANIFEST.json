@@ -1,0 +1,7 @@
+{
+  "fase": "EDDIE 11.14.5 — Estorno, Chargeback e Reversões",
+  "baseline": "EDDIE_11_14_4_FINANCEIRO_LEDGER_CONCILIACAO_REPASSE_E2E.zip",
+  "evidenceRequired": true,
+  "productionDestructiveTestsAllowed": false,
+  "prompt": ".gemini/prompts/EDDIE_11_14_5.md"
+}

@@ -2,27 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  LayoutDashboard,
-  Ticket,
-  Map,
-  FileBarChart,
-  Info,
-  Wallet,
-  Megaphone,
-  ScanLine,
-  ShieldAlert,
-  Activity,
-  RefreshCcw,
-  Gift,
-  Layers,
-  Calendar,
-  Compass,
-  Sparkles,
-  ShieldCheck,
-} from 'lucide-react';
-import { EventContextNav, NavItem } from '../event-operations/EventContextNav';
+import { usePathname } from 'next/navigation';
+import { ArrowLeft, Ticket } from 'lucide-react';
+import { EventContextNav, type NavItem } from '../event-operations/EventContextNav';
+import { EVENT_OS_NAV } from '../../lib/eventOsCatalog';
 
 export function EventOsShell({
   eventoId,
@@ -31,64 +14,63 @@ export function EventOsShell({
   eventoId: string;
   children: React.ReactNode;
 }) {
-  const navItems: NavItem[] = [
-    // Itens Prioritários (visíveis diretamente na barra)
-    { href: `/eventos/${eventoId}/operacao`, label: 'Operação', icon: Activity, priority: true },
-    { href: `/eventos/${eventoId}/cockpit`, label: 'Cockpit', icon: Compass, priority: true },
-    { href: `/eventos/${eventoId}/inteligencia`, label: 'Inteligência', icon: Sparkles, priority: true },
-    { href: `/eventos/${eventoId}/dashboard`, label: 'Dashboard', icon: LayoutDashboard, priority: true },
-    { href: `/eventos/${eventoId}/ingressos`, label: 'Ingressos', icon: Ticket, priority: true },
-    { href: `/eventos/${eventoId}/portaria`, label: 'Portaria', icon: ScanLine, priority: true },
-    { href: `/eventos/${eventoId}/antifraude`, label: 'Antifraude', icon: ShieldAlert, priority: true },
-    { href: `/eventos/${eventoId}/mapa`, label: 'Mapa', icon: Map, priority: true },
-    { href: `/eventos/${eventoId}/financeiro`, label: 'Financeiro', icon: Wallet, priority: true },
+  const pathname = usePathname();
 
-    { href: `/eventos/${eventoId}/sala-situacao`, label: 'Sala de Situação', icon: ShieldAlert, priority: false },
-    { href: `/eventos/${eventoId}/marketing`, label: 'Marketing', icon: Megaphone, priority: false },
-    { href: `/eventos/${eventoId}/remarketing`, label: 'Remarketing', icon: RefreshCcw, priority: false },
-    { href: `/eventos/${eventoId}/cortesias`, label: 'Cortesias', icon: Gift, priority: false },
-    { href: `/eventos/${eventoId}/relatorios`, label: 'Relatórios', icon: FileBarChart, priority: false },
-    { href: `/eventos/${eventoId}/detalhes`, label: 'Configurações', icon: Info, priority: false },
-    { href: `/eventos/${eventoId}/configuracao/lotes`, label: 'Gestão de Lotes', icon: Layers, priority: false },
-    { href: `/eventos/${eventoId}/configuracao/sessoes`, label: 'Sessões do Evento', icon: Calendar, priority: false },
-    { href: `/eventos/${eventoId}/configuracao/setores`, label: 'Setores & Capacidade', icon: Map, priority: false },
-    { href: `/eventos/${eventoId}/hardening`, label: 'Hardening & Segurança', icon: ShieldCheck, priority: false },
-  ];
+  // Mapeia itens da fonte única de verdade (EVENT_OS_NAV)
+  const navItems: NavItem[] = EVENT_OS_NAV.map((item) => ({
+    href: `/eventos/${eventoId}/${item.slug}`,
+    label: item.shortLabel || item.label,
+    icon: item.icon,
+    priority: item.priority,
+  }));
+
+  // Detecta o item ativo para o breadcrumb
+  const activeItem = EVENT_OS_NAV.find((item) => {
+    const target = `/eventos/${eventoId}/${item.slug}`;
+    return pathname === target || pathname.startsWith(target + '/');
+  });
 
   return (
-    <div className="flex flex-col w-full min-h-[calc(100vh-80px)] -m-4 lg:-m-6">
-      {/* BARRA HORIZONTAL FIXA DE CONTEXTO DO EVENTO (Substitui a 2ª sidebar) */}
-      <div className="sticky top-16 z-20 w-full bg-[#111317]/95 backdrop-blur-md border-b border-slate-800 px-4 lg:px-6 py-2">
+    <div className="flex flex-col w-full min-h-full -m-8">
+      {/* BARRA HORIZONTAL FIXA DE CONTEXTO DO EVENTO (ÚNICA FONTE DE VERDADE) */}
+      <header className="sticky top-0 z-20 w-full bg-[#0d1322]/95 backdrop-blur-md border-b border-slate-800 px-6 py-2.5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Lado Esquerdo: Voltar + Identificador do Evento */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Lado Esquerdo: Breadcrumb Todos os Eventos → Evento → Área */}
+          <nav aria-label="Breadcrumb do Evento" className="flex items-center gap-2 shrink-0 min-w-0">
             <Link
               href="/eventos"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-[#1e2026] px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-slate-700 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-[#161a24] px-2.5 py-1 text-xs font-semibold text-slate-300 transition hover:bg-slate-700 hover:text-white"
+              title="Voltar para Todos os Eventos"
             >
-              <ArrowLeft size={14} />
-              <span>Eventos</span>
+              <ArrowLeft size={13} />
+              <span className="hidden sm:inline">Todos os Eventos</span>
             </Link>
-            <div className="h-4 w-px bg-slate-700" />
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-                <Ticket size={15} />
-              </div>
-              <span className="font-mono text-xs font-bold text-slate-200">
+            <span className="text-slate-600 font-bold">/</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20">
+              <Ticket size={13} className="text-sky-400 shrink-0" />
+              <span className="font-mono text-xs font-bold text-sky-300 truncate max-w-[140px] md:max-w-[200px]">
                 {eventoId}
               </span>
             </div>
-          </div>
+            {activeItem && (
+              <>
+                <span className="text-slate-600 font-bold">/</span>
+                <span className="text-xs font-semibold text-slate-200 hidden md:inline truncate">
+                  {activeItem.label}
+                </span>
+              </>
+            )}
+          </nav>
 
-          {/* Navegação Contextual do Evento (EventContextNav) */}
+          {/* Lado Direito: Navegação Contextual do Evento (EventContextNav) */}
           <div className="min-w-0">
             <EventContextNav items={navItems} />
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Conteúdo Principal Ocupando 100% da Largura Útil */}
-      <main className="flex-1 w-full min-w-0 bg-[#0f1115] p-4 lg:p-6 overflow-x-hidden">
+      <main className="flex-1 w-full min-w-0 bg-[#0b0f19] p-6 lg:p-8 overflow-x-hidden">
         {children}
       </main>
     </div>
@@ -104,17 +86,17 @@ export const Kpi = ({
   value: string;
   help: string;
 }) => (
-  <div className="rounded-xl border border-slate-700 bg-[#292b31] p-4">
-    <div className="text-xs text-slate-400">{label}</div>
+  <div className="rounded-xl border border-slate-800 bg-[#131722] p-4 shadow-sm">
+    <div className="text-xs text-slate-400 font-medium">{label}</div>
     <div className="text-2xl font-bold text-white mt-2">{value}</div>
     <div className="text-xs text-slate-500 mt-1">{help}</div>
   </div>
 );
 
 export const EmptyChart = ({ title }: { title: string }) => (
-  <div className="rounded-xl border border-slate-700 bg-[#292b31] p-5 min-h-52">
-    <h3 className="font-semibold text-white">{title}</h3>
-    <div className="h-32 mt-4 grid place-items-center border-b border-l border-slate-600 text-xs text-slate-500">
+  <div className="rounded-xl border border-slate-800 bg-[#131722] p-5 min-h-52 shadow-sm">
+    <h3 className="font-semibold text-white text-sm">{title}</h3>
+    <div className="h-32 mt-4 grid place-items-center border-b border-l border-slate-700/60 text-xs text-slate-400">
       Aguardando dados reais do evento
     </div>
   </div>
