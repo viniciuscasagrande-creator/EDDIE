@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FinanceiroService } from './financeiro.service';
 import { FinanceiroEvents } from '@ticketing/contracts';
@@ -17,34 +18,34 @@ describe('FinanceiroService (Ledger, Conta Gráfica e Tesouraria)', () => {
 
   beforeEach(() => {
     mockOutbox = {
-      emit: jest.fn().mockResolvedValue('outbox-message-id'),
+      emit: vi.fn().mockResolvedValue('outbox-message-id'),
     };
 
     mockPrisma = {
-      $transaction: jest.fn().mockImplementation(async (callback: any) => {
+      $transaction: vi.fn().mockImplementation(async (callback: any) => {
         return callback(mockPrisma);
       }),
       lancamentoLedger: {
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        create: jest.fn(),
-        count: jest.fn(),
+        findMany: vi.fn(),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        count: vi.fn(),
       },
       transferenciaInterEvento: {
-        create: jest.fn(),
+        create: vi.fn(),
       },
       solicitacaoRepasse: {
-        create: jest.fn(),
-        findMany: jest.fn(),
+        create: vi.fn(),
+        findMany: vi.fn(),
       },
       solicitacaoAntecipacao: {
-        create: jest.fn(),
+        create: vi.fn(),
       },
       contaPagar: {
-        create: jest.fn(),
-        findUnique: jest.fn(),
-        findMany: jest.fn(),
-        update: jest.fn(),
+        create: vi.fn(),
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+        update: vi.fn(),
       },
     };
 

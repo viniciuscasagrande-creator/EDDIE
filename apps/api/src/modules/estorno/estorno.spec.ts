@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
 import { EstornoService } from './estorno.service';
 import { EstornoPolicy } from './estorno.policy';
@@ -59,18 +60,18 @@ describe('Módulo Estorno', () => {
 
     beforeEach(() => {
       mockOutbox = {
-        emit: jest.fn().mockResolvedValue(undefined),
+        emit: vi.fn().mockResolvedValue(undefined),
       };
 
       mockPrisma = {
-        $transaction: jest.fn().mockImplementation(async (cb) => cb(mockPrisma)),
+        $transaction: vi.fn().mockImplementation(async (cb) => cb(mockPrisma)),
         estorno: {
-          create: jest.fn(),
-          findUnique: jest.fn(),
-          update: jest.fn(),
+          create: vi.fn(),
+          findUnique: vi.fn(),
+          update: vi.fn(),
         },
         estornoTransicao: {
-          create: jest.fn(),
+          create: vi.fn(),
         },
       };
 

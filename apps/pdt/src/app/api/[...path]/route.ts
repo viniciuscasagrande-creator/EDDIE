@@ -157,6 +157,347 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     return NextResponse.json(ev);
   }
 
+  // ==========================================================================
+  //  EDDIE 11.19 — EVENT FINANCIAL INTELLIGENCE & SETTLEMENT OS
+  // ==========================================================================
+  if (fullPath.startsWith('eventos/') && fullPath.includes('/finance')) {
+    const eventId = pathParts[1] || 'evento-operacao';
+    const subAction = pathParts[3] || 'summary';
+
+    const baseGrossCents = eventId === 'evento-operacao' ? 48250000 : 31200000;
+    const baseDiskFeeCents = Math.round(baseGrossCents * 0.1);
+    const baseGatewayCents = Math.round(baseGrossCents * 0.025);
+    const baseNetCents = baseGrossCents - baseDiskFeeCents - baseGatewayCents;
+
+    if (subAction === 'summary') {
+      return NextResponse.json({
+        eventId,
+        producerId: '00000000-0000-0000-0000-000000000002',
+        balance: {
+          eventId,
+          producerId: '00000000-0000-0000-0000-000000000002',
+          contabilCents: baseNetCents,
+          disponivelCents: Math.round(baseNetCents * 0.25),
+          bloqueadoCents: 2500000,
+          reservadoEstornoCents: -50000,
+          retidoCents: Math.round(baseNetCents * 0.7),
+          aReceberCents: Math.round(baseNetCents * 0.7),
+          emLiquidacaoCents: 2500000,
+          compromissosPendentesCents: 6300000,
+          lastLedgerEntryAt: new Date().toISOString(),
+          ledgerEntriesCount: 3840,
+        },
+        dre: {
+          eventId,
+          producerId: '00000000-0000-0000-0000-000000000002',
+          period: '2026-01 a 2026-12',
+          grossTicketRevenueCents: baseGrossCents,
+          ticketsSoldTotal: eventId === 'evento-operacao' ? 4120 : 2450,
+          diskServiceFeesCents: baseDiskFeeCents,
+          diskEffectivePercentRate: 10.0,
+          gatewayProcessingFeesCents: baseGatewayCents,
+          refundsAndChargebacksCents: 50000,
+          operatingExpensesSupplierCents: 6300000,
+          grossOperatingProfitCents: baseGrossCents - baseDiskFeeCents - baseGatewayCents - 50000 - 6300000,
+          payoutsSettledCents: 20000000,
+          payoutsScheduledCents: 2500000,
+          netRemainingBalanceCents: baseNetCents - 20000000 - 2500000,
+          sourceNote: 'Escrituração contábil oficial baseada no Ledger em partidas dobradas. Atribuição de marketing analytics não altera a base patrimonial.',
+          generatedAt: new Date().toISOString(),
+        },
+        reconciliation: {
+          status: 'CONCILIADO',
+          totalDivergenceCents: 0,
+          points: [
+            { source: 'GATEWAY', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+            { source: 'PAGAMENTO', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+            { source: 'PEDIDO', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+            { source: 'LEDGER', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+            { source: 'REPASSE', expectedCents: 20000000, actualCents: 20000000, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 3, lastCheckedAt: new Date().toISOString() },
+            { source: 'BANCO', expectedCents: 20000000, actualCents: 20000000, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 3, lastCheckedAt: new Date().toISOString() },
+          ],
+          cases: [],
+          reconciledAt: new Date().toISOString(),
+        },
+        feeConfig: {
+          id: `fee-cfg-${eventId}-v1`,
+          eventId,
+          producerId: '00000000-0000-0000-0000-000000000002',
+          tenantId: '00000000-0000-0000-0000-000000000001',
+          version: 1,
+          ruleModel: 'PERCENTUAL',
+          percentRate: 10.0,
+          fixedAmountCents: 0,
+          gatewayProcessingPercentRate: 2.5,
+          spreadPercentRate: 1.0,
+          advancedDailyDiscountRate: 0.1,
+          effectiveFrom: '2026-01-01T00:00:00.000Z',
+          effectiveTo: null,
+          status: 'VIGENTE',
+          approvedBy: 'diretoria-comercial',
+          contractReference: `CTR-DISK-${eventId.toUpperCase()}-2026`,
+        },
+        intelligence: [
+          {
+            id: 'fin-ins-01',
+            category: 'REVENUE',
+            severity: 'INFO',
+            title: 'Taxa de Conversão Financeira Saudável',
+            observation: 'Taxa de aprovação consolidada de 94.2% em todos os meios de pagamento.',
+            evidence: `Receita bruta de R$ ${(baseGrossCents / 100).toFixed(2)} confirmada no Ledger.`,
+            recommendation: 'Manter contingência ativa entre adquirentes.',
+            confidenceScore: 98,
+            detectedAt: new Date().toISOString(),
+          },
+          {
+            id: 'fin-ins-02',
+            category: 'CONCILIACAO',
+            severity: 'INFO',
+            title: 'Conciliação 6 Vias Perfeita',
+            observation: 'Batimento 100% exato entre Gateway, Pagamento, Pedido, Ledger, Repasse e Banco.',
+            evidence: 'Zero divergências pendentes no extrato bancário oficial.',
+            recommendation: 'Trilha de auditoria 100% íntegra.',
+            confidenceScore: 99,
+            detectedAt: new Date().toISOString(),
+          },
+        ],
+        generatedAt: new Date().toISOString(),
+      });
+    }
+
+    if (subAction === 'balance') {
+      return NextResponse.json({
+        eventId,
+        producerId: '00000000-0000-0000-0000-000000000002',
+        contabilCents: baseNetCents,
+        disponivelCents: Math.round(baseNetCents * 0.25),
+        bloqueadoCents: 2500000,
+        reservadoEstornoCents: -50000,
+        retidoCents: Math.round(baseNetCents * 0.7),
+        aReceberCents: Math.round(baseNetCents * 0.7),
+        emLiquidacaoCents: 2500000,
+        compromissosPendentesCents: 6300000,
+        lastLedgerEntryAt: new Date().toISOString(),
+        ledgerEntriesCount: 3840,
+      });
+    }
+
+    if (subAction === 'fees') {
+      if (method === 'POST') {
+        return NextResponse.json({
+          id: `fee-cfg-${eventId}-v2`,
+          eventId,
+          producerId: '00000000-0000-0000-0000-000000000002',
+          tenantId: '00000000-0000-0000-0000-000000000001',
+          version: 2,
+          ruleModel: 'PERCENTUAL',
+          percentRate: 10.0,
+          fixedAmountCents: 0,
+          gatewayProcessingPercentRate: 2.5,
+          spreadPercentRate: 1.0,
+          advancedDailyDiscountRate: 0.1,
+          effectiveFrom: new Date().toISOString(),
+          effectiveTo: null,
+          status: 'VIGENTE',
+          approvedBy: 'diretoria-comercial',
+          contractReference: `CTR-DISK-${eventId.toUpperCase()}-2026-V2`,
+        });
+      }
+      return NextResponse.json({
+        id: `fee-cfg-${eventId}-v1`,
+        eventId,
+        producerId: '00000000-0000-0000-0000-000000000002',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        version: 1,
+        ruleModel: 'PERCENTUAL',
+        percentRate: 10.0,
+        fixedAmountCents: 0,
+        gatewayProcessingPercentRate: 2.5,
+        spreadPercentRate: 1.0,
+        advancedDailyDiscountRate: 0.1,
+        effectiveFrom: '2026-01-01T00:00:00.000Z',
+        effectiveTo: null,
+        status: 'VIGENTE',
+        approvedBy: 'diretoria-comercial',
+        contractReference: `CTR-DISK-${eventId.toUpperCase()}-2026`,
+      });
+    }
+
+    if (subAction === 'settlements') {
+      if (method === 'POST') {
+        return NextResponse.json({
+          id: `lot-${Date.now()}`,
+          tenantId: '00000000-0000-0000-0000-000000000001',
+          producerId: '00000000-0000-0000-0000-000000000002',
+          eventId,
+          batchNumber: `LOTE-${Date.now().toString().slice(-6)}`,
+          amountCents: 2500000,
+          diskServiceFeesRetainedCents: 0,
+          gatewayFeesRetainedCents: 0,
+          netPayoutCents: 2500000,
+          pixKey: 'financeiro@produtora.com.br',
+          bankAccountMasked: 'Banco Itaú Ag 0432 Conta ***9210-4',
+          scheduledDate: new Date().toISOString(),
+          status: 'AGENDADO',
+          idempotencyKey: `idem-${Date.now()}`,
+          requestedBy: 'diretor-financeiro',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
+      return NextResponse.json([
+        {
+          id: 'lot-01',
+          tenantId: '00000000-0000-0000-0000-000000000001',
+          producerId: '00000000-0000-0000-0000-000000000002',
+          eventId,
+          batchNumber: 'LOTE-849102',
+          amountCents: 20000000,
+          diskServiceFeesRetainedCents: 2000000,
+          gatewayFeesRetainedCents: 500000,
+          netPayoutCents: 17500000,
+          pixKey: 'financeiro@produtora.com.br',
+          bankAccountMasked: 'Banco Itaú Ag 0432 Conta ***9210-4',
+          scheduledDate: '2026-09-20T00:00:00Z',
+          status: 'PAGO',
+          idempotencyKey: 'idem-849102',
+          bankReceiptId: 'DOC-ITA-8492019',
+          pixEndToEndId: 'E2E-ITA-9921491028',
+          createdAt: '2026-09-18T10:00:00Z',
+          updatedAt: '2026-09-20T14:30:00Z',
+        },
+      ]);
+    }
+
+    if (subAction === 'reconciliation') {
+      return NextResponse.json({
+        status: 'CONCILIADO',
+        totalDivergenceCents: 0,
+        points: [
+          { source: 'GATEWAY', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+          { source: 'PAGAMENTO', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+          { source: 'PEDIDO', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+          { source: 'LEDGER', expectedCents: baseGrossCents, actualCents: baseGrossCents, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 4120, lastCheckedAt: new Date().toISOString() },
+          { source: 'REPASSE', expectedCents: 20000000, actualCents: 20000000, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 3, lastCheckedAt: new Date().toISOString() },
+          { source: 'BANCO', expectedCents: 20000000, actualCents: 20000000, divergenceCents: 0, status: 'CONCILIADO', sampleCount: 3, lastCheckedAt: new Date().toISOString() },
+        ],
+        cases: [],
+        reconciledAt: new Date().toISOString(),
+      });
+    }
+
+    if (subAction === 'dre') {
+      return NextResponse.json({
+        eventId,
+        producerId: '00000000-0000-0000-0000-000000000002',
+        period: '2026-01 a 2026-12',
+        grossTicketRevenueCents: baseGrossCents,
+        ticketsSoldTotal: eventId === 'evento-operacao' ? 4120 : 2450,
+        diskServiceFeesCents: baseDiskFeeCents,
+        diskEffectivePercentRate: 10.0,
+        gatewayProcessingFeesCents: baseGatewayCents,
+        refundsAndChargebacksCents: 50000,
+        operatingExpensesSupplierCents: 6300000,
+        grossOperatingProfitCents: baseGrossCents - baseDiskFeeCents - baseGatewayCents - 50000 - 6300000,
+        payoutsSettledCents: 20000000,
+        payoutsScheduledCents: 2500000,
+        netRemainingBalanceCents: baseNetCents - 20000000 - 2500000,
+        sourceNote: 'Escrituração contábil oficial baseada no Ledger em partidas dobradas. Atribuição de marketing analytics não altera a base patrimonial.',
+        generatedAt: new Date().toISOString(),
+      });
+    }
+
+    if (subAction === 'cashflow') {
+      return NextResponse.json([
+        { date: '2026-09-01', inflowsCents: 19300000, outflowsCents: 1930000, netCents: 17370000, accumulatedCents: 17370000, isProjected: false, description: 'Lote Promocional + Lote 1' },
+        { date: '2026-09-15', inflowsCents: 28950000, outflowsCents: 2895000, netCents: 26055000, accumulatedCents: 43425000, isProjected: false, description: 'Lote 2 e Camarotes' },
+        { date: '2026-11-15', inflowsCents: 0, outflowsCents: 35000000, netCents: -35000000, accumulatedCents: 8425000, isProjected: true, description: 'Liquidação de repasse final do evento (D+2 após sessão)' },
+      ]);
+    }
+
+    if (subAction === 'intelligence') {
+      return NextResponse.json([
+        {
+          id: 'fin-ins-01',
+          category: 'REVENUE',
+          severity: 'INFO',
+          title: 'Taxa de Conversão Financeira Saudável',
+          observation: 'Taxa de aprovação consolidada de 94.2% em todos os meios de pagamento.',
+          evidence: `Receita bruta de R$ ${(baseGrossCents / 100).toFixed(2)} confirmada no Ledger.`,
+          recommendation: 'Manter contingência ativa entre adquirentes.',
+          confidenceScore: 98,
+          detectedAt: new Date().toISOString(),
+        },
+        {
+          id: 'fin-ins-02',
+          category: 'CONCILIACAO',
+          severity: 'INFO',
+          title: 'Conciliação 6 Vias Perfeita',
+          observation: 'Batimento 100% exato entre Gateway, Pagamento, Pedido, Ledger, Repasse e Banco.',
+          evidence: 'Zero divergências pendentes no extrato bancário oficial.',
+          recommendation: 'Trilha de auditoria 100% íntegra.',
+          confidenceScore: 99,
+          detectedAt: new Date().toISOString(),
+        },
+      ]);
+    }
+
+    if (subAction === 'timeline') {
+      return NextResponse.json([
+        { id: 'ev-1', timestamp: new Date(Date.now() - 3600000).toISOString(), type: 'PEDIDO_PAGO', description: 'Venda Lote 1 - Pedido #849102 (Taxa Snapshot 10%)', amountCents: 15000, direction: 'IN', bucket: 'retido' },
+        { id: 'ev-2', timestamp: new Date(Date.now() - 7200000).toISOString(), type: 'PEDIDO_PAGO', description: 'Venda Lote 2 - Pedido #849098 (Taxa Snapshot 10%)', amountCents: 22000, direction: 'IN', bucket: 'retido' },
+        { id: 'ev-3', timestamp: new Date(Date.now() - 86400000).toISOString(), type: 'REPASSE', description: 'Liquidação de Repasse Pix Lote #LOTE-849102', amountCents: 20000000, direction: 'OUT', bucket: 'bloqueado' },
+      ]);
+    }
+  }
+
+  if (fullPath.startsWith('produtores/') && fullPath.includes('/finance')) {
+    const producerId = pathParts[1] || '00000000-0000-0000-0000-000000000002';
+    const subAction = pathParts[3] || 'balance';
+
+    if (subAction === 'transfers') {
+      if (pathParts.length > 4 && pathParts[5] === 'reverse') {
+        return NextResponse.json({
+          id: pathParts[4],
+          status: 'ESTORNADA',
+          reversalReason: 'Estorno compensatório autorizado por alçada',
+          reversedAt: new Date().toISOString(),
+        });
+      }
+      return NextResponse.json({
+        id: `trf-${Date.now()}`,
+        producerId,
+        originEventId: 'evento-operacao',
+        targetEventId: 'evento-1',
+        amountCents: 100000,
+        status: 'EXECUTADA',
+        reason: 'Transferência de saldo autorizada',
+        executedAt: new Date().toISOString(),
+      });
+    }
+
+    if (subAction === 'balance') {
+      return NextResponse.json({
+        producerId,
+        totalEventsCount: 2,
+        contabilCents: 65000000,
+        disponivelCents: 25650000,
+        bloqueadoCents: 2500000,
+        reservadoEstornoCents: -50000,
+        retidoCents: 36900000,
+        compromissosPendentesCents: 6300000,
+        eventos: defaultEventos.map((e) => ({
+          eventId: e.id,
+          nome: e.nome,
+          disponivelCents: e.id === 'evento-operacao' ? 18450000 : 7200000,
+          bloqueadoCents: 2500000,
+          retidoCents: e.id === 'evento-operacao' ? 25000000 : 11900000,
+          contabilCents: e.id === 'evento-operacao' ? 45950000 : 19050000,
+        })),
+      });
+    }
+  }
+
   // 2. FINANCEIRO / LEDGER
   if (fullPath.startsWith('financeiro/saldos/produtor/') && fullPath.endsWith('/eventos')) {
     return NextResponse.json({

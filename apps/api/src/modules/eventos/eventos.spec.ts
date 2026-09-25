@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventosService } from './eventos.service';
 import { PrismaService } from '@core/database/prisma.service';
@@ -10,17 +11,17 @@ describe('EventosService (Regras de Negócio)', () => {
 
   beforeEach(() => {
     mockOutbox = {
-      emit: jest.fn().mockResolvedValue(undefined),
+      emit: vi.fn().mockResolvedValue(undefined),
     };
 
     mockPrisma = {
-      $transaction: jest.fn().mockImplementation(async (callback) => {
+      $transaction: vi.fn().mockImplementation(async (callback) => {
         return callback(mockPrisma);
       }),
       evento: {
-        create: jest.fn(),
-        findUnique: jest.fn(),
-        update: jest.fn(),
+        create: vi.fn(),
+        findUnique: vi.fn(),
+        update: vi.fn(),
       },
     };
 

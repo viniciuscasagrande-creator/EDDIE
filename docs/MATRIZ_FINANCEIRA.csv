@@ -1,0 +1,17 @@
+ID,Cenario,Entrada,ComportamentoEsperado,BucketLedgerImpactado,ConciliacaoStatus,Homologacao
+CEN-01,Venda com Taxa Percentual,R$ 100.00 (10% Disk + 2.5% Gateway),Disk retem R$ 10.00 / Gateway R$ 2.50 / Liquido Produtor R$ 87.50,retido (entrada),CONCILIADO,HOMOLOGADO
+CEN-02,Venda com Taxa Fixa,R$ 100.00 (2 ingressos a R$ 5.00 fixo + 2.5% Gateway),Disk retem R$ 10.00 / Gateway R$ 2.50 / Liquido Produtor R$ 87.50,retido (entrada),CONCILIADO,HOMOLOGADO
+CEN-03,Preservacao Snapshot Historico,Regra alterada de 10% (V1) para 15% (V2),Vendas passadas mantem snapshot de 10%; novas aplicam 15%,retido (imutavel),CONCILIADO,HOMOLOGADO
+CEN-04,Saldo Real Derivado,Vendas brutas em custodia e saldos em buckets,Saldo computado sob demanda (SUM entradas - SUM saidas),disponivel/retido/bloqueado,CONCILIADO,HOMOLOGADO
+CEN-05,Consolidado do Produtor,Agregacao de saldos de multiplos eventos,Consolidado reflete soma exata mantendo segregacao por evento,todos os buckets,CONCILIADO,HOMOLOGADO
+CEN-06,Transferencia Inter-Eventos (Mesmo Produtor),R$ 1.000.00 de Evento A para Evento B,Partidas dobradas (debito na origem e credito no destino),disponivel (partida dobrada),CONCILIADO,HOMOLOGADO
+CEN-07,Bloqueio Entre Produtores Distintos,Tentativa de transferencia de Produtor A para B,Rejeicao imediata com ForbiddenException (isolamento de tenant),nenhum (bloqueado),ISOLADO,HOMOLOGADO
+CEN-08,Estorno Compensatorio de Transferencia,Cancelamento de transferencia anterior,Reversao em novas partidas dobradas (nunca DELETE/UPDATE),disponivel (compensatorio),CONCILIADO,HOMOLOGADO
+CEN-09,Spread e Advanced Prorata,R$ 1.000.00 antecipados por 30 dias a 0.1%/dia,Desagio exato de R$ 30.00 / Liquido disponibilizado R$ 970.00,disponivel (entrada),CONCILIADO,HOMOLOGADO
+CEN-10,Estorno Pre-Repasse,Estorno dentro do prazo de arrependimento (CDC),Abatimento do saldo retido sem afetar repasse futuro,retido (saida),CONCILIADO,HOMOLOGADO
+CEN-11,Chargeback Pos-Repasse,Chargeback de transacao apos liquidacao do repasse,Debito em reservado_estorno e abertura de caso auditavel,reservado_estorno (saida),CASO_REGISTRADO,HOMOLOGADO
+CEN-12,Settlement Engine (Agendamento),Solicitacao de repasse Pix no valor de R$ 500.00,Transferencia de disponivel para bloqueado (reserva cautelar),disponivel -> bloqueado,CONCILIADO,HOMOLOGADO
+CEN-13,Settlement Engine (Liquidacao Bancaria),Confirmacao Pix com endToEndId e comprovante,Baixa definitiva do bucket bloqueado com ID de recibo,bloqueado (saida),CONCILIADO,HOMOLOGADO
+CEN-14,Idempotencia de Payout,Retry de liquidacao de repasse com mesmo loteId,Retorno imediato do registro existente sem duplicar debitos,nenhum (idempotente),CONCILIADO,HOMOLOGADO
+CEN-15,Conciliacao 6 Vias,Batimento Gateway x Pagamento x Pedido x Ledger x Repasse x Banco,Conferencia cruzada das 6 pontas com tolerancia zero a centavos,6 vias auditadas,CONCILIADO,HOMOLOGADO
+CEN-16,DRE e Fluxo Contabil Soberano,Demonstrativo oficial de resultado por evento,Receita, taxas, gateway e despesas oficiais sem impacto de marketing,escrituracao contabil,CONCILIADO,HOMOLOGADO
