@@ -189,4 +189,48 @@ export class FinanceiroPublicService {
       pendencias,
     };
   }
+
+  /**
+   * Consulta pública de lançamentos do Ledger Financeiro para fins de conciliação contábil (EDDIE 11.21).
+   * Segue estritamente a Regra 1 de isolamento de schemas.
+   */
+  async obterExtratoLedgerParaContabilidade(
+    tenantId: string,
+    produtorId?: string,
+    query?: {
+      eventoId?: string;
+      limit?: number;
+      offset?: number;
+    },
+  ) {
+    if (produtorId) {
+      return this.financeiroService.obterExtrato(tenantId, produtorId, query);
+    }
+    const where: any = { tenantId };
+    if (query?.eventoId) where.eventoId = query.eventoId;
+    const [total, itens] = await Promise.all([
+      this.prisma.lancamentoLedger.count({ where }),
+      this.prisma.lancamentoLedger.findMany({
+        where,
+        orderBy: { criadoEm: 'desc' },
+        take: query?.limit ?? 100,
+        skip: query?.offset ?? 0,
+      }),
+    ]);
+    return {
+      total,
+      itens: itens.map((l) => ({
+        id: l.id,
+        origem: l.origem,
+        referenciaId: l.referenciaId,
+        bucket: l.bucket,
+        tipo: l.tipo,
+        valorCents: decimalToCents(l.valor),
+        eventoId: l.eventoId,
+        produtorId: l.produtorId,
+        criadoEm: l.criadoEm.toISOString(),
+      })),
+    };
+  }
 }
+

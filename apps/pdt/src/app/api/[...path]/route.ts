@@ -2511,6 +2511,203 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     ]);
   }
 
+  // ==========================================================================
+  //  EDDIE 11.21 — ACCOUNTING & FISCAL INTELLIGENCE OS
+  // ==========================================================================
+
+  if (fullPath.includes('accounting/summary')) {
+    return NextResponse.json({
+      competencia: '2026-09',
+      totalLancamentos: 1420,
+      totalDebitosCents: 48250000,
+      totalCreditosCents: 48250000,
+      partidasEquilibradas: true,
+      statusFechamento: 'ABERTO',
+      receitaBrutaServicosCents: 4825000,
+      recursosTerceirosCents: 43425000,
+      receitaLiquidaCents: 4583750,
+      contasAtivasCount: 24,
+      pendenciasAbertasCount: 2,
+      pendenciasCriticasCount: 0,
+      conciliacaoLedgerStatus: 'EM_CONFORMIDADE',
+      receitasDiferidasSaldoCents: 1250000,
+    });
+  }
+
+  if (fullPath.includes('accounting/chart-of-accounts')) {
+    return NextResponse.json([
+      { id: 'c-1', codigo: '1', nome: 'ATIVO', tipo: 'ativo', natureza: 'devedora', nivel: 1, analitica: false, ativa: true, versao: 1 },
+      { id: 'c-11', codigo: '1.1', nome: 'ATIVO CIRCULANTE', tipo: 'ativo', natureza: 'devedora', nivel: 2, analitica: false, ativa: true, versao: 1 },
+      { id: 'c-11101', codigo: '1.1.1.01', nome: 'Disponibilidades em Bancos e Caixa', tipo: 'ativo', natureza: 'devedora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-11201', codigo: '1.1.2.01', nome: 'Adquirentes e Gateways a Receber', tipo: 'ativo', natureza: 'devedora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-11301', codigo: '1.1.3.01', nome: 'Adiantamentos Concedidos a Produtores', tipo: 'ativo', natureza: 'devedora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-2', codigo: '2', nome: 'PASSIVO', tipo: 'passivo', natureza: 'credora', nivel: 1, analitica: false, ativa: true, versao: 1 },
+      { id: 'c-21201', codigo: '2.1.2.01', nome: 'Valores a Repassar a Produtores (Intermediação)', tipo: 'passivo', natureza: 'credora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-21301', codigo: '2.1.3.01', nome: 'Receitas Diferidas de Serviços de Eventos Futuros', tipo: 'passivo', natureza: 'credora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-21401', codigo: '2.1.4.01', nome: 'Contas a Pagar Fornecedores e Produção', tipo: 'passivo', natureza: 'credora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-21501', codigo: '2.1.5.01', nome: 'Reserva para Disputas e Chargebacks', tipo: 'passivo', natureza: 'credora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-3', codigo: '3', nome: 'RECEITAS', tipo: 'receita', natureza: 'credora', nivel: 1, analitica: false, ativa: true, versao: 1 },
+      { id: 'c-31101', codigo: '3.1.1.01', nome: 'Receita Própria de Taxa de Conveniência Disk', tipo: 'receita', natureza: 'credora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-31201', codigo: '3.1.2.01', nome: 'Receitas de Antecipação e Spread Comercial', tipo: 'receita', natureza: 'credora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-4', codigo: '4', nome: 'DESPESAS', tipo: 'despesa', natureza: 'devedora', nivel: 1, analitica: false, ativa: true, versao: 1 },
+      { id: 'c-41101', codigo: '4.1.1.01', nome: 'Tarifas de Gateway e Taxa MDR de Adquirentes', tipo: 'despesa', natureza: 'devedora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+      { id: 'c-42101', codigo: '4.2.1.01', nome: 'Custos Diretos de Operação de Eventos', tipo: 'despesa', natureza: 'devedora', nivel: 4, analitica: true, ativa: true, versao: 1 },
+    ]);
+  }
+
+  if (fullPath.includes('accounting/rules')) {
+    return NextResponse.json([
+      {
+        id: 'rule-v1-venda',
+        fatoTipo: 'VENDA_INGRESSO',
+        versao: 1,
+        descricao: 'Venda de Ingressos: Ativo Adquirente, Passivo Repasse Produtor e Receita Própria Disk',
+        contaDebitoCodigo: '1.1.2.01',
+        contaCreditoCodigo: '2.1.2.01',
+        contaTaxaCreditoCodigo: '3.1.1.01',
+        politicaReconhecimento: 'IMEDIATO',
+        contaReceitaDiferidaCodigo: '2.1.3.01',
+        ativa: true,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+      },
+      {
+        id: 'rule-v1-repasse',
+        fatoTipo: 'REPASSE_PRODUTOR',
+        versao: 1,
+        descricao: 'Liquidação de Repasse: Baixa de Passivo vs Disponibilidades Bancárias (Zero Receita)',
+        contaDebitoCodigo: '2.1.2.01',
+        contaCreditoCodigo: '1.1.1.01',
+        politicaReconhecimento: 'IMEDIATO',
+        ativa: true,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+      },
+      {
+        id: 'rule-v1-estorno',
+        fatoTipo: 'ESTORNO_VENDA',
+        versao: 1,
+        descricao: 'Estorno compensatório: Reversão de repasse, receita Disk e adquirente',
+        contaDebitoCodigo: '2.1.2.01',
+        contaCreditoCodigo: '1.1.2.01',
+        contaTaxaCreditoCodigo: '3.1.1.01',
+        politicaReconhecimento: 'IMEDIATO',
+        ativa: true,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('accounting/journal')) {
+    return NextResponse.json([
+      { data: '2026-09-25T10:00:00.000Z', numeroLancamento: 1420, contaCodigo: '1.1.2.01', contaNome: 'Adquirentes a Receber', tipo: 'D', valorCents: 10000, historico: 'Venda Pedido #ped-9988' },
+      { data: '2026-09-25T10:00:00.000Z', numeroLancamento: 1420, contaCodigo: '2.1.2.01', contaNome: 'Recursos a Repassar a Produtor', tipo: 'C', valorCents: 9000, historico: 'Repasse Produtor Festival' },
+      { data: '2026-09-25T10:00:00.000Z', numeroLancamento: 1420, contaCodigo: '3.1.1.01', contaNome: 'Receita Própria Taxa de Conveniência', tipo: 'C', valorCents: 1000, historico: 'Taxa DiskIngressos' },
+    ]);
+  }
+
+  if (fullPath.includes('accounting/ledger')) {
+    return NextResponse.json([
+      {
+        contaCodigo: '2.1.2.01',
+        contaNome: 'Valores a Repassar a Produtores',
+        tipo: 'passivo',
+        natureza: 'credora',
+        saldoAnteriorCents: 0,
+        debitosCents: 31500000,
+        creditosCents: 43425000,
+        saldoAtualCents: 11925000,
+        movimentos: [
+          { data: '2026-09-25T10:00:00.000Z', numeroLancamento: 1420, historico: 'Venda de Ingressos Pedido #ped-9988', tipo: 'C', valorCents: 9000, saldoAposCents: 11925000 },
+        ],
+      },
+    ]);
+  }
+
+  if (fullPath.includes('accounting/trial-balance')) {
+    return NextResponse.json([
+      { contaCodigo: '1.1.1.01', contaNome: 'Disponibilidades em Bancos', tipo: 'ativo', natureza: 'devedora', nivel: 4, analitica: true, saldoAnteriorCents: 0, debitosCents: 48250000, creditosCents: 31500000, saldoAtualCents: 16750000 },
+      { contaCodigo: '1.1.2.01', contaNome: 'Adquirentes e Gateways a Receber', tipo: 'ativo', natureza: 'devedora', nivel: 4, analitica: true, saldoAnteriorCents: 0, debitosCents: 48250000, creditosCents: 48250000, saldoAtualCents: 0 },
+      { contaCodigo: '2.1.2.01', contaNome: 'Valores a Repassar a Produtores', tipo: 'passivo', natureza: 'credora', nivel: 4, analitica: true, saldoAnteriorCents: 0, debitosCents: 31500000, creditosCents: 43425000, saldoAtualCents: 11925000 },
+      { contaCodigo: '3.1.1.01', contaNome: 'Receita Própria de Taxa de Conveniência', tipo: 'receita', natureza: 'credora', nivel: 4, analitica: true, saldoAnteriorCents: 0, debitosCents: 0, creditosCents: 4825000, saldoAtualCents: 4825000 },
+    ]);
+  }
+
+  if (fullPath.includes('accounting/income-statement')) {
+    return NextResponse.json({
+      competencia: '2026-09',
+      modelo: 'CONTABIL_COMPETENCIA',
+      receitaBrutaServicosCents: 4825000,
+      receitasDiferidasApropriadasCents: 350000,
+      recursosTerceirosTransitoCents: 43425000,
+      deducoesImpostosCents: 241250,
+      receitaLiquidaCents: 4583750,
+      despesasOperacionaisCents: 1250000,
+      resultadoOperacionalCents: 3333750,
+      discriminacaoContas: [
+        { contaCodigo: '3.1.1.01', contaNome: 'Receita Própria de Taxa de Conveniência', tipo: 'receita', valorCents: 4825000 },
+        { contaCodigo: '4.1.1.01', contaNome: 'Tarifas de Gateway e Taxa MDR', tipo: 'despesa', valorCents: 241250 },
+        { contaCodigo: '4.2.1.01', contaNome: 'Custos Diretos de Operação de Eventos', tipo: 'despesa', valorCents: 1250000 },
+      ],
+    });
+  }
+
+  if (fullPath.includes('accounting/reconciliation')) {
+    return NextResponse.json({
+      competencia: '2026-09',
+      totalFatosLedger: 1420,
+      totalLancamentosContabeis: 1420,
+      totalConciliados: 1420,
+      totalDivergentes: 0,
+      valorTotalLedgerCents: 48250000,
+      valorTotalContabilCents: 48250000,
+      diferencaTotalCents: 0,
+      divergencias: [],
+    });
+  }
+
+  if (fullPath.includes('accounting/pendencies')) {
+    return NextResponse.json([
+      {
+        id: 'pend-01',
+        tipo: 'DOCUMENTO_FALTANTE',
+        severidade: 'BAIXO',
+        status: 'PENDENTE',
+        descricao: 'Comprovante fiscal de despesa operacional de camarim aguardando upload.',
+        competencia: '2026-09',
+        eventoId: 'evento-operacao',
+        criadoEm: '2026-09-25T09:00:00Z',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('accounting/intelligence')) {
+    return NextResponse.json([
+      {
+        id: 'ins-01',
+        categoria: 'CLASSIFICACAO',
+        titulo: 'Equilíbrio Contábil Perfeito',
+        diagnostico: 'Todas as partidas dobradas da competência 2026-09 somam R$ 482.500,00 com débitos exatamente iguais aos créditos.',
+        evidencias: ['Total Débitos: R$ 482.500,00', 'Total Créditos: R$ 482.500,00'],
+        scoreConfianca: 1.0,
+        severidade: 'INFO',
+        acaoRecomendada: 'Manter rotina padrão de fechamento mensal.',
+        requerAprovacaoHumana: false,
+        geradoEm: new Date().toISOString(),
+      },
+      {
+        id: 'ins-02',
+        categoria: 'CONCILIACAO',
+        titulo: 'Conformidade Plena com o Ledger Financeiro',
+        diagnostico: 'Todos os 1.420 fatos registrados no Ledger Financeiro possuem contrapartida escriturada na Contabilidade.',
+        evidencias: ['Fatos analisados: 1.420', 'Conciliados: 1.420', 'Divergências: 0'],
+        scoreConfianca: 0.99,
+        severidade: 'INFO',
+        acaoRecomendada: 'Nenhuma ação corretiva requerida.',
+        requerAprovacaoHumana: false,
+        geradoEm: new Date().toISOString(),
+      },
+    ]);
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json({ ok: true, processado: true, id: `item-${Date.now()}` }, { status: 200 });
