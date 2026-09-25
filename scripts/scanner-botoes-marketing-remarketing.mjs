@@ -13,10 +13,11 @@ import path from 'path';
 const baseUrl = process.argv[2] || 'http://localhost:3001';
 
 const routesToScan = [
-  // 17 Telas de Marketing
+  // 18 Telas de Marketing (incluindo Central de Criativos 11.16.15)
   { path: '/marketing', module: 'Marketing', name: 'Dashboard' },
   { path: '/marketing/campanhas', module: 'Marketing', name: 'Campanhas Multicanais' },
   { path: '/marketing/campanhas-prontas', module: 'Marketing', name: 'Campanhas Prontas' },
+  { path: '/marketing/criativos', module: 'Marketing', name: 'Central de Criativos' },
   { path: '/marketing/status-real', module: 'Marketing', name: 'Status Real' },
   { path: '/marketing/meta', module: 'Marketing', name: 'Meta Ads & CAPI' },
   { path: '/marketing/google-analytics', module: 'Marketing', name: 'Google Analytics GA4' },
@@ -51,7 +52,7 @@ const routesToScan = [
 
 async function scanButtons() {
   console.log('======================================================================');
-  console.log('🚀 SCANNER DE BOTÕES MORTOS — MARKETING & REMARKETING (EDDIE 11.16.14)');
+  console.log('🚀 SCANNER DE BOTÕES MORTOS — MARKETING & REMARKETING (EDDIE 11.16.15)');
   console.log(`Alvo: ${baseUrl}`);
   console.log(`Total de Rotas a Inspecionar: ${routesToScan.length}`);
   console.log('======================================================================\n');

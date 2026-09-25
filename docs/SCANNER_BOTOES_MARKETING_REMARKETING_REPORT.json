@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-09-24T20:58:19.021Z",
+  "timestamp": "2026-09-25T12:53:14.244Z",
   "versao": "EDDIE-11.16.14",
   "totais": {
-    "totalBotoes": 744,
-    "totalFuncionais": 744,
+    "totalBotoes": 832,
+    "totalFuncionais": 832,
     "totalBloqueadosPermissao": 0,
     "totalIndisponiveisIntegracao": 0,
     "totalMortos": 0
@@ -14,7 +14,7 @@
       "rota": "/marketing",
       "modulo": "Marketing",
       "nome": "Dashboard",
-      "totalBotoesNaRota": 28,
+      "totalBotoesNaRota": 29,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -60,6 +60,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -190,7 +196,7 @@
       "rota": "/marketing/campanhas",
       "modulo": "Marketing",
       "nome": "Campanhas Multicanais",
-      "totalBotoesNaRota": 35,
+      "totalBotoesNaRota": 38,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -236,6 +242,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -367,6 +379,12 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
+          "texto": "Workspace",
+          "title": "Abrir Workspace com as 9 Abas Operacionais",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
           "texto": "Editar Campanha no Wizard",
           "title": "Editar Campanha no Wizard",
           "classificacao": "FUNCIONAL",
@@ -381,6 +399,12 @@
         {
           "texto": "Duplicar Campanha",
           "title": "Duplicar Campanha",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Workspace",
+          "title": "Abrir Workspace com as 9 Abas Operacionais",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
@@ -408,7 +432,7 @@
       "rota": "/marketing/campanhas-prontas",
       "modulo": "Marketing",
       "nome": "Campanhas Prontas",
-      "totalBotoesNaRota": 27,
+      "totalBotoesNaRota": 42,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -454,6 +478,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -543,7 +573,13 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Usar Modelo",
+          "texto": "Criar do Zero",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -555,13 +591,91 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Usar Modelo",
+          "texto": "Visualizar Modelo",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
           "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar Modelo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Modelo",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -575,10 +689,10 @@
       ]
     },
     {
-      "rota": "/marketing/status-real",
+      "rota": "/marketing/criativos",
       "modulo": "Marketing",
-      "nome": "Status Real",
-      "totalBotoesNaRota": 27,
+      "nome": "Central de Criativos",
+      "totalBotoesNaRota": 55,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -624,6 +738,350 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Status Real AO VIVO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Meta Ads & CAPI CAPI",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Google Analytics GA4",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TikTok Ads PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Spotify Ads ÁUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "WhatsApp OFICIAL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "E-mail Marketing",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Automações",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Cupons",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central UTM / QR UTM / QR",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Afiliados & Promoters",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pixels & Conversões MULTI-PIXEL",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atribuição Multicanal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Novo Criativo",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Todos os Tipos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "IMAGEM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "VIDEO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "AUDIO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "TEXTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "COMBINADO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Preview",
+          "title": "Visualizar Preview",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Criativo",
+          "title": "Editar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar Criativo",
+          "title": "Duplicar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Arquivar Criativo",
+          "title": "Arquivar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Preview",
+          "title": "Visualizar Preview",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Criativo",
+          "title": "Editar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar Criativo",
+          "title": "Duplicar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Arquivar Criativo",
+          "title": "Arquivar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Preview",
+          "title": "Visualizar Preview",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Criativo",
+          "title": "Editar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar Criativo",
+          "title": "Duplicar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Arquivar Criativo",
+          "title": "Arquivar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Preview",
+          "title": "Visualizar Preview",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Criativo",
+          "title": "Editar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar Criativo",
+          "title": "Duplicar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Arquivar Criativo",
+          "title": "Arquivar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visualizar Preview",
+          "title": "Visualizar Preview",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Criativo",
+          "title": "Editar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar Criativo",
+          "title": "Duplicar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Arquivar Criativo",
+          "title": "Arquivar Criativo",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        }
+      ]
+    },
+    {
+      "rota": "/marketing/status-real",
+      "modulo": "Marketing",
+      "nome": "Status Real",
+      "totalBotoesNaRota": 28,
+      "detalhes": [
+        {
+          "texto": "Recolher barra lateral",
+          "title": "Recolher barra lateral",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Notificações",
+          "title": "Notificações",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Nova Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Gerar Link UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Atualizar dados de marketing",
+          "title": "Atualizar dados de marketing",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dashboard",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -748,7 +1206,7 @@
       "rota": "/marketing/meta",
       "modulo": "Marketing",
       "nome": "Meta Ads & CAPI",
-      "totalBotoesNaRota": 23,
+      "totalBotoesNaRota": 24,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -794,6 +1252,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -894,7 +1358,7 @@
       "rota": "/marketing/google-analytics",
       "modulo": "Marketing",
       "nome": "Google Analytics GA4",
-      "totalBotoesNaRota": 28,
+      "totalBotoesNaRota": 29,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -940,6 +1404,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -1070,7 +1540,7 @@
       "rota": "/marketing/tiktok",
       "modulo": "Marketing",
       "nome": "TikTok Ads",
-      "totalBotoesNaRota": 24,
+      "totalBotoesNaRota": 25,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1116,6 +1586,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -1222,7 +1698,7 @@
       "rota": "/marketing/spotify",
       "modulo": "Marketing",
       "nome": "Spotify Ads",
-      "totalBotoesNaRota": 24,
+      "totalBotoesNaRota": 25,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1268,6 +1744,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -1374,7 +1856,7 @@
       "rota": "/marketing/whatsapp",
       "modulo": "Marketing",
       "nome": "WhatsApp Marketing",
-      "totalBotoesNaRota": 22,
+      "totalBotoesNaRota": 23,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1420,6 +1902,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -1514,7 +2002,7 @@
       "rota": "/marketing/email",
       "modulo": "Marketing",
       "nome": "E-mail Marketing",
-      "totalBotoesNaRota": 23,
+      "totalBotoesNaRota": 24,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1560,6 +2048,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -1660,7 +2154,7 @@
       "rota": "/marketing/automacoes",
       "modulo": "Marketing",
       "nome": "Automações & Jornadas",
-      "totalBotoesNaRota": 22,
+      "totalBotoesNaRota": 23,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1706,6 +2200,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -1800,7 +2300,7 @@
       "rota": "/marketing/cupons",
       "modulo": "Marketing",
       "nome": "Cupons & Descontos",
-      "totalBotoesNaRota": 23,
+      "totalBotoesNaRota": 24,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1846,6 +2346,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -1946,7 +2452,7 @@
       "rota": "/marketing/utm",
       "modulo": "Marketing",
       "nome": "Central UTM & Links / QR",
-      "totalBotoesNaRota": 34,
+      "totalBotoesNaRota": 35,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1992,6 +2498,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -2158,7 +2670,7 @@
       "rota": "/marketing/afiliados",
       "modulo": "Marketing",
       "nome": "Afiliados & Promoters",
-      "totalBotoesNaRota": 23,
+      "totalBotoesNaRota": 24,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -2204,6 +2716,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -2304,7 +2822,7 @@
       "rota": "/marketing/pixels",
       "modulo": "Marketing",
       "nome": "Pixels & Conversões",
-      "totalBotoesNaRota": 23,
+      "totalBotoesNaRota": 24,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -2350,6 +2868,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -2450,7 +2974,7 @@
       "rota": "/marketing/atribuicao",
       "modulo": "Marketing",
       "nome": "Atribuição Multicanal",
-      "totalBotoesNaRota": 22,
+      "totalBotoesNaRota": 23,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -2496,6 +3020,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -2590,7 +3120,7 @@
       "rota": "/marketing/relatorios",
       "modulo": "Marketing",
       "nome": "Relatórios de Marketing",
-      "totalBotoesNaRota": 23,
+      "totalBotoesNaRota": 24,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -2636,6 +3166,12 @@
         },
         {
           "texto": "Campanhas Prontas PRONTO",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Central de Criativos ASSETS",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
