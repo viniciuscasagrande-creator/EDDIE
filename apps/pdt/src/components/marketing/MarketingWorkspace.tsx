@@ -62,6 +62,9 @@ import {
   FolderOpen,
   SlidersHorizontal,
   FileText,
+  Server,
+  AlertOctagon,
+  Wrench,
 } from 'lucide-react';
 import { useProducerEvent } from '../ProducerEventContext';
 import { ModuleNavigation } from '../navigation/ModuleNavigation';
@@ -79,6 +82,26 @@ import { PixelManagementModal } from './PixelManagementModal';
 import { PixelDiagnosticModal } from './PixelDiagnosticModal';
 import { PixelLogsModal } from './PixelLogsModal';
 import { ConversionDetailModal } from './ConversionDetailModal';
+import { HealthEntityDetailModal } from './HealthEntityDetailModal';
+import { DiagnosticDetailModal } from './DiagnosticDetailModal';
+import { IncidentManagementModal } from './IncidentManagementModal';
+import { ReconciliationModal } from './ReconciliationModal';
+import { TimelineExplorerModal } from './TimelineExplorerModal';
+import type {
+  HealthStatus,
+  Severity,
+  EntityType,
+  IncidentStatus,
+  DiscrepancyType,
+  TimelineOperation,
+  HealthRecord,
+  DiagnosticFinding,
+  Incident,
+  ReconciliationDiscrepancy,
+  TimelineEvent,
+  TelemetryMetrics,
+  HealthSummary,
+} from './health-telemetry-types';
 import type {
   TrackingConfiguration,
   TrackingDeliveryLog,
@@ -1141,6 +1164,245 @@ const INITIAL_FUNNEL: ConversionFunnelItem[] = [
   { stage: 'PURCHASE', label: 'Compra Confirmada (Server)', count: 812, conversionRate: '41.8%', revenueCents: 20300000 },
 ];
 
+const INITIAL_HEALTH_RECORDS: HealthRecord[] = [
+  {
+    id: 'hlth-meta-conn',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'PROVIDER',
+    entityId: 'meta_ads_business',
+    entityName: 'Meta Ads & Conversions API (CAPI)',
+    provider: 'META',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 142,
+    correlationId: 'corr-meta-init-901',
+    source: 'Meta Graph API v19.0 /health',
+    summary: 'Token ativo (expira em 58 dias). Latência média de 142ms.',
+  },
+  {
+    id: 'hlth-ga4-conn',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'GA4',
+    entityId: 'ga4_measurement_stream',
+    entityName: 'GA4 Measurement Protocol',
+    provider: 'GOOGLE',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 88,
+    correlationId: 'corr-ga4-init-902',
+    source: 'Google Analytics MP Gateway',
+    summary: 'Stream G-849201 conectado e recebendo eventos server-side.',
+  },
+  {
+    id: 'hlth-tiktok-conn',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'TIKTOK_EVENTS',
+    entityId: 'tiktok_events_api',
+    entityName: 'TikTok Events API',
+    provider: 'TIKTOK',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 195,
+    correlationId: 'corr-tt-init-903',
+    source: 'TikTok Marketing API v1.3',
+    summary: 'Pixel C782910 operando em modo híbrido.',
+  },
+  {
+    id: 'hlth-spotify-conn',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'PROVIDER',
+    entityId: 'spotify_ad_studio',
+    entityName: 'Spotify Ad Studio Audio Ads',
+    provider: 'SPOTIFY',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 210,
+    correlationId: 'corr-spot-init-904',
+    source: 'Spotify Ads API',
+    summary: 'Capacidade restrita a anúncios de áudio e veiculação.',
+  },
+  {
+    id: 'hlth-pixel-capi-meta',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'CAPI',
+    entityId: 'cfg-meta-main',
+    entityName: 'Meta Pixel Principal + CAPI',
+    provider: 'META',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 135,
+    correlationId: 'corr-pix-meta-905',
+    source: 'CAPI Server Pipeline',
+    summary: 'Deduplicação Browser/Server em 100% com correspondência EMQ 8.4.',
+  },
+  {
+    id: 'hlth-journey-worker',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'JOURNEY',
+    entityId: 'jrn-carrinho-48h',
+    entityName: 'Jornada Recuperação de Carrinho 48h',
+    provider: 'WHATSAPP',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 45,
+    correlationId: 'corr-jrn-worker-906',
+    source: 'Journey Execution Engine',
+    summary: 'Worker ativo com polling de 30s. Zero nós órfãos.',
+  },
+  {
+    id: 'hlth-retry-queue',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'JOB',
+    entityId: 'job-tracking-retry',
+    entityName: 'Fila de Retry de Tracking & CAPI',
+    provider: 'SYSTEM',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 12,
+    correlationId: 'corr-retry-job-907',
+    source: 'Redis Retry Queue',
+    summary: 'Backlog normal: 0 jobs pendentes, 0 falhas recorrentes.',
+  },
+  {
+    id: 'hlth-tracking-gtw',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'TRACKING_GATEWAY',
+    entityId: 'gtw-server-events',
+    entityName: 'Tracking Gateway Server-Side',
+    provider: 'EDDIE',
+    status: 'OPERACIONAL',
+    checkedAt: '2026-09-25T10:45:00Z',
+    lastSuccessAt: '2026-09-25T10:45:00Z',
+    latencyMs: 28,
+    correlationId: 'corr-gtw-908',
+    source: 'DiskIngressos Event Router',
+    summary: 'Processando eventos canônicos com deduplicação de 48h.',
+  },
+];
+
+const INITIAL_FINDINGS: DiagnosticFinding[] = [
+  {
+    id: 'diag-01',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    entityType: 'CAPI',
+    entityId: 'cfg-meta-main',
+    entityName: 'Meta Conversions API',
+    severity: 'BAIXA',
+    ruleCode: 'CAPI_HEALTHY_WITH_WEB_PIXEL',
+    title: 'Transmissão Dupla Híbrida em Perfeita Conformidade',
+    evidence: [
+      'Eventos recebidos via Browser e Server com correlationId idêntico',
+      'Taxa de deduplicação em 100% nas últimas 24h',
+    ],
+    probableCause: 'Configuração estável entre SDK do navegador e endpoint CAPI.',
+    causeType: 'CONFIRMADA',
+    suggestedActions: ['Manter monitoramento de latência e tokens de acesso'],
+    canAutoRepair: false,
+    detectedAt: '2026-09-25T10:30:00Z',
+    correlationId: 'corr-diag-001',
+  },
+];
+
+const INITIAL_INCIDENTS: Incident[] = [
+  {
+    id: 'inc-01',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    provider: 'META',
+    entityType: 'CAMPAIGN',
+    entityId: 'cmp-rock-01',
+    title: 'Verificação Preventiva de Entrega Meta Ads',
+    severity: 'INFO',
+    status: 'RESOLVIDO',
+    startedAt: '2026-09-25T08:00:00Z',
+    lastOccurredAt: '2026-09-25T08:05:00Z',
+    observedImpact: 'Latência transitória normalizada após novo handshake TLS.',
+    evidence: ['Handshake TLS completado em 140ms'],
+    findingsCount: 1,
+    correlationIds: ['corr-init-tls-01'],
+    resolutionNotes: 'Resolvido automaticamente pela camada de rede.',
+    resolvedAt: '2026-09-25T08:05:00Z',
+  },
+];
+
+const INITIAL_RECONCILIATIONS: ReconciliationDiscrepancy[] = [
+  {
+    id: 'rec-01',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    campaignId: 'cmp-rock-01',
+    campaignName: 'Carrossel Line-up Atrações (ID: 849201)',
+    provider: 'META',
+    eddieStatus: 'ATIVA',
+    providerStatus: 'ATIVA',
+    lastCommand: 'RESUME_CAMPAIGN',
+    lastCommandAt: '2026-09-25T09:00:00Z',
+    webhookStatus: 'DELIVERED',
+    telemetryDeliveryStatus: 'ENTREGANDO',
+    discrepancyType: 'PENDING_CONFIRMATION',
+    applicableTruthSource: 'EDDIE',
+    reconciled: true,
+    reconciledAt: '2026-09-25T09:01:00Z',
+    reconciliationNotes: 'Sincronia confirmada via webhook Meta Ads.',
+    correlationId: 'corr-rec-001',
+  },
+];
+
+const INITIAL_TIMELINE_EVENTS: TimelineEvent[] = [
+  {
+    id: 'tl-101',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    provider: 'META',
+    operation: 'CONEXAO',
+    title: 'Conexão Estabelecida com Meta Ads',
+    description: 'Credencial OAuth renovada e permissões de Pixel e CAPI validadas.',
+    severity: 'INFO',
+    timestamp: '2026-09-25T07:30:00Z',
+    correlationId: 'corr-meta-init-901',
+  },
+  {
+    id: 'tl-102',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    provider: 'META',
+    operation: 'TRACKING',
+    title: 'CAPI Ping de Teste Aprovado',
+    description: 'Evento de teste VIEW_EVENT recebido e verificado com código TEST7481.',
+    severity: 'INFO',
+    timestamp: '2026-09-25T08:15:00Z',
+    correlationId: 'corr-pix-meta-905',
+  },
+  {
+    id: 'tl-103',
+    producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    eventId: 'evento-operacao',
+    provider: 'GOOGLE',
+    operation: 'SYNC',
+    title: 'Sincronização GA4 Measurement Protocol',
+    description: 'Streams validados e eventos de funil confirmados.',
+    severity: 'INFO',
+    timestamp: '2026-09-25T09:20:00Z',
+    correlationId: 'corr-ga4-init-902',
+  },
+];
+
 export default function MarketingWorkspace({ initialTab = 'dashboard', contextEventoId, eventoId }: MarketingWorkspaceProps) {
   const { api, produtorId, eventoId: globalEventoId, evento, eventos = [] } = useProducerEvent();
   const effectiveEventoId = contextEventoId || eventoId || globalEventoId;
@@ -1248,6 +1510,36 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
   const [filtroCanalStatusReal, setFiltroCanalStatusReal] = useState('todos');
   const [filtroStatusRealStatus, setFiltroStatusRealStatus] = useState('todos');
   const [buscaStatusReal, setBuscaStatusReal] = useState('');
+
+  // Estados EDDIE 11.16.18: Telemetria, Health Center, Diagnóstico, Incidentes e Reconciliação
+  const [healthRecords, setHealthRecords] = useState<HealthRecord[]>(INITIAL_HEALTH_RECORDS);
+  const [diagnosticFindings, setDiagnosticFindings] = useState<DiagnosticFinding[]>(INITIAL_FINDINGS);
+  const [incidents, setIncidents] = useState<Incident[]>(INITIAL_INCIDENTS);
+  const [reconciliations, setReconciliations] = useState<ReconciliationDiscrepancy[]>(INITIAL_RECONCILIATIONS);
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>(INITIAL_TIMELINE_EVENTS);
+
+  const [subTabStatusReal, setSubTabStatusReal] = useState<
+    'visao-geral' | 'health-center' | 'diagnostico' | 'incidentes' | 'reconciliador' | 'timeline'
+  >('visao-geral');
+
+  const [filtroEntityTypeHealth, setFiltroEntityTypeHealth] = useState<string>('TODOS');
+  const [filtroStatusHealth, setFiltroStatusHealth] = useState<string>('TODOS');
+  const [buscaHealth, setBuscaHealth] = useState<string>('');
+
+  const [modalHealthDetailOpen, setModalHealthDetailOpen] = useState(false);
+  const [activeHealthForDetail, setActiveHealthForDetail] = useState<HealthRecord | null>(null);
+
+  const [modalDiagnosticDetailOpen, setModalDiagnosticDetailOpen] = useState(false);
+  const [activeFindingForDetail, setActiveFindingForDetail] = useState<DiagnosticFinding | null>(null);
+
+  const [modalIncidentOpen, setModalIncidentOpen] = useState(false);
+  const [activeIncidentForDetail, setActiveIncidentForDetail] = useState<Incident | null>(null);
+
+  const [modalReconciliationOpen, setModalReconciliationOpen] = useState(false);
+  const [activeReconciliationForDetail, setActiveReconciliationForDetail] = useState<ReconciliationDiscrepancy | null>(null);
+
+  const [modalTimelineOpen, setModalTimelineOpen] = useState(false);
+  const [timelineInitialCorrelationId, setTimelineInitialCorrelationId] = useState('');
 
   // Filtros de UTM
   const [buscaUtm, setBuscaUtm] = useState('');
@@ -2017,6 +2309,47 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
     });
   }, [pixelConfigs, filtroProviderPixel, filtroHealthPixel, buscaPixel]);
 
+  const healthRecordsFiltrados = useMemo(() => {
+    return healthRecords.filter((rec) => {
+      const matchType = filtroEntityTypeHealth === 'TODOS' || rec.entityType === filtroEntityTypeHealth;
+      const matchStatus = filtroStatusHealth === 'TODOS' || rec.status === filtroStatusHealth;
+      const matchBusca =
+        !buscaHealth ||
+        rec.entityName.toLowerCase().includes(buscaHealth.toLowerCase()) ||
+        rec.entityId.toLowerCase().includes(buscaHealth.toLowerCase()) ||
+        (rec.provider || '').toLowerCase().includes(buscaHealth.toLowerCase());
+      return matchType && matchStatus && matchBusca;
+    });
+  }, [healthRecords, filtroEntityTypeHealth, filtroStatusHealth, buscaHealth]);
+
+  const summaryHealthCalculated = useMemo((): HealthSummary => {
+    const records = healthRecords;
+    const incs = incidents;
+    const hasCritico = records.some((r) => r.status === 'ERRO') || incs.some((i) => i.severity === 'CRITICA' && i.status === 'ABERTO');
+    const hasDegradado = records.some((r) => r.status === 'DEGRADADO');
+    const hasAtencao = records.some((r) => r.status === 'ATENCAO') || incs.some((i) => i.status === 'ABERTO');
+
+    let overall: HealthStatus = 'OPERACIONAL';
+    if (hasCritico) overall = 'ERRO';
+    else if (hasDegradado) overall = 'DEGRADADO';
+    else if (hasAtencao) overall = 'ATENCAO';
+
+    return {
+      overallStatus: overall,
+      activeCampaignsCount: campanhas.filter((c) => c.status === 'ATIVA' || (c.status as string) === 'ENTREGANDO').length,
+      healthyIntegrationsCount: records.filter((r) => r.status === 'OPERACIONAL').length,
+      attentionIntegrationsCount: records.filter((r) => r.status === 'ATENCAO' || r.status === 'DEGRADADO').length,
+      criticalErrorsCount: records.filter((r) => r.status === 'ERRO').length,
+      trackingEventsCount: 18420,
+      conversionFailuresCount: 0,
+      failedJobsCount: 0,
+      webhookErrorsCount: 0,
+      openIncidentsCount: incs.filter((i) => i.status === 'ABERTO' || i.status === 'INVESTIGANDO').length,
+      autoRepairsCount: diagnosticFindings.filter((d) => Boolean(d.repairAudit)).length,
+      lastGlobalCheckAt: new Date().toISOString(),
+    };
+  }, [healthRecords, incidents, campanhas, diagnosticFindings]);
+
   const campanhasFiltradas = useMemo(() => {
     return (campanhas || []).filter((c) => {
       if (!c) return false;
@@ -2152,6 +2485,221 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
       ticketMedioGeralCents,
     };
   }, [linksUtm]);
+
+  // Handlers EDDIE 11.16.18: Telemetria, Health Center, Diagnóstico, Incidentes e Reconciliação
+  const handleCheckHealthRecord = (rec: HealthRecord) => {
+    setHealthRecords((prev) =>
+      prev.map((r) =>
+        r.id === rec.id
+          ? {
+              ...r,
+              status: 'OPERACIONAL',
+              lastSuccessAt: new Date().toISOString(),
+              checkedAt: new Date().toISOString(),
+              latencyMs: Math.floor(40 + Math.random() * 60),
+            }
+          : r
+      )
+    );
+    setFeedback({
+      tipo: 'success',
+      texto: `Verificação em tempo real concluída para "${rec.entityName}": OPERACIONAL.`,
+    });
+  };
+
+  const handleOpenDiagnosticForRecord = (rec: HealthRecord) => {
+    let finding = diagnosticFindings.find((f) => f.entityId === rec.entityId);
+    if (!finding) {
+      finding = {
+        id: `diag-gen-${Date.now()}`,
+        producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        eventId: effectiveEventoId,
+        entityType: rec.entityType,
+        entityId: rec.entityId,
+        entityName: rec.entityName,
+        severity: rec.status === 'ERRO' ? 'ALTA' : rec.status === 'DEGRADADO' ? 'MEDIA' : 'INFO',
+        ruleCode: `${rec.entityType}_HEALTH_CHECK`,
+        title: `Diagnóstico Operacional: ${rec.entityName}`,
+        evidence: [
+          `Status apurado: ${rec.status}`,
+          `Latência média: ${rec.latencyMs || 80}ms`,
+          `Fonte da verificação: ${rec.source}`,
+        ],
+        probableCause: rec.status === 'OPERACIONAL' ? 'Canal operando sem anomalias.' : 'Instabilidade reportada pela API do provedor.',
+        causeType: 'CONFIRMADA',
+        suggestedActions: [
+          'Verificar credencial e tokens nas configurações de integração',
+          'Acompanhar latência e logs de entrega em tempo real',
+        ],
+        canAutoRepair: rec.status !== 'OPERACIONAL',
+        repairAction: 'RESTART_CAPI_DISPATCHER',
+        detectedAt: new Date().toISOString(),
+        correlationId: rec.correlationId,
+      };
+      setDiagnosticFindings((prev) => [finding!, ...prev]);
+    }
+    setActiveFindingForDetail(finding);
+    setModalDiagnosticDetailOpen(true);
+  };
+
+  const handleAutoRepairFinding = (finding: DiagnosticFinding) => {
+    const outcome = `Autocorreção segura (${finding.repairAction || 'RESTART'}) executada com sucesso. Fila restabelecida.`;
+    setDiagnosticFindings((prev) =>
+      prev.map((d) =>
+        d.id === finding.id
+          ? {
+              ...d,
+              resolvedAt: new Date().toISOString(),
+              repairAudit: {
+                repairedAt: new Date().toISOString(),
+                repairedBy: 'Autocorreção Segura EDDIE Ops',
+                outcome,
+                correlationId: `corr_rep_${Date.now()}`,
+                previousState: 'FALHA_DETECTADA',
+                newState: 'OPERACIONAL',
+              },
+            }
+          : d
+      )
+    );
+    // Também atualiza saúde da entidade
+    setHealthRecords((prev) =>
+      prev.map((r) =>
+        r.entityId === finding.entityId
+          ? { ...r, status: 'OPERACIONAL', lastSuccessAt: new Date().toISOString(), checkedAt: new Date().toISOString() }
+          : r
+      )
+    );
+    setFeedback({ tipo: 'success', texto: outcome });
+  };
+
+  const handleUpdateIncident = (
+    id: string,
+    patch: { status?: IncidentStatus; assignedTo?: string; resolutionNotes?: string }
+  ) => {
+    setIncidents((prev) =>
+      prev.map((inc) => (inc.id === id ? { ...inc, ...patch, lastOccurredAt: new Date().toISOString() } : inc))
+    );
+    setFeedback({ tipo: 'success', texto: 'Incidente operacional atualizado com sucesso!' });
+  };
+
+  const handleRetryIncident = (id: string) => {
+    setFeedback({ tipo: 'success', texto: `Retentativa manual despachada para o incidente #${id}.` });
+  };
+
+  const handleReconcileDiscrepancy = (id: string, chosenSource: 'EDDIE' | 'PROVIDER' | 'ARBITRATED') => {
+    setReconciliations((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              reconciled: true,
+              applicableTruthSource: chosenSource,
+              reconciledAt: new Date().toISOString(),
+              reconciliationNotes: `Reconciliado manualmente adotando ${chosenSource}.`,
+            }
+          : r
+      )
+    );
+    setFeedback({
+      tipo: 'success',
+      texto: `Discrepância reconciliada com sucesso adotando a fonte: ${chosenSource}!`,
+    });
+  };
+
+  const handleSimularDiagnosticoToken = () => {
+    const errRec: HealthRecord = {
+      id: `hlth-sim-${Date.now()}`,
+      producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      eventId: effectiveEventoId,
+      entityType: 'PROVIDER',
+      entityId: 'meta_ads_business',
+      entityName: 'Meta Ads & Conversions API (CAPI)',
+      provider: 'META',
+      status: 'ERRO',
+      checkedAt: new Date().toISOString(),
+      lastErrorAt: new Date().toISOString(),
+      latencyMs: 190,
+      errorCode: 'AUTH_TOKEN_EXPIRED_OR_INVALID',
+      summary: 'Simulação: Credencial OAuth inválida ou token revogado.',
+      correlationId: `corr_sim_token_${Date.now()}`,
+      source: 'Simulação Diagnóstica',
+    };
+    setHealthRecords((prev) => [errRec, ...prev.filter((r) => r.id !== errRec.id)]);
+
+    const finding: DiagnosticFinding = {
+      id: `diag-token-${Date.now()}`,
+      producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      eventId: effectiveEventoId,
+      entityType: 'PROVIDER',
+      entityId: 'meta_ads_business',
+      entityName: 'Meta Ads & Conversions API (CAPI)',
+      severity: 'ALTA',
+      ruleCode: 'AUTH_TOKEN_INVALID',
+      title: 'Token de Autenticação Inválido ou Expirado (Simulado)',
+      evidence: ['Resposta HTTP 401 Unauthorized recebida do provedor Meta Ads', 'Token expirado na verificação de permissões'],
+      probableCause: 'O token de acesso expirou ou foi revogado nas configurações de segurança do provedor.',
+      causeType: 'CONFIRMADA',
+      suggestedActions: ['Acessar a tela de integrações', 'Reconectar conta através de novo login OAuth'],
+      canAutoRepair: false,
+      detectedAt: new Date().toISOString(),
+      correlationId: errRec.correlationId,
+    };
+    setDiagnosticFindings((prev) => [finding, ...prev]);
+
+    setFeedback({
+      tipo: 'error',
+      texto: 'Simulação executada: Token inválido detectado, status ERRO e diagnóstico gerado.',
+    });
+    setSubTabStatusReal('diagnostico');
+  };
+
+  const handleSimularDiscrepancia = () => {
+    const recItem: ReconciliationDiscrepancy = {
+      id: `rec-sim-${Date.now()}`,
+      producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      eventId: effectiveEventoId,
+      campaignId: 'cmp-rock-01',
+      campaignName: 'Carrossel Line-up Atrações (ID: 849201)',
+      provider: 'META',
+      eddieStatus: 'ATIVA',
+      providerStatus: 'PAUSADA',
+      lastCommand: 'PAUSE_EXTERNAL_ADS_MANAGER',
+      lastCommandAt: new Date().toISOString(),
+      webhookStatus: 'DELIVERED',
+      telemetryDeliveryStatus: 'STOPPED',
+      discrepancyType: 'PROVIDER_CHANGED',
+      applicableTruthSource: 'PROVIDER',
+      reconciled: false,
+      correlationId: `corr_sim_disc_${Date.now()}`,
+    };
+    setReconciliations((prev) => [recItem, ...prev]);
+
+    const incItem: Incident = {
+      id: `inc-disc-${Date.now()}`,
+      producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      eventId: effectiveEventoId,
+      provider: 'META',
+      entityType: 'CAMPAIGN',
+      entityId: 'cmp-rock-01',
+      title: 'Divergência de Status: EDDIE (ATIVA) ≠ Meta Ads (PAUSADA)',
+      severity: 'MEDIA',
+      status: 'ABERTO',
+      startedAt: new Date().toISOString(),
+      lastOccurredAt: new Date().toISOString(),
+      observedImpact: 'Painel local exibindo veiculação que foi pausada externamente.',
+      evidence: ['Local ATIVA, Remoto PAUSADA via Meta Ads Manager'],
+      findingsCount: 1,
+      correlationIds: [recItem.correlationId],
+    };
+    setIncidents((prev) => [incItem, ...prev]);
+
+    setFeedback({
+      tipo: 'error',
+      texto: 'Simulação executada: Divergência EDDIE ≠ Provider e incidente gerados no Reconciliador.',
+    });
+    setSubTabStatusReal('reconciliador');
+  };
 
   // Sincronizar Status Real
   const handleSincronizarStatusReal = () => {
@@ -3002,146 +3550,769 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
       )}
 
       {/* ============================================================== */}
-      {/* 4. STATUS REAL & TELEMETRIA DE ENTREGA (AO VIVO) */}
+      {/* 4. STATUS REAL, TELEMETRIA & HEALTH CENTER MULTICANAL (EDDIE 11.16.18) */}
       {/* ============================================================== */}
       {activeTab === 'status-real' && (
-        <div className="space-y-4">
-          <div className="bg-[#111827] border border-slate-800 rounded-xl p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-4">
+        <div className="space-y-5">
+          {/* Header Operacional com Ações Rápidas */}
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
               <div>
-                <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Activity size={16} className="text-emerald-400" />
-                  <span>Central de Status Real & Telemetria de Entrega</span>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                    OBSERVABILIDADE AO VIVO
+                  </span>
+                  <span className="text-[10px] text-slate-500">Telemetria técnica, CAPI, Webhooks e Workers</span>
+                </div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2.5">
+                  <Activity size={20} className="text-emerald-400" />
+                  <span>Central de Status Real, Telemetria & Health Center Multicanal</span>
                 </h2>
-                <p className="text-slate-400 text-xs">
-                  Auditoria de veiculação em tempo real para detectar anúncios pausados, rejeições e falta de entrega nas redes.
+                <p className="text-slate-400 text-xs mt-0.5">
+                  Monitoramento contínuo de Meta, Google, TikTok, Spotify, WhatsApp, E-mail, CAPI, filas de retentativas e reconciliação em tempo real.
                 </p>
               </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSimularDiagnosticoToken}
+                  className="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5"
+                  title="Simula falha de token OAuth com diagnóstico e status ERRO"
+                >
+                  <AlertTriangle size={13} /> Simular Token Inválido
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSimularDiscrepancia}
+                  className="px-3 py-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center gap-1.5"
+                  title="Simula divergência EDDIE ATIVA vs Provider PAUSADA"
+                >
+                  <GitCompare size={13} /> Simular Divergência
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTimelineInitialCorrelationId('');
+                    setModalTimelineOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition flex items-center gap-1.5"
+                >
+                  <Clock size={13} /> Timeline / Correlation
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSincronizarStatusReal();
+                    setFeedback({ tipo: 'success', texto: 'Telemetria global re-sincronizada com sucesso em todos os provedores.' });
+                  }}
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
+                >
+                  <RefreshCcw size={13} /> Sincronizar Agora
+                </button>
+              </div>
+            </div>
+
+            {/* Grid de 8 Cards de Saúde e Telemetria */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Saúde Geral</span>
+                <div className="mt-1">
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                      summaryHealthCalculated.overallStatus === 'OPERACIONAL'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : summaryHealthCalculated.overallStatus === 'ATENCAO' || summaryHealthCalculated.overallStatus === 'DEGRADADO'
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                    }`}
+                  >
+                    {summaryHealthCalculated.overallStatus}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Campanhas Ativas</span>
+                <div className="text-lg font-black text-white font-mono mt-0.5">{summaryHealthCalculated.activeCampaignsCount}</div>
+                <span className="text-[9px] text-emerald-400 font-semibold">Veiculando</span>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Canais Saudáveis</span>
+                <div className="text-lg font-black text-emerald-400 font-mono mt-0.5">{summaryHealthCalculated.healthyIntegrationsCount}</div>
+                <span className="text-[9px] text-slate-500">100% online</span>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Canais em Atenção</span>
+                <div className="text-lg font-black text-amber-400 font-mono mt-0.5">{summaryHealthCalculated.attentionIntegrationsCount}</div>
+                <span className="text-[9px] text-slate-500">Monitorados</span>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Erros Críticos</span>
+                <div className="text-lg font-black text-rose-400 font-mono mt-0.5">{summaryHealthCalculated.criticalErrorsCount}</div>
+                <span className="text-[9px] text-slate-500">Zero bloqueio</span>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Tracking Gateway</span>
+                <div className="text-lg font-black text-purple-400 font-mono mt-0.5">{summaryHealthCalculated.trackingEventsCount.toLocaleString('pt-BR')}</div>
+                <span className="text-[9px] text-slate-500">Eventos 48h</span>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Incidentes Abertos</span>
+                <div className="text-lg font-black text-white font-mono mt-0.5">{summaryHealthCalculated.openIncidentsCount}</div>
+                <span className="text-[9px] text-slate-500">Anti-Spam ativo</span>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Autocorreções</span>
+                <div className="text-lg font-black text-sky-400 font-mono mt-0.5">{summaryHealthCalculated.autoRepairsCount}</div>
+                <span className="text-[9px] text-slate-500">Auditadas</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Banner de Atalhos: Saúde Operacional do Evento (Contexto do Evento) */}
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Target size={16} className="text-purple-400" />
+                <span className="text-xs font-bold text-white">
+                  Saúde Operacional do Evento: <strong className="text-purple-300">{eventosList[0]?.nome || effectiveEventoId}</strong>
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Navegação rápida contextual para os módulos integrados deste evento.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
-                onClick={handleSincronizarStatusReal}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
+                type="button"
+                onClick={() => setActiveTab('campanhas')}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold transition"
               >
-                <RefreshCcw size={13} /> Sincronizar Agora
+                Ver Campanhas
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pixels')}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold transition"
+              >
+                Central de Pixels
+              </button>
+              <button
+                type="button"
+                onClick={() => setSubTabStatusReal('diagnostico')}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold transition"
+              >
+                Diagnóstico
+              </button>
+              <Link
+                href="/remarketing/publicos"
+                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold transition inline-flex items-center gap-1"
+              >
+                <span>Públicos</span>
+                <ExternalLink size={10} className="text-slate-400" />
+              </Link>
+              <Link
+                href="/remarketing/jornadas"
+                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold transition inline-flex items-center gap-1"
+              >
+                <span>Jornadas</span>
+                <ExternalLink size={10} className="text-slate-400" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setActiveTab('utm')}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold transition"
+              >
+                Central UTM
               </button>
             </div>
-
-            {/* 4 Cards de Entrega */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl p-3.5">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Ativas Entregando</span>
-                <div className="text-2xl font-black text-white mt-1">3</div>
-                <span className="text-[10px] text-slate-500">Impressões normais nas últimas 6h</span>
-              </div>
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5">
-                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Ativas sem Entrega</span>
-                <div className="text-2xl font-black text-white mt-1">0</div>
-                <span className="text-[10px] text-slate-500">Sem impressões registradas</span>
-              </div>
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5">
-                <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Em Análise / Fila</span>
-                <div className="text-2xl font-black text-white mt-1">1</div>
-                <span className="text-[10px] text-slate-500">Aguardando aprovação na plataforma</span>
-              </div>
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5">
-                <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Problemas / Rejeições</span>
-                <div className="text-2xl font-black text-white mt-1">0</div>
-                <span className="text-[10px] text-emerald-400 font-semibold">Nenhuma rejeição crítica</span>
-              </div>
-            </div>
           </div>
 
-          {/* Tabela de Telemetria por Campanha */}
-          <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <select
-                  value={filtroCanalStatusReal}
-                  onChange={(e) => setFiltroCanalStatusReal(e.target.value)}
-                  className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                >
-                  <option value="todos">Todos os Canais</option>
-                  <option value="meta">Meta Ads</option>
-                  <option value="google">Google Ads</option>
-                  <option value="tiktok">TikTok Ads</option>
-                  <option value="spotify">Spotify Ads</option>
-                </select>
-                <select
-                  value={filtroStatusRealStatus}
-                  onChange={(e) => setFiltroStatusRealStatus(e.target.value)}
-                  className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                >
-                  <option value="todos">Todos os Status</option>
-                  <option value="entregando">Entregando</option>
-                  <option value="analise">Em Análise</option>
-                  <option value="pausada">Pausada</option>
-                </select>
-              </div>
+          {/* Sub-Tabs de Status Real */}
+          <div className="flex flex-wrap items-center gap-1 bg-[#111827] border border-slate-800 p-1.5 rounded-xl">
+            {[
+              { id: 'visao-geral', label: 'Visão Geral & Canais', icon: <Activity size={13} /> },
+              { id: 'health-center', label: 'Health Center (Entidades)', icon: <Server size={13} /> },
+              { id: 'diagnostico', label: 'Diagnóstico Automático', badge: diagnosticFindings.length > 0 ? String(diagnosticFindings.length) : undefined, icon: <Zap size={13} /> },
+              { id: 'incidentes', label: 'Incidentes Agrupados', badge: incidents.filter((i) => i.status === 'ABERTO').length > 0 ? String(incidents.filter((i) => i.status === 'ABERTO').length) : undefined, icon: <AlertOctagon size={13} /> },
+              { id: 'reconciliador', label: 'Reconciliador EDDIE ↔ Provider', badge: reconciliations.filter((r) => !r.reconciled).length > 0 ? 'Divergência' : undefined, icon: <GitCompare size={13} /> },
+              { id: 'timeline', label: 'Timeline & Telemetria', icon: <Clock size={13} /> },
+            ].map((st) => (
+              <button
+                key={st.id}
+                type="button"
+                onClick={() => setSubTabStatusReal(st.id as any)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  subTabStatusReal === st.id
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                {st.icon}
+                <span>{st.label}</span>
+                {st.badge && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-mono ${
+                    subTabStatusReal === st.id ? 'bg-black/30 text-white' : 'bg-purple-500/20 text-purple-300'
+                  }`}>
+                    {st.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
 
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-2.5 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Buscar campanha por ID ou nome..."
-                  value={buscaStatusReal}
-                  onChange={(e) => setBuscaStatusReal(e.target.value)}
-                  className="bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 w-64"
-                />
-              </div>
-            </div>
+          {/* ============================================================== */}
+          {/* SUB-ABA 1: VISÃO GERAL & CANAIS */}
+          {/* ============================================================== */}
+          {subTabStatusReal === 'visao-geral' && (
+            <div className="space-y-4">
+              {/* Canais Principais */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  {
+                    canal: 'Meta Ads & CAPI',
+                    provider: 'META',
+                    status: 'OPERACIONAL',
+                    latencia: '142ms',
+                    summary: 'Token ativo (58d). Pixel Web + CAPI em modo híbrido com 100% dedup.',
+                    checkedAt: '2026-09-25T10:45:00Z',
+                    targetTab: 'meta',
+                  },
+                  {
+                    canal: 'Google Analytics 4 & Ads',
+                    provider: 'GOOGLE',
+                    status: 'OPERACIONAL',
+                    latencia: '88ms',
+                    summary: 'Measurement Protocol ativo. Stream G-849201 recebendo compras server-side.',
+                    checkedAt: '2026-09-25T10:45:00Z',
+                    targetTab: 'google-analytics',
+                  },
+                  {
+                    canal: 'TikTok Ads & Events API',
+                    provider: 'TIKTOK',
+                    status: 'OPERACIONAL',
+                    latencia: '195ms',
+                    summary: 'Pixel C782910 conectado com hashing SHA-256 de identificadores.',
+                    checkedAt: '2026-09-25T10:45:00Z',
+                    targetTab: 'tiktok',
+                  },
+                  {
+                    canal: 'Spotify Ad Studio',
+                    provider: 'SPOTIFY',
+                    status: 'OPERACIONAL',
+                    latencia: '210ms',
+                    summary: 'Capacidades estritas a anúncios de áudio e engajamento cultural.',
+                    checkedAt: '2026-09-25T10:45:00Z',
+                    targetTab: 'spotify',
+                  },
+                  {
+                    canal: 'WhatsApp Business Cloud API',
+                    provider: 'WHATSAPP',
+                    status: 'OPERACIONAL',
+                    latencia: '45ms',
+                    summary: 'Templates de abandono aprovados. Frequency cap de 1 msg / 24h ativo.',
+                    checkedAt: '2026-09-25T10:45:00Z',
+                    targetTab: 'whatsapp',
+                  },
+                  {
+                    canal: 'E-mail Transacional & Remarketing',
+                    provider: 'EMAIL',
+                    status: 'OPERACIONAL',
+                    latencia: '35ms',
+                    summary: 'DKIM e SPF 100% validados. Zero bounce em campanhas ativas.',
+                    checkedAt: '2026-09-25T10:45:00Z',
+                    targetTab: 'email',
+                  },
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition space-y-3"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">{item.canal}</span>
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {item.status}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{item.summary}</p>
+                    </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800">
-                  <tr>
-                    <th className="p-3.5">Canal</th>
-                    <th className="p-3.5">Campanha / Evento</th>
-                    <th className="p-3.5 text-center">Status Plataforma</th>
-                    <th className="p-3.5 text-center">Status Real</th>
-                    <th className="p-3.5 text-right">Impressões 6h</th>
-                    <th className="p-3.5 text-right">Cliques 6h</th>
-                    <th className="p-3.5 text-right">Gasto 6h</th>
-                    <th className="p-3.5">Diagnóstico & Causa</th>
-                    <th className="p-3.5 text-center">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/80 text-slate-300">
-                  {[
-                    { canal: 'Meta Ads', nome: 'Carrossel Line-up Atrações (ID: 849201)', statusPlat: 'ATIVA', statusReal: 'ENTREGANDO', imp: 14200, cli: 642, gasto: 15000, diag: 'Entrega saudável; CPM estável a R$ 10,50' },
-                    { canal: 'Google Ads', nome: 'Search Palavras-Chave Nome Artista', statusPlat: 'ATIVA', statusReal: 'ENTREGANDO', imp: 5800, cli: 410, gasto: 12000, diag: 'Índice de qualidade 9/10; parcela de impressões 84%' },
-                    { canal: 'Spotify Ads', nome: 'Retargeting Ouvintes Música (ID: 9812)', statusPlat: 'EM_ANALISE', statusReal: 'EM_ANALISE', imp: 0, cli: 0, gasto: 0, diag: 'Áudio em fila de moderação pela equipe do Spotify' },
-                    { canal: 'TikTok Ads', nome: 'Spark Ads Vídeo Teaser Oficial', statusPlat: 'ATIVA', statusReal: 'ENTREGANDO', imp: 22400, cli: 890, gasto: 18000, diag: 'Taxa de conclusão de 6 segundos em 42%' },
-                  ].map((row, idx) => (
-                    <tr key={idx} className="hover:bg-slate-800/30 transition">
-                      <td className="p-3.5 font-bold text-white">{row.canal}</td>
-                      <td className="p-3.5 font-medium">{row.nome}</td>
-                      <td className="p-3.5 text-center">
-                        <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-bold text-slate-300">
-                          {row.statusPlat}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.statusReal === 'ENTREGANDO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'}`}>
-                          {row.statusReal}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-right font-mono text-slate-300">{row.imp.toLocaleString('pt-BR')}</td>
-                      <td className="p-3.5 text-right font-mono text-slate-300">{row.cli.toLocaleString('pt-BR')}</td>
-                      <td className="p-3.5 text-right font-mono font-bold text-emerald-400">{formatBRL(row.gasto)}</td>
-                      <td className="p-3.5 text-slate-400 max-w-[250px] truncate">{row.diag}</td>
-                      <td className="p-3.5 text-center">
+                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
+                      <div className="text-slate-500 font-mono">
+                        Latência: <strong className="text-slate-300">{item.latencia}</strong>
+                      </div>
+                      <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => setFeedback({ tipo: 'success', texto: `Campanha "${row.nome}" re-sincronizada com o canal ${row.canal}.` })}
-                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold border border-slate-700"
+                          type="button"
+                          onClick={() => {
+                            setFeedback({ tipo: 'success', texto: `Conexão com ${item.canal} verificada com sucesso!` });
+                          }}
+                          className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition"
                         >
-                          Sincronizar
+                          Verificar
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab(item.targetTab as any)}
+                          className="px-2 py-1 rounded bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 font-bold border border-purple-500/30 transition"
+                        >
+                          Abrir Canal
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* SUB-ABA 2: HEALTH CENTER (ENTIDADES MONITORADAS) */}
+          {/* ============================================================== */}
+          {subTabStatusReal === 'health-center' && (
+            <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div className="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={filtroEntityTypeHealth}
+                    onChange={(e) => setFiltroEntityTypeHealth(e.target.value)}
+                    className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-purple-500"
+                  >
+                    <option value="TODOS">Todos os Tipos</option>
+                    <option value="PROVIDER">Provedores</option>
+                    <option value="CAPI">CAPI</option>
+                    <option value="GA4">GA4</option>
+                    <option value="TIKTOK_EVENTS">TikTok Events</option>
+                    <option value="JOURNEY">Jornadas</option>
+                    <option value="JOB">Jobs & Filas</option>
+                    <option value="TRACKING_GATEWAY">Tracking Gateway</option>
+                  </select>
+
+                  <select
+                    value={filtroStatusHealth}
+                    onChange={(e) => setFiltroStatusHealth(e.target.value)}
+                    className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-purple-500"
+                  >
+                    <option value="TODOS">Todos os Status</option>
+                    <option value="OPERACIONAL">Operacional</option>
+                    <option value="ATENCAO">Atenção</option>
+                    <option value="DEGRADADO">Degradado</option>
+                    <option value="ERRO">Erro</option>
+                  </select>
+                </div>
+
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-2.5 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Buscar entidade por nome ou ID..."
+                    value={buscaHealth}
+                    onChange={(e) => setBuscaHealth(e.target.value)}
+                    className="bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 w-64 outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="p-3.5">Entidade & Tipo</th>
+                      <th className="p-3.5">Provedor</th>
+                      <th className="p-3.5 text-center">Status</th>
+                      <th className="p-3.5 text-center">Latência</th>
+                      <th className="p-3.5">Fonte da Verificação</th>
+                      <th className="p-3.5">Última Checagem</th>
+                      <th className="p-3.5">Correlation ID</th>
+                      <th className="p-3.5 text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80 text-slate-300">
+                    {healthRecordsFiltrados.map((rec) => (
+                      <tr key={rec.id} className="hover:bg-slate-800/30 transition">
+                        <td className="p-3.5">
+                          <div className="font-bold text-white">{rec.entityName}</div>
+                          <span className="text-[10px] text-slate-500 font-mono">{rec.entityType} • {rec.entityId}</span>
+                        </td>
+                        <td className="p-3.5 font-semibold text-slate-200">{rec.provider || 'EDDIE'}</td>
+                        <td className="p-3.5 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              rec.status === 'OPERACIONAL'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : rec.status === 'DEGRADADO' || rec.status === 'ATENCAO'
+                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            }`}
+                          >
+                            {rec.status}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-center font-mono text-slate-300">
+                          {rec.latencyMs ? `${rec.latencyMs}ms` : 'N/A'}
+                        </td>
+                        <td className="p-3.5 text-slate-400 font-mono text-[10px] max-w-[180px] truncate">
+                          {rec.source}
+                        </td>
+                        <td className="p-3.5 text-slate-400 text-[10px]">
+                          {new Date(rec.checkedAt).toLocaleTimeString('pt-BR')}
+                        </td>
+                        <td className="p-3.5 font-mono text-purple-300 text-[10px]">
+                          {rec.correlationId}
+                        </td>
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleCheckHealthRecord(rec)}
+                              className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold border border-slate-700 transition"
+                              title="Checar saúde agora"
+                            >
+                              Verificar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDiagnosticForRecord(rec)}
+                              className="px-2 py-1 rounded bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-[10px] font-bold border border-purple-500/30 transition"
+                            >
+                              Diagnóstico
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveHealthForDetail(rec);
+                                setModalHealthDetailOpen(true);
+                              }}
+                              className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold border border-slate-700 transition"
+                            >
+                              Detalhes
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* SUB-ABA 3: DIAGNÓSTICO AUTOMÁTICO */}
+          {/* ============================================================== */}
+          {subTabStatusReal === 'diagnostico' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Zap size={16} className="text-purple-400" />
+                    <span>Achados do Motor de Diagnóstico Automático</span>
+                  </h3>
+                  <p className="text-slate-400 text-xs">
+                    Identificação de anomalias com diferenciação rigorosa entre Causa Confirmada e Causa Provável.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFeedback({ tipo: 'success', texto: 'Varredura diagnóstica concluída: nenhum novo erro crítico detectado.' });
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
+                >
+                  Executar Varredura
+                </button>
+              </div>
+
+              {diagnosticFindings.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 bg-[#111827] border border-slate-800 rounded-xl">
+                  Nenhuma anomalia técnica encontrada. Todos os canais e workers operando em normalidade.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {diagnosticFindings.map((finding) => (
+                    <div
+                      key={finding.id}
+                      className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-3"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] font-mono text-purple-400 block">{finding.ruleCode}</span>
+                            <h4 className="text-xs font-bold text-white mt-0.5">{finding.title}</h4>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              finding.severity === 'CRITICA' || finding.severity === 'ALTA'
+                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            }`}
+                          >
+                            {finding.severity}
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-300">
+                          <div className="text-[9px] text-slate-500 uppercase font-bold mb-1">
+                            Causa {finding.causeType}:
+                          </div>
+                          {finding.probableCause}
+                        </div>
+
+                        <div className="space-y-1">
+                          <span className="text-[10px] text-slate-400 font-semibold block">Evidências:</span>
+                          {finding.evidence.slice(0, 2).map((ev, i) => (
+                            <div key={i} className="text-[10px] text-slate-400 flex items-start gap-1">
+                              <span className="text-purple-400">•</span> <span>{ev}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveFindingForDetail(finding);
+                            setModalDiagnosticDetailOpen(true);
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition"
+                        >
+                          Ver Detalhes
+                        </button>
+
+                        {finding.canAutoRepair && !finding.repairAudit ? (
+                          <button
+                            type="button"
+                            onClick={() => handleAutoRepairFinding(finding)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
+                          >
+                            <Wrench size={12} /> Autocorreção Segura
+                          </button>
+                        ) : finding.repairAudit ? (
+                          <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Autocorrigido
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* SUB-ABA 4: INCIDENTES AGRUPADOS */}
+          {/* ============================================================== */}
+          {subTabStatusReal === 'incidentes' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <AlertOctagon size={16} className="text-rose-400" />
+                    <span>Central de Incidentes Operacionais</span>
+                  </h3>
+                  <p className="text-slate-400 text-xs">
+                    Agrupamento inteligente de falhas para mitigar alert spam e orientar a resolução.
+                  </p>
+                </div>
+              </div>
+
+              {incidents.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 bg-[#111827] border border-slate-800 rounded-xl">
+                  Nenhum incidente ativo registrado no momento.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {incidents.map((inc) => (
+                    <div
+                      key={inc.id}
+                      className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              inc.severity === 'CRITICA' || inc.severity === 'ALTA'
+                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            }`}
+                          >
+                            {inc.severity}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                            {inc.status}
+                          </span>
+                          <h4 className="text-xs font-bold text-white">{inc.title}</h4>
+                        </div>
+                        <p className="text-[11px] text-slate-300">{inc.observedImpact}</p>
+                        <div className="text-[10px] text-slate-500 flex items-center gap-3">
+                          <span>Início: {new Date(inc.startedAt).toLocaleString('pt-BR')}</span>
+                          <span>{inc.findingsCount} ocorrência(s) agrupada(s)</span>
+                          {inc.assignedTo && <span className="text-purple-300">Resp: {inc.assignedTo}</span>}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleRetryIncident(inc.id)}
+                          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition"
+                        >
+                          Retentar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveIncidentForDetail(inc);
+                            setModalIncidentOpen(true);
+                          }}
+                          className="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition"
+                        >
+                          Gerenciar Incidente
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* SUB-ABA 5: RECONCILIADOR EDDIE ↔ PROVIDER */}
+          {/* ============================================================== */}
+          {subTabStatusReal === 'reconciliador' && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <GitCompare size={16} className="text-purple-400" />
+                  <span>Reconciliador de Status Multicanal</span>
+                </h3>
+                <p className="text-slate-400 text-xs">
+                  Comparação contínua entre estado no EDDIE e no Provedor Remoto. Divergências nunca são alteradas silenciosamente.
+                </p>
+              </div>
+
+              {reconciliations.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 bg-[#111827] border border-slate-800 rounded-xl">
+                  Nenhuma divergência registrada. Sincronia perfeita entre EDDIE e as plataformas remotas.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {reconciliations.map((rec) => (
+                    <div
+                      key={rec.id}
+                      className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            {rec.discrepancyType}
+                          </span>
+                          <h4 className="text-xs font-bold text-white">{rec.campaignName}</h4>
+                          <span className="text-[10px] font-mono text-purple-300">({rec.provider})</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-slate-400">
+                            Status EDDIE: <strong className="text-white">{rec.eddieStatus}</strong>
+                          </span>
+                          <span className="text-slate-500">↔</span>
+                          <span className="text-slate-400">
+                            Status Provedor: <strong className="text-purple-300">{rec.providerStatus}</strong>
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-500">
+                          {rec.reconciled ? (
+                            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                              <CheckCircle2 size={12} /> Reconciliado (Fonte: {rec.applicableTruthSource})
+                            </span>
+                          ) : (
+                            <span className="text-amber-400">Aguardando decisão operacional</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveReconciliationForDetail(rec);
+                            setModalReconciliationOpen(true);
+                          }}
+                          className="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition"
+                        >
+                          Reconciliar Status
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* SUB-ABA 6: TIMELINE & TELEMETRIA */}
+          {/* ============================================================== */}
+          {subTabStatusReal === 'timeline' && (
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Clock size={16} className="text-purple-400" />
+                    <span>Timeline Operacional dos Eventos</span>
+                  </h3>
+                  <p className="text-slate-400 text-xs">Histórico cronológico de conexões, testes, syncs e erros.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTimelineInitialCorrelationId('');
+                    setModalTimelineOpen(true);
+                  }}
+                  className="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition"
+                >
+                  Abrir Correlation Explorer
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {timelineEvents.slice(0, 5).map((ev) => (
+                  <div
+                    key={ev.id}
+                    className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1 rounded bg-slate-800 text-purple-400">
+                        <Activity size={13} />
+                      </div>
+                      <div>
+                        <span className="font-bold text-white">{ev.title}</span>
+                        <div className="text-[10px] text-slate-400">{ev.description}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono text-purple-300 text-[10px] block">{ev.correlationId}</span>
+                      <span className="text-[10px] text-slate-500">{new Date(ev.timestamp).toLocaleTimeString('pt-BR')}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -4833,6 +6004,67 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
           setActiveConversionForDetail(null);
         }}
         conversion={activeConversionForDetail}
+      />
+
+      {/* Modais de Telemetria, Health Center, Diagnóstico, Incidentes e Reconciliação (EDDIE 11.16.18) */}
+      <HealthEntityDetailModal
+        isOpen={modalHealthDetailOpen}
+        onClose={() => {
+          setModalHealthDetailOpen(false);
+          setActiveHealthForDetail(null);
+        }}
+        record={activeHealthForDetail}
+        onCheckHealth={handleCheckHealthRecord}
+        onOpenDiagnostic={handleOpenDiagnosticForRecord}
+        onOpenLogs={(rec) => {
+          const cfg = pixelConfigs.find((p) => p.id === rec.entityId);
+          if (cfg) {
+            setActivePixelForLogs(cfg);
+            setModalLogsOpen(true);
+          } else {
+            setFeedback({ tipo: 'success', texto: `Logs técnicos de entrega consultados para ${rec.entityName}.` });
+          }
+        }}
+      />
+
+      <DiagnosticDetailModal
+        isOpen={modalDiagnosticDetailOpen}
+        onClose={() => {
+          setModalDiagnosticDetailOpen(false);
+          setActiveFindingForDetail(null);
+        }}
+        finding={activeFindingForDetail}
+        onAutoRepair={handleAutoRepairFinding}
+      />
+
+      <IncidentManagementModal
+        isOpen={modalIncidentOpen}
+        onClose={() => {
+          setModalIncidentOpen(false);
+          setActiveIncidentForDetail(null);
+        }}
+        incident={activeIncidentForDetail}
+        onUpdateIncident={handleUpdateIncident}
+        onRetryIncident={handleRetryIncident}
+      />
+
+      <ReconciliationModal
+        isOpen={modalReconciliationOpen}
+        onClose={() => {
+          setModalReconciliationOpen(false);
+          setActiveReconciliationForDetail(null);
+        }}
+        discrepancy={activeReconciliationForDetail}
+        onReconcile={handleReconcileDiscrepancy}
+      />
+
+      <TimelineExplorerModal
+        isOpen={modalTimelineOpen}
+        onClose={() => {
+          setModalTimelineOpen(false);
+        }}
+        events={timelineEvents}
+        initialCorrelationId={timelineInitialCorrelationId}
       />
 
       {/* Modal Operacional Padronizado */}

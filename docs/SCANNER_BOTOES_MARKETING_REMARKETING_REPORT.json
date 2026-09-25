@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-09-25T13:38:40.809Z",
+  "timestamp": "2026-09-25T14:16:00.805Z",
   "versao": "EDDIE-11.16.14",
   "totais": {
-    "totalBotoes": 889,
-    "totalFuncionais": 889,
+    "totalBotoes": 910,
+    "totalFuncionais": 910,
     "totalBloqueadosPermissao": 0,
     "totalIndisponiveisIntegracao": 0,
     "totalMortos": 0
@@ -1030,7 +1030,7 @@
       "rota": "/marketing/status-real",
       "modulo": "Marketing",
       "nome": "Status Real",
-      "totalBotoesNaRota": 28,
+      "totalBotoesNaRota": 49,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -1171,31 +1171,157 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
+          "texto": "Simular Token Inválido",
+          "title": "Simula falha de token OAuth com diagnóstico e status ERRO",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Simular Divergência",
+          "title": "Simula divergência EDDIE ATIVA vs Provider PAUSADA",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Timeline / Correlation",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
           "texto": "Sincronizar Agora",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Sincronizar",
+          "texto": "Ver Campanhas",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Sincronizar",
+          "texto": "Central de Pixels",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Sincronizar",
+          "texto": "Diagnóstico",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Sincronizar",
+          "texto": "Central UTM",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Visão Geral & Canais",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Health Center (Entidades)",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Diagnóstico Automático 1",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Incidentes Agrupados",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Reconciliador EDDIE ↔ Provider",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Timeline & Telemetria",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Verificar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Abrir Canal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Verificar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Abrir Canal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Verificar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Abrir Canal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Verificar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Abrir Canal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Verificar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Abrir Canal",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Verificar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Abrir Canal",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
