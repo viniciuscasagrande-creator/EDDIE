@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-09-25T14:16:00.805Z",
+  "timestamp": "2026-09-25T15:58:48.161Z",
   "versao": "EDDIE-11.16.14",
   "totais": {
-    "totalBotoes": 910,
-    "totalFuncionais": 910,
+    "totalBotoes": 927,
+    "totalFuncionais": 927,
     "totalBloqueadosPermissao": 0,
     "totalIndisponiveisIntegracao": 0,
     "totalMortos": 0
@@ -14,7 +14,7 @@
       "rota": "/marketing",
       "modulo": "Marketing",
       "nome": "Dashboard",
-      "totalBotoesNaRota": 29,
+      "totalBotoesNaRota": 36,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -150,6 +150,48 @@
         },
         {
           "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Comparar Campanhas",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Relatório",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Auditoria Completa",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Comparar Campanhas Lado a Lado",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Evidências & Ação",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Evidências & Ação",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Evidências & Ação",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -2974,7 +3016,7 @@
       "rota": "/marketing/atribuicao",
       "modulo": "Marketing",
       "nome": "Atribuição Multicanal",
-      "totalBotoesNaRota": 23,
+      "totalBotoesNaRota": 33,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -3110,6 +3152,66 @@
         },
         {
           "texto": "Relatórios",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular Modelo de Atribuição",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Last Non-Direct Descarta tráfego direto se houver UTM prévia",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "First Touch 100% no canal originador do lead",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Last Touch 100% no último clique antes do checkout",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Linear (1/N) Divisão equilibrada entre todos os pontos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Position-Based 40% primeiro, 40% último, 20% meio",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Ver Jornada",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -3261,7 +3363,7 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Exportar Relatório CSV",
+          "texto": "Exportar Relatório Completo",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."

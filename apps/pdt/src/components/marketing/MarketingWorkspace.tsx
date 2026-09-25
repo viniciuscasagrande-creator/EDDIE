@@ -65,6 +65,10 @@ import {
   Server,
   AlertOctagon,
   Wrench,
+  Scale,
+  MousePointerClick,
+  FileSpreadsheet,
+  FileJson,
 } from 'lucide-react';
 import { useProducerEvent } from '../ProducerEventContext';
 import { ModuleNavigation } from '../navigation/ModuleNavigation';
@@ -87,6 +91,22 @@ import { DiagnosticDetailModal } from './DiagnosticDetailModal';
 import { IncidentManagementModal } from './IncidentManagementModal';
 import { ReconciliationModal } from './ReconciliationModal';
 import { TimelineExplorerModal } from './TimelineExplorerModal';
+import AttributionOrderModal from './AttributionOrderModal';
+import CampaignCompareModal from './CampaignCompareModal';
+import InsightDetailModal from './InsightDetailModal';
+import ExportReportModal from './ExportReportModal';
+import type {
+  AttributionModel,
+  MarketingMetric,
+  OrderAttributionResult,
+  AttributionAuditLog,
+  FunnelStageMetric,
+  TimeSeriesDataPoint,
+  ChannelPerformanceMetric,
+  CampaignPerformanceMetric,
+  MarketingInsight,
+  DataQualitySummary,
+} from './analytics-attribution-types';
 import type {
   HealthStatus,
   Severity,
@@ -1541,6 +1561,32 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
   const [modalTimelineOpen, setModalTimelineOpen] = useState(false);
   const [timelineInitialCorrelationId, setTimelineInitialCorrelationId] = useState('');
 
+  // Estados EDDIE 11.16.19: Analytics, Atribuição Multi-touch, Insights e Relatórios
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('30d');
+  const [selectedChannel, setSelectedChannel] = useState<string>('todos');
+  const [selectedAttributionModel, setSelectedAttributionModel] = useState<AttributionModel>('LAST_NON_DIRECT');
+  const [modalAttributionOrderOpen, setModalAttributionOrderOpen] = useState(false);
+  const [activeOrderForAttribution, setActiveOrderForAttribution] = useState<OrderAttributionResult | null>(null);
+  const [modalCampaignCompareOpen, setModalCampaignCompareOpen] = useState(false);
+  const [modalInsightDetailOpen, setModalInsightDetailOpen] = useState(false);
+  const [activeInsightForDetail, setActiveInsightForDetail] = useState<MarketingInsight | null>(null);
+  const [modalExportReportOpen, setModalExportReportOpen] = useState(false);
+  const [attributionAuditLogs, setAttributionAuditLogs] = useState<AttributionAuditLog[]>([
+    {
+      id: 'audit-init-01',
+      producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      eventId: effectiveEventoId,
+      recalculatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+      requestedBy: 'Equipe de Mídia PDT',
+      previousModel: 'LAST_TOUCH',
+      newModel: 'LAST_NON_DIRECT',
+      ordersProcessed: 4,
+      totalAttributedRevenueCents: 190000,
+      status: 'SUCESSO',
+      reason: 'Ajuste para expurgar tráfego direto de campanhas com UTM.',
+    },
+  ]);
+
   // Filtros de UTM
   const [buscaUtm, setBuscaUtm] = useState('');
   const [filtroCanalUtm, setFiltroCanalUtm] = useState('todos');
@@ -2864,48 +2910,557 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
       />
 
       {/* ============================================================== */}
-      {/* 1. DASHBOARD MARKETING */}
+      {/* 1. DASHBOARD MARKETING (EDDIE 11.16.19 ANALYTICS & ATRIBUIÇÃO) */}
       {/* ============================================================== */}
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
-          {/* Top KPIs */}
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vendas Atribuídas</span>
-              <div className="text-xl font-black text-emerald-400 font-mono mt-1.5">{formatBRL(4800000)}</div>
-              <span className="text-[10px] text-emerald-400 font-semibold">+18.4% vs mês anterior</span>
+          {/* Barra de Filtros Unificada de Analytics */}
+          <div className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                <Filter size={14} className="text-purple-400" />
+                <span>Filtros de Analytics:</span>
+              </div>
+
+              {/* Período */}
+              <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                <Clock size={12} className="text-slate-400" />
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                >
+                  <option value="7d">Últimos 7 dias</option>
+                  <option value="30d">Últimos 30 dias (Padrão)</option>
+                  <option value="este-mes">Este Mês</option>
+                  <option value="tudo">Todo o Período</option>
+                </select>
+              </div>
+
+              {/* Canal / Provider */}
+              <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                <Target size={12} className="text-slate-400" />
+                <select
+                  value={selectedChannel}
+                  onChange={(e) => setSelectedChannel(e.target.value)}
+                  className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                >
+                  <option value="todos">Todos os Canais</option>
+                  <option value="META">Meta Ads (Instagram & FB)</option>
+                  <option value="GOOGLE">Google Ads (Search & PMax)</option>
+                  <option value="TIKTOK">TikTok Ads</option>
+                  <option value="SPOTIFY">Spotify Ads</option>
+                  <option value="REMARKETING">WhatsApp / E-mail</option>
+                </select>
+              </div>
+
+              {/* Modelo de Atribuição Ativo */}
+              <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                <GitBranch size={12} className="text-indigo-400" />
+                <select
+                  value={selectedAttributionModel}
+                  onChange={(e) => setSelectedAttributionModel(e.target.value as AttributionModel)}
+                  className="bg-transparent text-xs text-indigo-300 font-semibold focus:outline-none cursor-pointer"
+                >
+                  <option value="LAST_NON_DIRECT">Atribuição: Last Non-Direct</option>
+                  <option value="FIRST_TOUCH">Atribuição: First Touch</option>
+                  <option value="LAST_TOUCH">Atribuição: Last Touch</option>
+                  <option value="LINEAR">Atribuição: Linear (1/N)</option>
+                  <option value="POSITION_BASED">Atribuição: Position-Based (40-20-40)</option>
+                </select>
+              </div>
             </div>
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Investimento Total</span>
-              <div className="text-xl font-black text-white font-mono mt-1.5">{formatBRL(800000)}</div>
-              <span className="text-[10px] text-slate-400">Meta + Google + TikTok + Spotify</span>
-            </div>
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ROAS Consolidado</span>
-              <div className="text-xl font-black text-purple-400 font-mono mt-1.5">6.00x</div>
-              <span className="text-[10px] text-purple-400 font-semibold">R$ 6,00 de retorno p/ R$ 1</span>
-            </div>
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Conversões / Ingressos</span>
-              <div className="text-xl font-black text-white font-mono mt-1.5">240</div>
-              <span className="text-[10px] text-slate-400">Ingressos pagos</span>
-            </div>
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CPA Médio</span>
-              <div className="text-xl font-black text-sky-400 font-mono mt-1.5">{formatBRL(3333)}</div>
-              <span className="text-[10px] text-sky-400 font-semibold">Custo por ingresso vendido</span>
-            </div>
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CTR Global</span>
-              <div className="text-xl font-black text-white font-mono mt-1.5">4.52%</div>
-              <span className="text-[10px] text-emerald-400 font-semibold">5.310 cliques totais</span>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setModalCampaignCompareOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition"
+              >
+                <Scale size={13} className="text-purple-400" />
+                <span>Comparar Campanhas</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalExportReportOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition shadow-sm"
+              >
+                <Download size={13} />
+                <span>Exportar Relatório</span>
+              </button>
             </div>
           </div>
 
-          {/* Atalhos Rápidos para as Telas do Vídeo */}
+          {/* Top KPIs com Fonte e Timestamp */}
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vendas Atribuídas</span>
+                <span className="text-[10px] text-emerald-400 font-semibold">+26.6%</span>
+              </div>
+              <div className="text-xl font-black text-emerald-400 font-mono">{formatBRL(7850000)}</div>
+              <div className="text-[9px] text-slate-500 truncate" title="Engine de Atribuição Server-Side DiskIngressos">
+                Fonte: Atribuição Server-Side · 11:30
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Investimento Total</span>
+                <span className="text-[10px] text-slate-400 font-semibold">+13.2%</span>
+              </div>
+              <div className="text-xl font-black text-white font-mono">{formatBRL(1245000)}</div>
+              <div className="text-[9px] text-slate-500 truncate" title="Meta Ads + Google Ads + TikTok API">
+                Fonte: APIs Meta, Google, TikTok · 11:30
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ROAS Consolidado</span>
+                <span className="text-[10px] text-purple-400 font-semibold">+11.9%</span>
+              </div>
+              <div className="text-xl font-black text-purple-400 font-mono">6.31x</div>
+              <div className="text-[9px] text-slate-500 truncate" title="Cálculo Receita Atribuída / Investimento">
+                Fonte: Receita / Mídia · 11:30
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CPA Médio</span>
+                <span className="text-[10px] text-sky-400 font-semibold">-8.5% (Melhor)</span>
+              </div>
+              <div className="text-xl font-black text-sky-400 font-mono">{formatBRL(3890)}</div>
+              <div className="text-[9px] text-slate-500 truncate" title="Investimento / 320 Ingressos Pagos">
+                Fonte: Ingressos Pagos Server-Side
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Conversão Funil</span>
+                <span className="text-[10px] text-emerald-400 font-semibold">+18.3%</span>
+              </div>
+              <div className="text-xl font-black text-white font-mono">3.42%</div>
+              <div className="text-[9px] text-slate-500 truncate" title="320 compras / 9.350 visitas">
+                Fonte: Tracking Gateway · 11:30
+              </div>
+            </div>
+
+            <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CTR Global</span>
+                <span className="text-[10px] text-emerald-400 font-semibold">+6.6%</span>
+              </div>
+              <div className="text-xl font-black text-white font-mono">4.18%</div>
+              <div className="text-[9px] text-slate-500 truncate" title="9.350 cliques em 223.700 impressões">
+                Fonte: Tracking UTM & Provedores
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Data Quality Health Banner */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <ShieldCheck size={16} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-white">Qualidade dos Dados de Tracking:</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    ESTADO BOA · SCORE 94/100
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Cobertura de 99.4% nas rotas · Divergência CAPI 0.8% · Latência média de 42ms · Zero falhas de schema nas últimas 24h.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setActiveTab('relatorios')}
+              className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition self-end sm:self-center"
+            >
+              <span>Ver Auditoria Completa</span>
+              <ArrowRight size={12} />
+            </button>
+          </div>
+
+          {/* Funil de Conversão Interativo */}
+          <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <BarChart3 size={16} className="text-purple-400" />
+                  <span>Funil de Conversão Multicanal (Visita → Carrinho → Checkout → Compra)</span>
+                </h3>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  Acompanhamento de volume e taxas de drop-off entre etapas de aquisição.
+                </p>
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono">
+                Atualizado em tempo real via CAPI
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                {
+                  stage: '1. Visualizou Evento',
+                  count: 9350,
+                  rate: '100.0%',
+                  drop: '0.0%',
+                  time: '42s médio',
+                  color: 'border-slate-700 bg-slate-900/60',
+                  badge: 'bg-slate-800 text-slate-300',
+                  source: 'Browser SDK & UTM',
+                },
+                {
+                  stage: '2. Adicionou ao Carrinho',
+                  count: 2430,
+                  rate: '25.99%',
+                  drop: '74.01% abandono',
+                  time: '95s no setor',
+                  color: 'border-indigo-500/30 bg-indigo-950/20',
+                  badge: 'bg-indigo-500/20 text-indigo-300',
+                  source: 'CAPI & BFF Checkout',
+                },
+                {
+                  stage: '3. Iniciou Checkout',
+                  count: 1120,
+                  rate: '46.09%',
+                  drop: '53.91% abandono',
+                  time: '160s preenchimento',
+                  color: 'border-purple-500/30 bg-purple-950/20',
+                  badge: 'bg-purple-500/20 text-purple-300',
+                  source: 'Checkout Gateway',
+                },
+                {
+                  stage: '4. Compra Confirmada',
+                  count: 320,
+                  rate: '28.57%',
+                  drop: '71.43% dropoff',
+                  time: '45s confirmação',
+                  color: 'border-emerald-500/30 bg-emerald-950/20',
+                  badge: 'bg-emerald-500/20 text-emerald-300',
+                  source: 'Ledger Server-Side',
+                  rev: formatBRL(7850000),
+                },
+              ].map((step, idx) => (
+                <div key={idx} className={`p-4 rounded-xl border ${step.color} space-y-2 relative overflow-hidden`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-200">{step.stage}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${step.badge}`}>
+                      {step.rate}
+                    </span>
+                  </div>
+                  <div className="text-2xl font-black text-white font-mono">
+                    {step.count.toLocaleString('pt-BR')}
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800/80 pt-2 font-mono">
+                    <span>{step.drop}</span>
+                    <span>{step.time}</span>
+                  </div>
+                  {step.rev && (
+                    <div className="text-xs font-bold text-emerald-400 font-mono pt-1">
+                      Receita: {step.rev}
+                    </div>
+                  )}
+                  <div className="text-[9px] text-slate-500 truncate pt-0.5">Fonte: {step.source}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desempenho por Canal & Provedor */}
+          <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Target size={16} className="text-sky-400" />
+                  <span>Performance Consolidada por Canal de Mídia & Provedor</span>
+                </h3>
+                <p className="text-slate-400 text-xs">Atribuição segundo modelo {selectedAttributionModel}.</p>
+              </div>
+              <span className="text-[10px] text-slate-400">5 canais ativos</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800 font-mono">
+                  <tr>
+                    <th className="p-3.5">Canal / Provedor</th>
+                    <th className="p-3.5 text-center">Status</th>
+                    <th className="p-3.5 text-right">Investimento</th>
+                    <th className="p-3.5 text-right">Cliques (CTR)</th>
+                    <th className="p-3.5 text-right">Conversões</th>
+                    <th className="p-3.5 text-right">Receita Atribuída</th>
+                    <th className="p-3.5 text-center">CPA Médio</th>
+                    <th className="p-3.5 text-center">ROAS</th>
+                    <th className="p-3.5 text-right">Última Sync</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80 text-slate-300 font-mono">
+                  {[
+                    {
+                      canal: 'Meta Ads (Instagram & FB)',
+                      provider: 'META',
+                      status: 'OPERACIONAL',
+                      invest: 520000,
+                      clicks: '4.480 (4.00%)',
+                      conv: 142,
+                      rev: 3479000,
+                      cpa: 3662,
+                      roas: '6.69x',
+                      sync: '11:30',
+                    },
+                    {
+                      canal: 'Google Ads (Search & PMax)',
+                      provider: 'GOOGLE',
+                      status: 'OPERACIONAL',
+                      invest: 410000,
+                      clicks: '3.120 (4.22%)',
+                      conv: 118,
+                      rev: 2891000,
+                      cpa: 3475,
+                      roas: '7.05x',
+                      sync: '11:30',
+                    },
+                    {
+                      canal: 'TikTok Ads (Spark & Feed)',
+                      provider: 'TIKTOK',
+                      status: 'OPERACIONAL',
+                      invest: 215000,
+                      clicks: '1.350 (2.81%)',
+                      conv: 36,
+                      rev: 882000,
+                      cpa: 5972,
+                      roas: '4.10x',
+                      sync: '11:30',
+                    },
+                    {
+                      canal: 'Spotify Ads (Áudio & Vídeo)',
+                      provider: 'SPOTIFY',
+                      status: 'ATENCAO',
+                      invest: 100000,
+                      clicks: '400 (1.82%)',
+                      conv: 8,
+                      rev: 196000,
+                      cpa: 12500,
+                      roas: '1.96x',
+                      sync: '11:28',
+                    },
+                    {
+                      canal: 'WhatsApp & E-mail (Remarketing)',
+                      provider: 'REMARKETING',
+                      status: 'OPERACIONAL',
+                      invest: 0,
+                      clicks: '890 (21.19%)',
+                      conv: 78,
+                      rev: 1911000,
+                      cpa: 0,
+                      roas: 'N/A',
+                      sync: '11:30',
+                    },
+                  ].map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-800/30 transition">
+                      <td className="p-3.5 font-sans font-bold text-white">{row.canal}</td>
+                      <td className="p-3.5 text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            row.status === 'OPERACIONAL'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }`}
+                        >
+                          {row.status}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-right text-slate-300">{formatBRL(row.invest)}</td>
+                      <td className="p-3.5 text-right text-slate-300">{row.clicks}</td>
+                      <td className="p-3.5 text-right font-bold text-white">{row.conv}</td>
+                      <td className="p-3.5 text-right font-bold text-emerald-400">{formatBRL(row.rev)}</td>
+                      <td className="p-3.5 text-center text-sky-400">{row.cpa ? formatBRL(row.cpa) : 'R$ 0,00'}</td>
+                      <td className="p-3.5 text-center font-bold text-purple-400">{row.roas}</td>
+                      <td className="p-3.5 text-right text-slate-500">{row.sync}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Ranking de Campanhas Ativas com Botão de Comparação */}
+          <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Trophy size={16} className="text-amber-400" />
+                  <span>Ranking de Campanhas de Maior Retorno (ROAS)</span>
+                </h3>
+                <p className="text-slate-400 text-xs">Desempenho consolidado por canal com atribuição direta de vendas.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalCampaignCompareOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs font-semibold border border-slate-700 transition"
+              >
+                <Scale size={13} />
+                <span>Comparar Campanhas Lado a Lado</span>
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800 font-mono">
+                  <tr>
+                    <th className="p-3.5">Campanha</th>
+                    <th className="p-3.5">Canal</th>
+                    <th className="p-3.5 text-right">Investimento</th>
+                    <th className="p-3.5 text-right">Receita Atribuída</th>
+                    <th className="p-3.5 text-center">CPA</th>
+                    <th className="p-3.5 text-center">ROAS</th>
+                    <th className="p-3.5 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80 text-slate-300 font-mono">
+                  {[
+                    { nome: 'Lançamento Oficial · Lote Promocional', canal: 'Meta + Google', gasto: 600000, receita: 4410000, cpa: 3333, roas: '7.35x', status: 'ATIVA' },
+                    { nome: 'Virada de Lote 72h · Contagem Regressiva', canal: 'Meta + TikTok', gasto: 450000, receita: 2548000, cpa: 4327, roas: '5.66x', status: 'ATIVA' },
+                    { nome: 'Recuperação Automática de Carrinho VIP', canal: 'WhatsApp + E-mail', gasto: 45000, receita: 1274000, cpa: 865, roas: '28.31x', status: 'ATIVA' },
+                    { nome: 'Teaser Spotify · Playlist Oficial do Festival', canal: 'Spotify Ads', gasto: 150000, receita: 294000, cpa: 12500, roas: '1.96x', status: 'PAUSADA' },
+                  ].map((camp, idx) => (
+                    <tr key={idx} className="hover:bg-slate-800/30 transition">
+                      <td className="p-3.5 font-sans font-bold text-white">{camp.nome}</td>
+                      <td className="p-3.5 text-slate-400">{camp.canal}</td>
+                      <td className="p-3.5 text-right text-slate-300">{formatBRL(camp.gasto)}</td>
+                      <td className="p-3.5 text-right font-bold text-emerald-400">{formatBRL(camp.receita)}</td>
+                      <td className="p-3.5 text-center text-sky-400">{formatBRL(camp.cpa)}</td>
+                      <td className="p-3.5 text-center font-bold text-purple-400">{camp.roas}</td>
+                      <td className="p-3.5 text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            camp.status === 'ATIVA'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {camp.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Feed de Inteligência de Marketing Baseada em Evidências */}
+          <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Sparkles size={16} className="text-amber-400" />
+                  <span>Inteligência de Marketing & Diagnósticos Baseados em Evidências</span>
+                </h3>
+                <p className="text-slate-400 text-xs">
+                  Recomendações com evidências numéricas reais. Ressalva metodológica: correlação observada não implica causalidade confirmada.
+                </p>
+              </div>
+              <span className="text-[10px] text-slate-400">3 diagnósticos recentes</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                {
+                  id: 'ins-01-cpa-google',
+                  title: 'Eficiência Elevada em Google Ads com ROAS 7.05x',
+                  scope: 'CANAL' as const,
+                  severity: 'INFORMATIVA' as const,
+                  evidenceNum: 'ROAS 7.05x · CPA R$ 34,75',
+                  evidenceSource: 'Google Ads & Conversões CAPI',
+                  summary: 'Pesquisa de marca do Google Ads lidera conversão final com dados 100% íntegros.',
+                  actionTab: 'campanhas',
+                },
+                {
+                  id: 'ins-02-dropoff-checkout',
+                  title: 'Queda de 53.9% entre Início de Checkout e Compra no Spotify',
+                  scope: 'FUNIL' as const,
+                  severity: 'ALTA' as const,
+                  evidenceNum: 'CPA R$ 125,00 · Abandono 53.91%',
+                  evidenceSource: 'Spotify Ads & Funil de Tracking',
+                  summary: 'Anúncios de áudio no Spotify apresentam desistência elevada antes do pagamento.',
+                  actionTab: 'status-real',
+                },
+                {
+                  id: 'ins-03-remarketing-recup',
+                  title: 'Jornada WhatsApp Converte 27.1% dos Pix Expirando',
+                  scope: 'ORCAMENTO' as const,
+                  severity: 'INFORMATIVA' as const,
+                  evidenceNum: '114 Ingressos · R$ 27.930,00 Resgatados',
+                  evidenceSource: 'Motor de Jornadas EDDIE',
+                  summary: 'Disparo de aviso 30 minutos antes do vencimento do Pix evitou desistência de compra.',
+                  actionTab: 'automacoes',
+                },
+              ].map((ins) => (
+                <div key={ins.id} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">
+                        {ins.scope}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          ins.severity === 'ALTA'
+                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                            : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                        }`}
+                      >
+                        {ins.severity}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold text-white leading-snug">{ins.title}</h4>
+                    <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-0.5">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Evidência:</span>
+                      <div className="text-xs font-mono font-bold text-amber-300">{ins.evidenceNum}</div>
+                      <span className="text-[9px] text-slate-500 block truncate">Fonte: {ins.evidenceSource}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">{ins.summary}</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveInsightForDetail({
+                        id: ins.id,
+                        title: ins.title,
+                        scope: ins.scope,
+                        severity: ins.severity,
+                        period: { from: new Date(Date.now() - 86400000 * 7).toISOString(), to: new Date().toISOString() },
+                        evidence: [
+                          { label: 'Métrica Observada', value: ins.evidenceNum, source: ins.evidenceSource },
+                        ],
+                        interpretation: ins.summary,
+                        suggestedAction: 'Avaliar otimização de lances e orçamento no canal correspondente.',
+                        diagnosticActionLink: ins.actionTab,
+                        dataQuality: 'BOA',
+                        generatedAt: new Date().toISOString(),
+                      });
+                      setModalInsightDetailOpen(true);
+                    }}
+                    className="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 border border-slate-700"
+                  >
+                    <span>Ver Evidências & Ação</span>
+                    <ArrowRight size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Atalhos Rápidos para as Telas de Marketing */}
           <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">
-              Módulos Integrados do Vídeo
+              Módulos Integrados de Operação & Mídia
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
               {[
@@ -2918,6 +3473,7 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
               ].map((item) => (
                 <button
                   key={item.tab}
+                  type="button"
                   onClick={() => setActiveTab(item.tab as MarketingVideoTab)}
                   className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 text-left transition flex items-center gap-2"
                 >
@@ -2925,50 +3481,6 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                   <span className="text-xs font-semibold text-slate-300 truncate">{item.label}</span>
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Ranking de Campanhas Ativas */}
-          <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-white">Ranking de Campanhas de Maior Retorno (ROAS)</h3>
-                <p className="text-slate-400 text-xs">Desempenho consolidado por canal com atribuição direta de vendas.</p>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800">
-                  <tr>
-                    <th className="p-3.5">Campanha</th>
-                    <th className="p-3.5">Canal</th>
-                    <th className="p-3.5 text-right">Investimento</th>
-                    <th className="p-3.5 text-right">Receita Atribuída</th>
-                    <th className="p-3.5 text-center">ROAS</th>
-                    <th className="p-3.5 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/80 text-slate-300">
-                  {[
-                    { nome: 'Meta Ads · Carrossel Line-up Atrações', canal: 'Meta Ads', gasto: 500000, receita: 2840000, roas: '5.68x', status: 'ENTREGANDO' },
-                    { nome: 'Google Search · Palavras-Chave Nome Artista', canal: 'Google Search', gasto: 300000, receita: 1960000, roas: '6.53x', status: 'ENTREGANDO' },
-                    { nome: 'Spotify Audio Ads · Retargeting Ouvintes', canal: 'Spotify Ads', gasto: 120000, receita: 680000, roas: '5.66x', status: 'EM_ANALISE' },
-                  ].map((camp, idx) => (
-                    <tr key={idx} className="hover:bg-slate-800/30 transition">
-                      <td className="p-3.5 font-bold text-white">{camp.nome}</td>
-                      <td className="p-3.5 text-slate-400">{camp.canal}</td>
-                      <td className="p-3.5 text-right font-mono text-slate-300">{formatBRL(camp.gasto)}</td>
-                      <td className="p-3.5 text-right font-mono font-bold text-emerald-400">{formatBRL(camp.receita)}</td>
-                      <td className="p-3.5 text-center font-mono font-bold text-purple-400">{camp.roas}</td>
-                      <td className="p-3.5 text-center">
-                        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
-                          {camp.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
@@ -5756,74 +6268,661 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
       )}
 
       {/* ============================================================== */}
-      {/* 16. ATRIBUIÇÃO MULTICANAL */}
+      {/* 16. ATRIBUIÇÃO MULTICANAL (EDDIE 11.16.19) */}
       {/* ============================================================== */}
       {activeTab === 'atribuicao' && (
-        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
-              <GitBranch size={16} className="text-indigo-400" />
-              <span>Modelos de Atribuição & Jornada Multi-Touch</span>
-            </h2>
-            <p className="text-slate-400 text-xs">Entenda o caminho exato de touchpoints até a conversão final do ingresso.</p>
+        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-6">
+          {/* Header e Seletor de Modelo */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  ATRIBUIÇÃO MULTI-TOUCH
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">5 Modelos Estatísticos Suportados</span>
+              </div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2 mt-1">
+                <GitBranch size={18} className="text-indigo-400" />
+                <span>Modelos de Atribuição & Jornada Multi-Touch</span>
+              </h2>
+              <p className="text-slate-400 text-xs">
+                Entenda a contribuição de cada canal e touchpoint até a compra final do ingresso.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const newLog: AttributionAuditLog = {
+                    id: `audit-${Date.now().toString(36)}`,
+                    producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                    eventId: effectiveEventoId,
+                    recalculatedAt: new Date().toISOString(),
+                    requestedBy: 'Equipe de Mídia PDT',
+                    previousModel: selectedAttributionModel,
+                    newModel: selectedAttributionModel,
+                    ordersProcessed: 4,
+                    totalAttributedRevenueCents: 190000,
+                    status: 'SUCESSO',
+                    reason: `Recálculo manual auditado para o modelo ${selectedAttributionModel}.`,
+                  };
+                  setAttributionAuditLogs((prev) => [newLog, ...prev]);
+                  setFeedback({
+                    tipo: 'success',
+                    texto: `Atribuição recalculada com sucesso sob modelo ${selectedAttributionModel}. 4 pedidos reindexados.`,
+                  });
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm"
+              >
+                <RefreshCcw size={13} />
+                <span>Recalcular Modelo de Atribuição</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {/* Model Selector Pills */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+              Selecione o Modelo para Cálculo:
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              {[
+                { id: 'LAST_NON_DIRECT' as AttributionModel, label: 'Last Non-Direct', desc: 'Descarta tráfego direto se houver UTM prévia' },
+                { id: 'FIRST_TOUCH' as AttributionModel, label: 'First Touch', desc: '100% no canal originador do lead' },
+                { id: 'LAST_TOUCH' as AttributionModel, label: 'Last Touch', desc: '100% no último clique antes do checkout' },
+                { id: 'LINEAR' as AttributionModel, label: 'Linear (1/N)', desc: 'Divisão equilibrada entre todos os pontos' },
+                { id: 'POSITION_BASED' as AttributionModel, label: 'Position-Based', desc: '40% primeiro, 40% último, 20% meio' },
+              ].map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setSelectedAttributionModel(m.id)}
+                  className={`p-3 rounded-xl border text-left transition ${
+                    selectedAttributionModel === m.id
+                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                      : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                >
+                  <div className="text-xs font-bold">{m.label}</div>
+                  <div className="text-[10px] opacity-75 mt-0.5 leading-snug">{m.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grid de Comparação dos 5 Modelos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {[
-              { modelo: 'Último Clique (Last Click)', share: '100% no último canal', roasMeta: '5.68x', roasGoogle: '6.53x' },
-              { modelo: 'Primeiro Clique (First Click)', share: '100% no canal originador', roasMeta: '6.42x', roasGoogle: '4.80x' },
-              { modelo: 'Linear (Ponderação Igual)', share: 'Divisão equilibrada', roasMeta: '6.10x', roasGoogle: '5.85x' },
-              { modelo: 'Data-Driven (Algorítmico)', share: 'Machine Learning DiskIngressos', roasMeta: '6.25x', roasGoogle: '6.20x' },
+              {
+                modelo: 'Último Não-Direto',
+                id: 'LAST_NON_DIRECT',
+                share: '100% no último touchpoint com UTM',
+                metaRev: 'R$ 42.100,00',
+                googleRev: 'R$ 36.400,00',
+                roasMeta: '6.69x',
+                roasGoogle: '7.05x',
+              },
+              {
+                modelo: 'Primeiro Clique',
+                id: 'FIRST_TOUCH',
+                share: '100% no canal originador',
+                metaRev: 'R$ 38.500,00',
+                googleRev: 'R$ 26.400,00',
+                roasMeta: '6.42x',
+                roasGoogle: '4.80x',
+              },
+              {
+                modelo: 'Último Clique',
+                id: 'LAST_TOUCH',
+                share: '100% no touchpoint imediato',
+                metaRev: 'R$ 34.790,00',
+                googleRev: 'R$ 28.910,00',
+                roasMeta: '5.68x',
+                roasGoogle: '6.53x',
+              },
+              {
+                modelo: 'Linear Equilibrado',
+                id: 'LINEAR',
+                share: 'Divisão igualitária 1/N',
+                metaRev: 'R$ 36.200,00',
+                googleRev: 'R$ 30.100,00',
+                roasMeta: '6.10x',
+                roasGoogle: '5.85x',
+              },
+              {
+                modelo: 'Position-Based (40-20-40)',
+                id: 'POSITION_BASED',
+                share: 'Ponderação em U',
+                metaRev: 'R$ 37.800,00',
+                googleRev: 'R$ 31.900,00',
+                roasMeta: '6.35x',
+                roasGoogle: '6.20x',
+              },
             ].map((m, i) => (
-              <div key={i} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 space-y-2">
-                <span className="text-xs font-bold text-white">{m.modelo}</span>
+              <div
+                key={i}
+                className={`rounded-xl p-3.5 space-y-2 border transition ${
+                  selectedAttributionModel === m.id
+                    ? 'bg-indigo-950/30 border-indigo-500/60'
+                    : 'bg-slate-900/60 border-slate-800'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white">{m.modelo}</span>
+                  {selectedAttributionModel === m.id && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-300">
+                      ATIVO
+                    </span>
+                  )}
+                </div>
                 <p className="text-[10px] text-slate-400">{m.share}</p>
-                <div className="pt-2 border-t border-slate-800 space-y-0.5 text-[11px] font-mono">
-                  <div className="text-slate-300">Meta: <span className="text-emerald-400 font-bold">{m.roasMeta}</span></div>
-                  <div className="text-slate-300">Google: <span className="text-emerald-400 font-bold">{m.roasGoogle}</span></div>
+                <div className="pt-2 border-t border-slate-800 space-y-1 text-[11px] font-mono">
+                  <div className="flex justify-between text-slate-300">
+                    <span>Meta:</span>
+                    <span className="text-emerald-400 font-bold">{m.metaRev} ({m.roasMeta})</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Google:</span>
+                    <span className="text-emerald-400 font-bold">{m.googleRev} ({m.roasGoogle})</span>
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Tabela de Pedidos com Jornada Multi-Touch */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <ShoppingBag size={16} className="text-emerald-400" />
+                  <span>Pedidos Auditados & Atribuição de Créditos</span>
+                </h3>
+                <p className="text-slate-400 text-xs">Clique para inspecionar os touchpoints individuais de cada compra.</p>
+              </div>
+              <span className="text-[10px] text-slate-400">4 pedidos na amostra ativa</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800 font-mono">
+                  <tr>
+                    <th className="p-3.5">Pedido</th>
+                    <th className="p-3.5">Comprador</th>
+                    <th className="p-3.5 text-right">Valor Total</th>
+                    <th className="p-3.5 text-center">Touchpoints</th>
+                    <th className="p-3.5">Canal Originador</th>
+                    <th className="p-3.5">Último Touchpoint</th>
+                    <th className="p-3.5 text-right">Receita Atribuída</th>
+                    <th className="p-3.5 text-center">Ação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80 text-slate-300 font-mono">
+                  {[
+                    {
+                      orderId: 'PED-701-VIP',
+                      email: 'ca***@gmail.com',
+                      total: 45000,
+                      touchpointsCount: 3,
+                      origin: 'Google Ads (Search)',
+                      last: 'E-mail Marketing (Remarketing)',
+                      rev: 45000,
+                      orderData: {
+                        orderId: 'PED-701-VIP',
+                        eventId: effectiveEventoId,
+                        producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                        orderTotalCents: 45000,
+                        customerEmailMasked: 'ca***@gmail.com',
+                        purchasedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+                        modelUsed: selectedAttributionModel,
+                        touchpoints: [
+                          {
+                            id: 'tp-701-1',
+                            sessionId: 'sess-701-a',
+                            occurredAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+                            source: 'google',
+                            medium: 'cpc',
+                            campaign: 'lancamento-pesquisa-marca',
+                            channel: 'Google Ads',
+                            provider: 'GOOGLE' as const,
+                            costCents: 350,
+                          },
+                          {
+                            id: 'tp-701-2',
+                            sessionId: 'sess-701-b',
+                            occurredAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+                            source: 'instagram',
+                            medium: 'story_ads',
+                            campaign: 'virada-lote-urgencia',
+                            channel: 'Meta Ads',
+                            provider: 'META' as const,
+                            costCents: 420,
+                          },
+                          {
+                            id: 'tp-701-3',
+                            sessionId: 'sess-701-c',
+                            occurredAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+                            source: 'email',
+                            medium: 'automacao',
+                            campaign: 'carrinho-abandonado-vip',
+                            channel: 'E-mail Marketing',
+                            provider: 'EMAIL' as const,
+                            costCents: 20,
+                          },
+                        ],
+                        credits: [
+                          {
+                            channel: 'E-mail Marketing',
+                            provider: 'EMAIL',
+                            campaign: 'carrinho-abandonado-vip',
+                            touchpointId: 'tp-701-3',
+                            weight: 1.0,
+                            attributedRevenueCents: 45000,
+                          },
+                        ],
+                      },
+                    },
+                    {
+                      orderId: 'PED-702-PISTA',
+                      email: 'br***@hotmail.com',
+                      total: 22000,
+                      touchpointsCount: 2,
+                      origin: 'TikTok Ads (Spark Ads)',
+                      last: 'Acesso Direto',
+                      rev: 22000,
+                      orderData: {
+                        orderId: 'PED-702-PISTA',
+                        eventId: effectiveEventoId,
+                        producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                        orderTotalCents: 22000,
+                        customerEmailMasked: 'br***@hotmail.com',
+                        purchasedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+                        modelUsed: selectedAttributionModel,
+                        touchpoints: [
+                          {
+                            id: 'tp-702-1',
+                            sessionId: 'sess-702-a',
+                            occurredAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+                            source: 'tiktok',
+                            medium: 'spark_ads',
+                            campaign: 'lineup-viral-tiktok',
+                            channel: 'TikTok Ads',
+                            provider: 'TIKTOK' as const,
+                            costCents: 280,
+                          },
+                          {
+                            id: 'tp-702-2',
+                            sessionId: 'sess-702-b',
+                            occurredAt: new Date(Date.now() - 3600000 * 13).toISOString(),
+                            source: 'direct',
+                            medium: 'none',
+                            campaign: '(direct)',
+                            channel: 'Acesso Direto',
+                            provider: 'DIRECT' as const,
+                            costCents: 0,
+                          },
+                        ],
+                        credits: [
+                          {
+                            channel: 'TikTok Ads',
+                            provider: 'TIKTOK',
+                            campaign: 'lineup-viral-tiktok',
+                            touchpointId: 'tp-702-1',
+                            weight: 1.0,
+                            attributedRevenueCents: 22000,
+                          },
+                        ],
+                      },
+                    },
+                    {
+                      orderId: 'PED-703-PREMIUM',
+                      email: 'ro***@outlook.com',
+                      total: 85000,
+                      touchpointsCount: 4,
+                      origin: 'Meta Ads (Feed)',
+                      last: 'Acesso Direto',
+                      rev: 85000,
+                      orderData: {
+                        orderId: 'PED-703-PREMIUM',
+                        eventId: effectiveEventoId,
+                        producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                        orderTotalCents: 85000,
+                        customerEmailMasked: 'ro***@outlook.com',
+                        purchasedAt: new Date(Date.now() - 3600000 * 26).toISOString(),
+                        modelUsed: selectedAttributionModel,
+                        touchpoints: [
+                          {
+                            id: 'tp-703-1',
+                            sessionId: 'sess-703-a',
+                            occurredAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+                            source: 'facebook',
+                            medium: 'feed_ads',
+                            campaign: 'abertura-geral',
+                            channel: 'Meta Ads',
+                            provider: 'META' as const,
+                            costCents: 510,
+                          },
+                          {
+                            id: 'tp-703-2',
+                            sessionId: 'sess-703-b',
+                            occurredAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+                            source: 'google',
+                            medium: 'cpc',
+                            campaign: 'lancamento-pesquisa-marca',
+                            channel: 'Google Ads',
+                            provider: 'GOOGLE' as const,
+                            costCents: 390,
+                          },
+                          {
+                            id: 'tp-703-3',
+                            sessionId: 'sess-703-c',
+                            occurredAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+                            source: 'whatsapp',
+                            medium: 'transacional',
+                            campaign: 'recuperacao-vip-wpp',
+                            channel: 'WhatsApp Business',
+                            provider: 'WHATSAPP' as const,
+                            costCents: 45,
+                          },
+                          {
+                            id: 'tp-703-4',
+                            sessionId: 'sess-703-d',
+                            occurredAt: new Date(Date.now() - 3600000 * 27).toISOString(),
+                            source: 'direct',
+                            medium: 'none',
+                            campaign: '(direct)',
+                            channel: 'Acesso Direto',
+                            provider: 'DIRECT' as const,
+                            costCents: 0,
+                          },
+                        ],
+                        credits: [
+                          {
+                            channel: 'WhatsApp Business',
+                            provider: 'WHATSAPP',
+                            campaign: 'recuperacao-vip-wpp',
+                            touchpointId: 'tp-703-3',
+                            weight: 1.0,
+                            attributedRevenueCents: 85000,
+                          },
+                        ],
+                      },
+                    },
+                    {
+                      orderId: 'PED-704-DUPLO',
+                      email: 'lu***@yahoo.com',
+                      total: 38000,
+                      touchpointsCount: 1,
+                      origin: 'Spotify Ads (Playlist)',
+                      last: 'Spotify Ads',
+                      rev: 38000,
+                      orderData: {
+                        orderId: 'PED-704-DUPLO',
+                        eventId: effectiveEventoId,
+                        producerId: produtorId || 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                        orderTotalCents: 38000,
+                        customerEmailMasked: 'lu***@yahoo.com',
+                        purchasedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+                        modelUsed: selectedAttributionModel,
+                        touchpoints: [
+                          {
+                            id: 'tp-704-1',
+                            sessionId: 'sess-704-a',
+                            occurredAt: new Date(Date.now() - 3600000 * 49).toISOString(),
+                            source: 'spotify',
+                            medium: 'audio_ad',
+                            campaign: 'playlist-oficial-rock',
+                            channel: 'Spotify Ads',
+                            provider: 'SPOTIFY' as const,
+                            costCents: 600,
+                          },
+                        ],
+                        credits: [
+                          {
+                            channel: 'Spotify Ads',
+                            provider: 'SPOTIFY',
+                            campaign: 'playlist-oficial-rock',
+                            touchpointId: 'tp-704-1',
+                            weight: 1.0,
+                            attributedRevenueCents: 38000,
+                          },
+                        ],
+                      },
+                    },
+                  ].map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-800/40 transition">
+                      <td className="p-3.5 font-bold text-sky-400">{row.orderId}</td>
+                      <td className="p-3.5 text-slate-300 font-sans">{row.email}</td>
+                      <td className="p-3.5 text-right font-bold text-white">{formatBRL(row.total)}</td>
+                      <td className="p-3.5 text-center">
+                        <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">
+                          {row.touchpointsCount} pontos
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-slate-300 font-sans">{row.origin}</td>
+                      <td className="p-3.5 text-slate-300 font-sans">{row.last}</td>
+                      <td className="p-3.5 text-right font-bold text-emerald-400">{formatBRL(row.rev)}</td>
+                      <td className="p-3.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveOrderForAttribution(row.orderData as OrderAttributionResult);
+                            setModalAttributionOrderOpen(true);
+                          }}
+                          className="px-2.5 py-1 rounded bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 font-sans font-bold border border-indigo-500/30 text-[11px] transition"
+                        >
+                          Ver Jornada
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Histórico de Recálculos Auditados */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-indigo-400" />
+                <span>Trilha de Auditoria de Recálculos</span>
+              </h3>
+              <span className="text-[10px] text-slate-500">{attributionAuditLogs.length} execuções registradas</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[11px] text-left">
+                <thead className="text-slate-500 border-b border-slate-800 font-mono">
+                  <tr>
+                    <th className="py-2 px-3">ID Auditoria</th>
+                    <th className="py-2 px-3">Data / Hora</th>
+                    <th className="py-2 px-3">Solicitante</th>
+                    <th className="py-2 px-3">Modelo Anterior</th>
+                    <th className="py-2 px-3">Novo Modelo</th>
+                    <th className="py-2 px-3 text-center">Pedidos</th>
+                    <th className="py-2 px-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-slate-400 font-mono">
+                  {attributionAuditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-800/30">
+                      <td className="py-2 px-3 text-indigo-300 font-bold">{log.id}</td>
+                      <td className="py-2 px-3">{new Date(log.recalculatedAt).toLocaleString('pt-BR')}</td>
+                      <td className="py-2 px-3 font-sans text-slate-300">{log.requestedBy}</td>
+                      <td className="py-2 px-3">{log.previousModel}</td>
+                      <td className="py-2 px-3 text-white font-bold">{log.newModel}</td>
+                      <td className="py-2 px-3 text-center">{log.ordersProcessed}</td>
+                      <td className="py-2 px-3 text-right">
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {log.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Legal / Ledger Notice */}
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
+            <ShieldCheck size={18} className="text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-200/90 leading-relaxed">
+              <strong>Aviso de Conformidade Fiscal & Contábil:</strong> A atribuição de Marketing é analítica e opera exclusivamente para fins de mensuração de ROAS e CAC. Os valores e prazos de repasse ao produtor permanecem regidos estritamente pelo módulo <strong>Financeiro e Contabilidade (Ledger)</strong>, sem qualquer alteração contábil decorrente de modelos de clique.
+            </p>
           </div>
         </div>
       )}
 
       {/* ============================================================== */}
-      {/* 17. RELATÓRIOS DE MARKETING */}
+      {/* 17. RELATÓRIOS EXECUTIVOS & DATA QUALITY (EDDIE 11.16.19) */}
       {/* ============================================================== */}
       {activeTab === 'relatorios' && (
-        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <FileBarChart size={16} className="text-amber-400" />
-                <span>Relatórios Executivos de Marketing & Mídia</span>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  RELATÓRIOS EXECUTIVOS
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">Consolidado Multicanal</span>
+              </div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2 mt-1">
+                <FileBarChart size={18} className="text-amber-400" />
+                <span>Relatórios Executivos de Marketing, Mídia & Atribuição</span>
               </h2>
-              <p className="text-slate-400 text-xs">Consolidação de investimento, conversão, CPA, CAC e receita por evento.</p>
+              <p className="text-slate-400 text-xs">
+                Auditoria de investimento, conversão, CPA, CAC e receita atribuída por evento.
+              </p>
             </div>
-            <button
-              onClick={() => triggerAction('EXPORT', { produtorId, eventoId: effectiveEventoId })}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700"
-            >
-              <Download size={13} /> Exportar Relatório CSV
-            </button>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setModalExportReportOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition shadow-sm"
+              >
+                <Download size={13} />
+                <span>Exportar Relatório Completo</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
-              <span className="text-[10px] font-bold text-slate-500 uppercase">Custo de Aquisição (CAC)</span>
-              <div className="text-2xl font-black text-sky-400 mt-1">R$ 33,33</div>
-              <span className="text-[10px] text-slate-400">Tíquete Médio: R$ 200,00</span>
+          {/* Cards de Métricas Executivas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Custo de Aquisição (CAC)</span>
+              <div className="text-2xl font-black text-sky-400 font-mono">R$ 38,90</div>
+              <span className="text-[10px] text-slate-400 block">Tíquete Médio: R$ 245,31</span>
+              <span className="text-[9px] text-slate-500 block truncate">Fonte: Ingressos Confirmados · 11:30</span>
             </div>
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
-              <span className="text-[10px] font-bold text-slate-500 uppercase">Margem Comercial de Mídia</span>
-              <div className="text-2xl font-black text-emerald-400 mt-1">83.3%</div>
-              <span className="text-[10px] text-slate-400">Margem líquida após custos de anúncio</span>
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Margem Comercial de Mídia</span>
+              <div className="text-2xl font-black text-emerald-400 font-mono">84.1%</div>
+              <span className="text-[10px] text-slate-400 block">Margem líquida após custos de anúncio</span>
+              <span className="text-[9px] text-slate-500 block truncate">Fonte: Receita Atribuída / Mídia · 11:30</span>
             </div>
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
-              <span className="text-[10px] font-bold text-slate-500 uppercase">Taxa de Conversão Global</span>
-              <div className="text-2xl font-black text-purple-400 mt-1">4.52%</div>
-              <span className="text-[10px] text-slate-400">Total de sessões originadas por anúncios</span>
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Taxa de Conversão Global</span>
+              <div className="text-2xl font-black text-purple-400 font-mono">3.42%</div>
+              <span className="text-[10px] text-slate-400 block">Total de sessões originadas por anúncios</span>
+              <span className="text-[9px] text-slate-500 block truncate">Fonte: Funil de Tracking Server-Side · 11:30</span>
+            </div>
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Receita Total Atribuída</span>
+              <div className="text-2xl font-black text-emerald-400 font-mono">{formatBRL(7850000)}</div>
+              <span className="text-[10px] text-slate-400 block">320 ingressos vendidos</span>
+              <span className="text-[9px] text-slate-500 block truncate">Fonte: Engine de Atribuição · 11:30</span>
+            </div>
+          </div>
+
+          {/* Matriz de Qualidade de Dados (Data Quality Auditor) */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <ShieldCheck size={16} className="text-emerald-400" />
+                  <span>Auditoria de Qualidade dos Dados (Data Quality)</span>
+                </h3>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  Checklist de integridade técnica entre SDKs do navegador, CAPI e banco de pedidos.
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded text-xs font-bold font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                SCORE 94/100 · ESTADO: BOA
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800 font-mono">
+                  <tr>
+                    <th className="p-3">Verificação Técnica</th>
+                    <th className="p-3 text-center">Status</th>
+                    <th className="p-3">Métrica Apurada</th>
+                    <th className="p-3">Impacto no Dashboard</th>
+                    <th className="p-3 text-right">Última Checagem</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80 text-slate-300 font-mono text-[11px]">
+                  {[
+                    {
+                      name: 'Cobertura de Tracking nas Páginas',
+                      status: 'APROVADO',
+                      metric: '99.4% das sessões cobertas',
+                      impact: 'Zero perda de sinal nos estágios do funil',
+                      time: 'Há 2 min',
+                    },
+                    {
+                      name: 'Deduplicação Browser vs Server-Side (CAPI)',
+                      status: 'APROVADO',
+                      metric: '0.8% divergência (Benchmark < 2.0%)',
+                      impact: 'Impede métricas infladas no Meta/Google',
+                      time: 'Há 2 min',
+                    },
+                    {
+                      name: 'Latência de Sincronização com Provedores',
+                      status: 'APROVADO',
+                      metric: '42ms de latência média',
+                      impact: 'Otimização de lances em tempo quase real',
+                      time: 'Há 5 min',
+                    },
+                    {
+                      name: 'Compras Atribuídas vs Acesso Direto',
+                      status: 'ALERTA',
+                      metric: '12.4% de compras diretas sem UTM',
+                      impact: 'Tráfego orgânico ou bloqueador agressivo',
+                      time: 'Há 10 min',
+                    },
+                    {
+                      name: 'Validação de Schema dos Eventos Canônicos',
+                      status: 'APROVADO',
+                      metric: '0 falhas de schema nas últimas 24h',
+                      impact: 'Alta confiabilidade estatística',
+                      time: 'Há 1 min',
+                    },
+                  ].map((chk, idx) => (
+                    <tr key={idx} className="hover:bg-slate-800/40 transition">
+                      <td className="p-3 font-sans font-bold text-white">{chk.name}</td>
+                      <td className="p-3 text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            chk.status === 'APROVADO'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }`}
+                        >
+                          {chk.status}
+                        </span>
+                      </td>
+                      <td className="p-3 font-bold text-indigo-300">{chk.metric}</td>
+                      <td className="p-3 text-slate-400 font-sans">{chk.impact}</td>
+                      <td className="p-3 text-right text-slate-500">{chk.time}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -6065,6 +7164,124 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
         }}
         events={timelineEvents}
         initialCorrelationId={timelineInitialCorrelationId}
+      />
+
+      {/* Modais de Analytics, Atribuição Multi-touch, Comparador e Relatórios (EDDIE 11.16.19) */}
+      <AttributionOrderModal
+        isOpen={modalAttributionOrderOpen}
+        onClose={() => {
+          setModalAttributionOrderOpen(false);
+          setActiveOrderForAttribution(null);
+        }}
+        orderResult={activeOrderForAttribution}
+        onModelChange={(newModel) => {
+          setSelectedAttributionModel(newModel);
+          if (activeOrderForAttribution) {
+            setActiveOrderForAttribution({
+              ...activeOrderForAttribution,
+              modelUsed: newModel,
+            });
+          }
+        }}
+      />
+
+      <CampaignCompareModal
+        isOpen={modalCampaignCompareOpen}
+        onClose={() => setModalCampaignCompareOpen(false)}
+        campaigns={[
+          {
+            campaignId: 'camp-lanc-01',
+            campaignName: 'Lançamento Oficial · Lote Promocional',
+            eventId: effectiveEventoId,
+            status: 'ATIVA',
+            channels: ['Meta Ads', 'Google Ads'],
+            investmentCents: 600000,
+            impressions: 120000,
+            clicks: 5200,
+            ctr: 4.33,
+            conversions: 180,
+            cpaCents: 3333,
+            attributedRevenueCents: 4410000,
+            roas: 7.35,
+            source: 'API Multicanal EDDIE',
+            lastSyncAt: new Date().toISOString(),
+            isEligibleForComparison: true,
+          },
+          {
+            campaignId: 'camp-virada-02',
+            campaignName: 'Virada de Lote 72h · Contagem Regressiva',
+            eventId: effectiveEventoId,
+            status: 'ATIVA',
+            channels: ['Meta Ads', 'TikTok Ads'],
+            investmentCents: 450000,
+            impressions: 89000,
+            clicks: 3400,
+            ctr: 3.82,
+            conversions: 104,
+            cpaCents: 4327,
+            attributedRevenueCents: 2548000,
+            roas: 5.66,
+            source: 'API Multicanal EDDIE',
+            lastSyncAt: new Date().toISOString(),
+            isEligibleForComparison: true,
+          },
+          {
+            campaignId: 'camp-recup-03',
+            campaignName: 'Recuperação Automática de Carrinho VIP',
+            eventId: effectiveEventoId,
+            status: 'ATIVA',
+            channels: ['WhatsApp', 'E-mail'],
+            investmentCents: 45000,
+            impressions: 4200,
+            clicks: 980,
+            ctr: 23.33,
+            conversions: 52,
+            cpaCents: 865,
+            attributedRevenueCents: 1274000,
+            roas: 28.31,
+            source: 'Motor de Jornadas EDDIE',
+            lastSyncAt: new Date().toISOString(),
+            isEligibleForComparison: true,
+          },
+          {
+            campaignId: 'camp-spot-04',
+            campaignName: 'Teaser Spotify · Playlist Oficial do Festival',
+            eventId: effectiveEventoId,
+            status: 'PAUSADA',
+            channels: ['Spotify Ads'],
+            investmentCents: 150000,
+            impressions: 31000,
+            clicks: 520,
+            ctr: 1.68,
+            conversions: 12,
+            cpaCents: 12500,
+            attributedRevenueCents: 294000,
+            roas: 1.96,
+            source: 'Spotify Ads API',
+            lastSyncAt: new Date(Date.now() - 86400000).toISOString(),
+            isEligibleForComparison: false,
+          },
+        ]}
+      />
+
+      <InsightDetailModal
+        isOpen={modalInsightDetailOpen}
+        onClose={() => {
+          setModalInsightDetailOpen(false);
+          setActiveInsightForDetail(null);
+        }}
+        insight={activeInsightForDetail}
+        onNavigateAction={(tab) => {
+          setActiveTab(tab as MarketingVideoTab);
+        }}
+      />
+
+      <ExportReportModal
+        isOpen={modalExportReportOpen}
+        onClose={() => setModalExportReportOpen(false)}
+        eventId={effectiveEventoId}
+        eventName={eventosList[0]?.nome || 'Rock in Rio 2026 · Edição Histórica'}
+        defaultModel={selectedAttributionModel}
       />
 
       {/* Modal Operacional Padronizado */}
