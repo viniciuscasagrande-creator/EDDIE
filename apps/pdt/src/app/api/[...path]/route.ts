@@ -1352,6 +1352,248 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     ]);
   }
 
+  // 10. EDDIE 11.18 — COMMAND CENTER & EVENT INTELLIGENCE
+  if (fullPath.includes('command-center/events')) {
+    return NextResponse.json([
+      {
+        id: 'evento-operacao',
+        producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        name: 'Festival DiskIngressos Live 2026',
+        slug: 'festival-diskingressos-live',
+        status: 'PUBLICADO',
+        venue: 'Pedreira Paulo Leminski - Curitiba/PR',
+        startDate: '2026-12-05T18:00:00Z',
+        capacityTotal: 15000,
+        ticketsSold: 11420,
+        occupancyPercent: 76.1,
+        grossRevenueCents: 228400000,
+        netProducerCents: 205560000,
+        activeCampaignsCount: 4,
+        health: 'ATENCAO',
+        criticalAlertsCount: 1,
+        lastUpdate: new Date().toISOString(),
+      },
+      {
+        id: 'evento-1',
+        producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        name: 'Turnê Rock Fest Brasil 2026',
+        slug: 'turne-rock-fest-2026',
+        status: 'PUBLICADO',
+        venue: 'Teatro Positivo - Curitiba/PR',
+        startDate: '2026-11-14T20:00:00Z',
+        capacityTotal: 3000,
+        ticketsSold: 2450,
+        occupancyPercent: 81.6,
+        grossRevenueCents: 49000000,
+        netProducerCents: 44100000,
+        activeCampaignsCount: 3,
+        health: 'OPERACIONAL',
+        criticalAlertsCount: 0,
+        lastUpdate: new Date().toISOString(),
+      },
+    ]);
+  }
+
+  if (fullPath.includes('command-center/summary')) {
+    const isOp = fullPath.includes('evento-operacao');
+    const eventId = isOp ? 'evento-operacao' : 'evento-1';
+    const eventName = isOp ? 'Festival DiskIngressos Live 2026' : 'Turnê Rock Fest Brasil 2026';
+    const capacityTotal = isOp ? 15000 : 3000;
+    const ticketsSold = isOp ? 11420 : 2450;
+    const grossRevenueCents = isOp ? 228400000 : 49000000;
+    const now = new Date().toISOString();
+
+    return NextResponse.json({
+      header: {
+        eventId,
+        producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        eventName,
+        status: 'EM_VEICULACAO',
+        sessionName: 'Abertura dos Portões 18h',
+        sessionDate: '2026-11-14T18:00:00Z',
+        capacityTotal,
+        occupancyCurrent: isOp ? 8420 : 1840,
+        occupancyPercent: isOp ? 56.1 : 61.3,
+        ticketsSoldTotal: ticketsSold,
+        grossRevenueCents,
+        revenueSource: 'LEDGER_CONTABIL',
+        overallHealth: isOp ? 'ATENCAO' : 'OPERACIONAL',
+        lastUpdated: now,
+      },
+      sales: {
+        totalOrders: isOp ? 7420 : 1640,
+        paidOrders: isOp ? 6980 : 1520,
+        pendingOrders: 320,
+        failedOrders: 120,
+        ticketsSoldTotal: ticketsSold,
+        grossSalesCents: grossRevenueCents,
+        averageTicketCents: 20000,
+        conversionRatePercent: 4.8,
+        salesBySector: [
+          { sectorId: 'sec-1', sectorName: 'Pista Premium', sold: 4800, capacity: 5000, percent: 96.0 },
+          { sectorId: 'sec-2', sectorName: 'Pista Geral', sold: 5400, capacity: 8000, percent: 67.5 },
+          { sectorId: 'sec-3', sectorName: 'Camarote Open Bar', sold: 1220, capacity: 2000, percent: 61.0 },
+        ],
+        salesByLot: [
+          { lotId: 'lot-1', lotName: 'Lote Promocional', sold: 3000, limit: 3000, status: 'ESGOTADO' },
+          { lotId: 'lot-2', lotName: 'Lote 1', sold: 8420, limit: 12000, status: 'ATIVO' },
+        ],
+        salesByChannel: [
+          { channel: 'Site DiskIngressos', orders: 4800, revenueCents: Math.round(grossRevenueCents * 0.7), sharePercent: 70.0 },
+          { channel: 'App Mobile', orders: 1800, revenueCents: Math.round(grossRevenueCents * 0.25), sharePercent: 25.0 },
+          { channel: 'Ponto de Venda', orders: 380, revenueCents: Math.round(grossRevenueCents * 0.05), sharePercent: 5.0 },
+        ],
+      },
+      payments: {
+        totalProcessedCents: grossRevenueCents,
+        approvedCents: Math.round(grossRevenueCents * 0.94),
+        pendingCents: Math.round(grossRevenueCents * 0.04),
+        declinedCents: Math.round(grossRevenueCents * 0.02),
+        approvalRatePercent: 94.2,
+        pixApprovalRatePercent: 98.4,
+        cardApprovalRatePercent: 89.1,
+        methods: [
+          { method: 'PIX', ordersCount: 4200, totalCents: Math.round(grossRevenueCents * 0.6), approvalRate: 98.4 },
+          { method: 'CREDITO', ordersCount: 2600, totalCents: Math.round(grossRevenueCents * 0.38), approvalRate: 89.1 },
+          { method: 'BOLETO', ordersCount: 180, totalCents: Math.round(grossRevenueCents * 0.02), approvalRate: 72.0 },
+        ],
+        declinedReasons: [
+          { reason: 'Saldo insuficiente no cartão', count: 48, actionRecommended: 'Disparo de WhatsApp para troca de cartão ou PIX' },
+          { reason: 'Falha de comunicação 3DS adquirente', count: 18, actionRecommended: 'Retentativa com gateway de contingência' },
+          { reason: 'Transação expirada no PIX', count: 12, actionRecommended: 'Reenvio de link com novo QR Code dinâmico' },
+        ],
+      },
+      gate: {
+        totalEntries: isOp ? 8420 : 1840,
+        entriesLast15Minutes: 248,
+        flowPacePerMinute: 16.5,
+        deniedEntries: 18,
+        peakHour: '19:30 - 20:00',
+        occupancyCurrent: isOp ? 8420 : 1840,
+        occupancyCapacity: capacityTotal,
+        occupancyPercent: isOp ? 56.1 : 61.3,
+        gates: [
+          { gateId: 'gate-a', gateName: 'Portão Principal (Pista)', entries: 5600, devicesOnline: 6, status: 'OPERACIONAL' },
+          { gateId: 'gate-b', gateName: 'Portão VIP / Camarotes', entries: 2820, devicesOnline: 3, status: 'OPERACIONAL' },
+        ],
+        deniedAlerts: [
+          { id: 'den-1', ticketCode: 'TKT-99124-XX', reason: 'INGRESSO_JA_UTILIZADO', gate: 'Portão Principal', timestamp: new Date(Date.now() - 300000).toISOString(), operator: 'Catraca 04' },
+          { id: 'den-2', ticketCode: 'TKT-98411-ZZ', reason: 'INGRESSO_CANCELADO_ESTORNO', gate: 'Portão VIP', timestamp: new Date(Date.now() - 600000).toISOString(), operator: 'Catraca 01' },
+        ],
+      },
+      marketing: {
+        activeCampaigns: 4,
+        totalImpressions: 482000,
+        totalClicks: 24800,
+        attributedRevenueCents: Math.round(grossRevenueCents * 0.85),
+        blendedRoas: 6.84,
+        topChannels: [
+          { channel: 'Meta Ads (Instagram)', costCents: 1500000, revenueCents: 98000000, roas: 6.53 },
+          { channel: 'Google Search Ads', costCents: 850000, revenueCents: 58000000, roas: 6.82 },
+          { channel: 'TikTok Ads', costCents: 420000, revenueCents: 24000000, roas: 5.71 },
+        ],
+        topUtmSources: [
+          { source: 'instagram', visits: 18420, conversions: 2100, revenueCents: 98000000 },
+          { source: 'google', visits: 9240, conversions: 1240, revenueCents: 58000000 },
+        ],
+        trackingHealth: 'OPERACIONAL',
+        sourceNote: 'Atribuição multi-touch analítica. Ledger oficial permanece inviolável.',
+      },
+      finance: {
+        grossTicketSalesCents: grossRevenueCents,
+        diskServiceFeesCents: Math.round(grossRevenueCents * 0.1),
+        producerNetBalanceCents: Math.round(grossRevenueCents * 0.9),
+        gatewayProcessingFeesCents: Math.round(grossRevenueCents * 0.025),
+        refundsProcessedCents: 1200000,
+        chargebacksUnderDisputeCents: 350000,
+        payoutScheduledCents: Math.round(grossRevenueCents * 0.65),
+        payoutStatus: 'AGENDADO',
+        reconciliationStatus: 'CONCILIADO_100',
+        reconciliationDivergenceCents: 0,
+        ledgerEntryCount: 14820,
+      },
+      support: {
+        openTicketsCount: 12,
+        ticketsInSlaCount: 11,
+        slaBreachedCount: 1,
+        averageResponseMinutes: 18,
+        topTopics: [
+          { topic: 'Segunda via de QR Code', count: 6 },
+          { topic: 'Troca de titularidade', count: 4 },
+          { topic: 'Comprovante de meia-entrada', count: 2 },
+        ],
+        criticalTickets: [],
+      },
+      risks: {
+        antifraudAlertsCount: 4,
+        duplicateQrAttemptsCount: 3,
+        chargebackRatePercent: 0.06,
+        suspiciousOrdersCount: 2,
+        riskScore: 'BAIXO',
+        recentIncidents: [
+          { id: 'rsk-1', title: 'Tentativa de reuso de QR Code barrada na Catraca 04', riskLevel: 'MEDIO', timestamp: new Date(Date.now() - 300000).toISOString() },
+        ],
+      },
+      health: {
+        apiLatencyMs: 38,
+        eventBusStatus: 'OPERACIONAL',
+        gatewayProvidersStatus: [
+          { provider: 'Adquirente Cielo / E-Rede', status: 'OPERACIONAL', latencyMs: 145 },
+          { provider: 'PIX Banco Central SPI', status: 'OPERACIONAL', latencyMs: 82 },
+        ],
+        marketingProvidersStatus: [
+          { provider: 'Meta CAPI', status: 'OPERACIONAL' },
+          { provider: 'GA4 Measurement Protocol', status: 'OPERACIONAL' },
+        ],
+        queueBacklogs: [
+          { queue: 'queue_ticket_dispatch', pending: 0, delayed: 0, failed: 0 },
+          { queue: 'queue_capi_events', pending: 1, delayed: 0, failed: 0 },
+        ],
+      },
+      activeIncidents: [
+        {
+          id: 'inc-1',
+          eventId,
+          producerId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          title: 'Oscilação transitória na Adquirente Cielo (PIX normalizado)',
+          sourceModule: 'GATEWAY',
+          severity: 'MEDIA',
+          status: 'INVESTIGANDO',
+          startedAt: new Date(Date.now() - 1800000).toISOString(),
+          observedImpact: 'Latência média de 420ms em pagamentos com cartão nas últimas 2 horas',
+          relatedSymptoms: ['Taxa de aprovação de cartões caiu temporariamente para 86%'],
+          evidenceTimeline: [
+            { time: new Date(Date.now() - 1800000).toISOString(), note: 'Alerta disparado por monitor de gateway', source: 'Health Probe' },
+          ],
+          correlationId: 'corr_inc_gw_01',
+        },
+      ],
+      insights: [
+        {
+          id: 'ins-1',
+          category: 'PORTARIA',
+          title: 'Fluxo de Catracas Acelerado',
+          observation: 'O fluxo de catracas atingiu 16.5 pessoas/min, dentro da capacidade ideal.',
+          evidence: 'Sem filas externas superiores a 5 minutos registradas nos sensores.',
+          recommendation: 'Manter todas as catracas ativas até às 21h.',
+          confidenceScore: 96,
+          dataQuality: 'ALTA',
+        },
+        {
+          id: 'ins-2',
+          category: 'VENDAS',
+          title: 'Esgotamento Próximo do Setor Premium',
+          observation: 'Restam apenas 200 ingressos no Lote 1 da Pista Premium (96% vendido).',
+          evidence: 'Taxa de venda média de 12 ingressos/hora nas últimas 3 horas.',
+          recommendation: 'Acionar virada automática para Lote 2 nas próximas 2 horas.',
+          confidenceScore: 94,
+          dataQuality: 'ALTA',
+        },
+      ],
+      generatedAt: now,
+    });
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json({ ok: true, processado: true, id: `item-${Date.now()}` }, { status: 200 });
