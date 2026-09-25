@@ -2189,6 +2189,328 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     });
   }
 
+  // 12. EDDIE 11.20 — FINANCIAL OPERATIONS CONTROL TOWER
+  if (fullPath.includes('finance/management/summary')) {
+    return NextResponse.json({
+      queues: {
+        totalPendingCount: 14,
+        criticalCount: 2,
+        breachedSlaCount: 0,
+        queuesCount: {
+          repasses: 3,
+          transferencias: 1,
+          pagamentos: 2,
+          estornos: 1,
+          chargebacks: 1,
+          divergencias: 2,
+          conciliacoes: 1,
+          contas_vencidas: 1,
+          aprovacoes: 2,
+          retornos: 0,
+          fechamentos: 0,
+        },
+      },
+      approvals: {
+        pendingCount: 3,
+        totalAmountPendingCents: 14500000,
+        highestTierPending: 'DIRETOR',
+      },
+      closings: {
+        eventsReadyCount: 1,
+        eventsBlockedCount: 0,
+        dailyClosingStatus: 'PRONTO_PARA_FECHAR',
+      },
+      massPayouts: {
+        eligibleBatchAvailable: true,
+        eligibleTotalCents: 7500000,
+        eligibleItemsCount: 3,
+      },
+      reconciliation: {
+        overallMatchingPercent: 99.4,
+        unresolvedCasesCount: 2,
+        criticalCasesCount: 1,
+      },
+      lastUpdated: new Date().toISOString(),
+    });
+  }
+
+  if (fullPath.includes('finance/operations/queues')) {
+    return NextResponse.json([
+      {
+        id: 'queue-01',
+        queue: 'repasses',
+        priority: 'ALTA',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        producerId: '00000000-0000-0000-0000-000000000002',
+        eventId: 'evento-operacao',
+        eventName: 'Festival DiskIngressos Live 2026',
+        title: 'Repasse Quinquenal Programado #SET-202609-01',
+        description: 'Lote programado para produtor com chave Pix validada.',
+        amountCents: 2500000,
+        status: 'PENDENTE',
+        slaLimitAt: new Date(Date.now() + 86400000).toISOString(),
+        origin: 'SETTLEMENT_ENGINE',
+        correlationId: 'corr_queue_rep_01',
+        updatedAt: new Date().toISOString(),
+        allowedActions: ['APROVAR', 'POSTERGAR', 'CANCELAR'],
+      },
+      {
+        id: 'queue-02',
+        queue: 'divergencias',
+        priority: 'CRITICA',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        producerId: '00000000-0000-0000-0000-000000000002',
+        eventId: 'evento-operacao',
+        eventName: 'Festival DiskIngressos Live 2026',
+        title: 'Retorno Bancário CNAB 240 com Rejeição',
+        description: 'Banco Itaú retornou ocorrência de conta destinatária com divergência.',
+        amountCents: 500000,
+        status: 'EM_ANALISE',
+        slaLimitAt: new Date(Date.now() + 14400000).toISOString(),
+        origin: 'CNAB_RETURN_PARSER',
+        correlationId: 'corr_queue_div_01',
+        updatedAt: new Date().toISOString(),
+        allowedActions: ['INVESTIGAR', 'RECADASTRAR_CONTA', 'RESOLVER'],
+      },
+      {
+        id: 'queue-03',
+        queue: 'contas_vencidas',
+        priority: 'MEDIA',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        producerId: '00000000-0000-0000-0000-000000000002',
+        eventId: 'evento-operacao',
+        eventName: 'Festival DiskIngressos Live 2026',
+        title: 'Fatura de Som e Iluminação (Sound & Light)',
+        description: 'Vencimento atingido sem confirmação de baixa bancária.',
+        amountCents: 8500000,
+        status: 'PENDENTE',
+        slaLimitAt: new Date(Date.now() + 28800000).toISOString(),
+        origin: 'CONTAS_A_PAGAR',
+        correlationId: 'corr_queue_cap_01',
+        updatedAt: new Date().toISOString(),
+        allowedActions: ['PAGAR', 'PRORROGAR'],
+      },
+    ]);
+  }
+
+  if (fullPath.includes('finance/approvals')) {
+    return NextResponse.json([
+      {
+        id: 'appr-01',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        producerId: '00000000-0000-0000-0000-000000000002',
+        eventId: 'evento-operacao',
+        type: 'REPASSE',
+        title: 'Aprovação de Repasse Extraordinário',
+        description: 'Liberação antecipada para pagamento de fornecedor de palco.',
+        amountCents: 6500000,
+        requiredTier: 'DIRETOR',
+        requesterId: 'usr-operador-01',
+        requesterRole: 'OPERADOR',
+        status: 'PENDENTE',
+        correlationId: 'corr_appr_01',
+        createdAt: new Date(Date.now() - 3600000).toISOString(),
+      },
+      {
+        id: 'appr-02',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        producerId: '00000000-0000-0000-0000-000000000002',
+        eventId: 'evento-operacao',
+        type: 'TRANSFERENCIA',
+        title: 'Transferência Inter-Eventos Festival -> Turnê',
+        description: 'Aporte de fluxo de caixa entre projetos do mesmo produtor.',
+        amountCents: 1500000,
+        requiredTier: 'SUPERVISOR',
+        requesterId: 'usr-analista-02',
+        requesterRole: 'OPERADOR',
+        status: 'PENDENTE',
+        correlationId: 'corr_appr_02',
+        createdAt: new Date(Date.now() - 7200000).toISOString(),
+      },
+    ]);
+  }
+
+  if (fullPath.includes('finance/closings/event')) {
+    return NextResponse.json({
+      eventId: pathParts[pathParts.length - 1] || 'evento-operacao',
+      producerId: '00000000-0000-0000-0000-000000000002',
+      tenantId: '00000000-0000-0000-0000-000000000001',
+      state: 'PRONTO_PARA_FECHAR',
+      checklist: {
+        ordersChecked: true,
+        paymentsChecked: true,
+        ledgerBalanced: true,
+        gatewaysReconciled: true,
+        refundsProcessed: true,
+        chargebacksAccounted: true,
+        transfersSettled: true,
+        payoutsExecuted: true,
+        bankConciliated: true,
+        openDivergencesCount: 0,
+        criticalDivergencesCount: 0,
+      },
+    });
+  }
+
+  if (fullPath.includes('finance/payouts/mass/preview')) {
+    return NextResponse.json({
+      batchId: `BATCH-${Date.now()}`,
+      tenantId: '00000000-0000-0000-0000-000000000001',
+      producerId: '00000000-0000-0000-0000-000000000002',
+      totalAmountCents: 7500000,
+      eligibleCount: 2,
+      ineligibleCount: 0,
+      items: [
+        {
+          settlementId: 'set-prev-01',
+          eventId: 'evento-operacao',
+          eventName: 'Festival DiskIngressos Live 2026',
+          producerId: '00000000-0000-0000-0000-000000000002',
+          amountCents: 2500000,
+          pixKey: 'financeiro@produtora.com.br',
+          status: 'ELEGIVEL',
+          validationNote: 'Saldo e conta validados',
+        },
+        {
+          settlementId: 'set-prev-02',
+          eventId: 'evento-operacao',
+          eventName: 'Festival DiskIngressos Live 2026',
+          producerId: '00000000-0000-0000-0000-000000000002',
+          amountCents: 5000000,
+          pixKey: 'financeiro@produtora.com.br',
+          status: 'ELEGIVEL',
+          validationNote: 'Saldo e conta validados',
+        },
+      ],
+      estimatedExecutionDate: new Date(Date.now() + 86400000).toISOString(),
+      validationPassed: true,
+    });
+  }
+
+  if (fullPath.includes('finance/reconciliation/enterprise')) {
+    return NextResponse.json([
+      {
+        id: 'match-01',
+        sourceA: {
+          origin: 'GATEWAY',
+          referenceId: 'GW-TID-98214',
+          amountCents: 35000,
+          date: new Date(Date.now() - 3600000).toISOString(),
+        },
+        sourceB: {
+          origin: 'PEDIDO',
+          referenceId: 'ped-849102',
+          amountCents: 35000,
+          date: new Date(Date.now() - 3600000).toISOString(),
+        },
+        confidenceScore: 99.8,
+        suggestedAction: 'CONCILIAR_AUTOMATICO',
+        reason: 'NSU idêntico, valor exato e timestamp com 2 segundos de diferença.',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('finance/cases')) {
+    return NextResponse.json([
+      {
+        id: 'case-01',
+        caseNumber: 'CASE-2026-0001',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        producerId: '00000000-0000-0000-0000-000000000002',
+        eventId: 'evento-operacao',
+        title: 'Divergência Adquirente Cielo vs Pedidos #849102',
+        category: 'DIVERGENCIA_BANCO',
+        severity: 'CRITICA',
+        status: 'ABERTO',
+        amountCents: 35000,
+        description: 'Captura confirmada no gateway mas webhook atrasado em 4 horas.',
+        evidenceNotes: ['Webhook payload recebido às 14:22', 'Autorização NSU 984112 confirmada'],
+        evidenceUrls: ['https://storage.diskingressos.com.br/evidences/nsu_984112.pdf'],
+        correlationId: 'corr_case_div_01',
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ]);
+  }
+
+  if (fullPath.includes('finance/calendar')) {
+    const now = Date.now();
+    return NextResponse.json([
+      {
+        id: 'cal-01',
+        date: new Date(now + 86400000).toISOString(),
+        type: 'REPASSE',
+        title: 'Repasse Quinquenal Programado #SET-202609-01',
+        amountCents: 2500000,
+        direction: 'OUT',
+        status: 'PREVISTO',
+        eventId: 'evento-operacao',
+        producerId: '00000000-0000-0000-0000-000000000002',
+      },
+      {
+        id: 'cal-02',
+        date: new Date(now + 86400000 * 3).toISOString(),
+        type: 'RECEBIMENTO_PATROCINIO',
+        title: 'Cota Master Cervejaria Artesanal',
+        amountCents: 15000000,
+        direction: 'IN',
+        status: 'PREVISTO',
+        eventId: 'evento-operacao',
+        producerId: '00000000-0000-0000-0000-000000000002',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('finance/liquidity')) {
+    return NextResponse.json([
+      {
+        daysHorizon: 7,
+        periodLabel: 'Próximos 7 dias',
+        projectedInflowCents: 28000000,
+        projectedOutflowCents: 18500000,
+        netProjectedCashCents: 9500000,
+        confidenceScore: 94.5,
+        isSimulation: true,
+      },
+      {
+        daysHorizon: 15,
+        periodLabel: 'Próximos 15 dias',
+        projectedInflowCents: 52000000,
+        projectedOutflowCents: 32000000,
+        netProjectedCashCents: 20000000,
+        confidenceScore: 91.2,
+        isSimulation: true,
+      },
+      {
+        daysHorizon: 30,
+        periodLabel: 'Próximos 30 dias',
+        projectedInflowCents: 98000000,
+        projectedOutflowCents: 65000000,
+        netProjectedCashCents: 33000000,
+        confidenceScore: 86.8,
+        isSimulation: true,
+      },
+    ]);
+  }
+
+  if (fullPath.includes('finance/audit/search')) {
+    return NextResponse.json([
+      {
+        id: 'aud-01',
+        timestamp: new Date().toISOString(),
+        module: 'CONTROL_TOWER',
+        action: 'BATCH_EXECUTED',
+        correlationId: 'corr_mass_01',
+        idempotencyKey: 'idemp_mass_9941',
+        actorId: 'usr-tesoureiro-chefe',
+        actorRole: 'TESOURARIA',
+        tenantId: '00000000-0000-0000-0000-000000000001',
+        amountCents: 7500000,
+        metadata: { executedCount: 2 },
+      },
+    ]);
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json({ ok: true, processado: true, id: `item-${Date.now()}` }, { status: 200 });

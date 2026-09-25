@@ -10,6 +10,8 @@ import {
   FinancialEngineProducerController,
 } from './financial-engine.controller';
 import { FinancialEngineService } from './financial-engine.service';
+import { ControlTowerController } from './control-tower.controller';
+import { ControlTowerService } from './control-tower.service';
 
 @Module({
   imports: [EventosModule],
@@ -18,15 +20,17 @@ import { FinancialEngineService } from './financial-engine.service';
     ConciliacaoController,
     FinancialEngineEventController,
     FinancialEngineProducerController,
+    ControlTowerController,
   ],
   providers: [
     FinanceiroService,
     FinanceiroPublicService,
     FinanceiroConsumer,
     FinancialEngineService,
+    ControlTowerService,
   ],
   // Porta pública: outros módulos consomem exclusivamente FinanceiroPublicService e FinancialEngineService
-  exports: [FinanceiroPublicService, FinancialEngineService],
+  exports: [FinanceiroPublicService, FinancialEngineService, ControlTowerService],
 })
 export class FinanceiroModule {}
 
