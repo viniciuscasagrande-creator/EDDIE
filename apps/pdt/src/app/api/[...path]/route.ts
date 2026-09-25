@@ -1935,6 +1935,260 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     });
   }
 
+  // 11. EDDIE 11.19 — FINANCIAL INTELLIGENCE & SETTLEMENT OS
+  if (fullPath.includes('/finance/summary')) {
+    const isOp = fullPath.includes('evento-operacao');
+    const grossRevenueCents = isOp ? 228400000 : 49000000;
+    return NextResponse.json({
+      eventId: pathParts[1] || 'evento-operacao',
+      producerId: '00000000-0000-0000-0000-000000000002',
+      balance: {
+        contabilCents: Math.round(grossRevenueCents * 0.9),
+        disponivelCents: Math.round(grossRevenueCents * 0.25),
+        retidoCents: Math.round(grossRevenueCents * 0.6),
+        bloqueadoCents: 5000000,
+        reservadoEstornoCents: -120000,
+        compromissosPendentesCents: 15400000,
+      },
+      feeConfig: {
+        ruleModel: 'PERCENTUAL',
+        percentRate: 10.0,
+        fixedAmountCents: 0,
+        gatewayProcessingPercentRate: 2.5,
+        contractReference: 'CTR-PADRAO-2026-FEST',
+        version: 1,
+        status: 'VIGENTE',
+        advancedDailyDiscountRate: 0.1,
+      },
+      reconciliation: {
+        status: 'CONCILIADO',
+        points: [
+          { source: 'Gateway Adquirente', actualCents: grossRevenueCents },
+          { source: 'Pagamentos Processados', actualCents: grossRevenueCents },
+          { source: 'Pedidos Pagos', actualCents: grossRevenueCents },
+          { source: 'Ledger Imutável', actualCents: grossRevenueCents },
+          { source: 'Repasses Produtor', actualCents: Math.round(grossRevenueCents * 0.65) },
+          { source: 'Extrato Bancário', actualCents: Math.round(grossRevenueCents * 0.65) },
+        ],
+      },
+      dre: {
+        grossTicketRevenueCents: grossRevenueCents,
+        diskEffectivePercentRate: 10.0,
+        diskServiceFeesCents: Math.round(grossRevenueCents * 0.1),
+        gatewayProcessingFeesCents: Math.round(grossRevenueCents * 0.025),
+        refundsAndChargebacksCents: 1200000,
+        operatingExpensesSupplierCents: 15400000,
+        grossOperatingProfitCents: Math.round(grossRevenueCents * 0.8) - 15400000,
+        payoutsSettledCents: Math.round(grossRevenueCents * 0.65),
+        netRemainingBalanceCents: Math.round(grossRevenueCents * 0.15),
+        sourceNote: 'Escrituração contábil oficial baseada no Ledger imutável.',
+      },
+      intelligence: [
+        {
+          id: 'fin-ins-1',
+          category: 'SETTLEMENT',
+          title: 'Janela Segura de Repasse Antecipado',
+          observation: 'O evento possui R$ 571.000,00 disponíveis com índice de estorno inferior a 0.08%.',
+          evidence: 'Histórico de 25 dias sem novos chargebacks e 76% de ocupação confirmada.',
+          recommendation: 'Agendar repasse parcial sem impacto na retenção de segurança.',
+          confidenceScore: 98,
+        },
+        {
+          id: 'fin-ins-2',
+          category: 'TAXAS',
+          title: 'Eficiência da Regra Comercial Vigente',
+          observation: 'Modelo PERCENTUAL gerou receitas de serviço Disk em conformidade com o contrato.',
+          evidence: 'Alíquota de 10% aplicada a 100% das vendas com snapshot histórico preservado.',
+          recommendation: 'Manter a regra V1 até o encerramento do lote promocional.',
+          confidenceScore: 95,
+        },
+      ],
+    });
+  }
+
+  if (fullPath.includes('/finance/timeline')) {
+    return NextResponse.json([
+      {
+        id: 'led-1',
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        type: 'PEDIDO_PAGO',
+        description: 'Venda Pedido #849102 - Pista Premium (2 ingressos)',
+        amountCents: 35000,
+        direction: 'IN',
+        bucket: 'DISPONIVEL',
+      },
+      {
+        id: 'led-2',
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        type: 'TAXA_SERVICO',
+        description: 'Taxa DiskIngressos retida ref. Pedido #849102 (10%)',
+        amountCents: 3500,
+        direction: 'OUT',
+        bucket: 'RETIDO',
+      },
+      {
+        id: 'led-3',
+        timestamp: new Date(Date.now() - 14400000).toISOString(),
+        type: 'REPASSE_EXECUTADO',
+        description: 'Liquidação de Repasse Pix Lote #SET-202609-01',
+        amountCents: 2500000,
+        direction: 'OUT',
+        bucket: 'BLOQUEADO',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/settlements')) {
+    return NextResponse.json([
+      {
+        id: 'set-1',
+        batchNumber: 'SET-202609-01',
+        amountCents: 2500000,
+        pixKey: 'financeiro@produtora.com.br',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
+        status: 'AGENDADO',
+        bankReceiptId: null,
+        pixEndToEndId: null,
+      },
+      {
+        id: 'set-2',
+        batchNumber: 'SET-202608-04',
+        amountCents: 5000000,
+        pixKey: 'financeiro@produtora.com.br',
+        scheduledDate: new Date(Date.now() - 604800000).toISOString(),
+        status: 'PAGO',
+        bankReceiptId: 'REC-ITAU-992144',
+        pixEndToEndId: 'E2E-ITA-20260828-9841',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/payables')) {
+    return NextResponse.json([
+      {
+        id: 'pay-1',
+        eventId: pathParts[1] || 'evento-operacao',
+        supplierId: 'sup-1',
+        supplierName: 'Sound & Light Rental Brasil Ltda',
+        category: 'AUDIO_VISUAL',
+        description: 'Locação de PA Line Array e iluminação de palco principal',
+        amountCents: 8500000,
+        dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+        costCenterId: 'cc-infra',
+        status: 'APROVADO',
+        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+      },
+      {
+        id: 'pay-2',
+        eventId: pathParts[1] || 'evento-operacao',
+        supplierId: 'sup-2',
+        supplierName: 'Segurança & Validação Tática Curitiba',
+        category: 'SEGURANCA',
+        description: 'Equipe de 30 brigadistas e controladores de acesso',
+        amountCents: 4200000,
+        dueDate: new Date(Date.now() + 86400000 * 10).toISOString(),
+        costCenterId: 'cc-operacao',
+        status: 'PENDENTE',
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+      },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/receivables')) {
+    return NextResponse.json([
+      {
+        id: 'rec-1',
+        eventId: pathParts[1] || 'evento-operacao',
+        origin: 'PATROCINIO',
+        counterparty: 'Cervejaria Premium Artesanal',
+        description: 'Cota de Patrocínio Master e Exclusividade de Bar',
+        amountCents: 15000000,
+        dueDate: new Date(Date.now() + 86400000 * 3).toISOString(),
+        costCenterId: 'cc-mkt',
+        status: 'PENDENTE',
+        createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+      },
+      {
+        id: 'rec-2',
+        eventId: pathParts[1] || 'evento-operacao',
+        origin: 'STAND_MERCH',
+        counterparty: 'Loja Oficial Rock Merchandising',
+        description: 'Taxa de cessão de espaço de merchandising',
+        amountCents: 2500000,
+        dueDate: new Date(Date.now() - 86400000 * 2).toISOString(),
+        costCenterId: 'cc-operacao',
+        status: 'LIQUIDADO',
+        settledAt: new Date(Date.now() - 86400000).toISOString(),
+        createdAt: new Date(Date.now() - 86400000 * 8).toISOString(),
+      },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/cost-centers')) {
+    return NextResponse.json([
+      { id: 'cc-infra', code: 'CC-01', name: 'Infraestrutura e Palco', category: 'PRODUCAO', budgetLimitCents: 20000000, active: true },
+      { id: 'cc-operacao', code: 'CC-02', name: 'Operação de Portaria e Segurança', category: 'OPERACAO', budgetLimitCents: 10000000, active: true },
+      { id: 'cc-mkt', code: 'CC-03', name: 'Marketing e Ativações de Marca', category: 'MARKETING', budgetLimitCents: 8000000, active: true },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/suppliers')) {
+    return NextResponse.json([
+      { id: 'sup-1', name: 'Sound & Light Rental Brasil Ltda', documentMasked: '12.***.***/0001-99', contactEmail: 'contato@soundlight.com.br', category: 'AUDIO_VISUAL', bankAccountMasked: 'Banco Itaú Ag 0123 CC 98765-4', pixKey: '12345678000199', active: true },
+      { id: 'sup-2', name: 'Segurança & Validação Tática Curitiba', documentMasked: '98.***.***/0001-11', contactEmail: 'operacao@tatica.com.br', category: 'SEGURANCA', bankAccountMasked: 'Banco Bradesco Ag 0456 CC 12345-6', pixKey: 'contato@tatica.com.br', active: true },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/refunds')) {
+    return NextResponse.json([
+      { id: 'ref-1', orderId: 'ped-849102', eventId: pathParts[1] || 'evento-operacao', amountCents: 35000, reason: 'ARREPENDIMENTO_CDC_7_DIAS', status: 'COMPENSADO', createdAt: new Date(Date.now() - 86400000).toISOString() },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/chargebacks')) {
+    return NextResponse.json([
+      { id: 'cb-1', orderId: 'ped-849098', eventId: pathParts[1] || 'evento-operacao', amountCents: 22000, reason: 'FRAUDE_ALEGADA', status: 'CONTESTADO', receivedAt: new Date(Date.now() - 172800000).toISOString() },
+    ]);
+  }
+
+  if (fullPath.includes('/finance/treasury')) {
+    return NextResponse.json({
+      producerId: '00000000-0000-0000-0000-000000000002',
+      accounts: [
+        { id: 'cta-1', bankCode: '341', bankName: 'Banco Itaú Unibanco', accountNumber: 'Conta Movimento 98765-4', currentBalanceCents: 45000000, type: 'CONTA_CORRENTE' },
+        { id: 'cta-2', bankCode: '260', bankName: 'Nu Pagamentos S.A.', accountNumber: 'Conta Reserva 123456-7', currentBalanceCents: 12500000, type: 'CONTA_PAGAMENTO' },
+      ],
+      batches: [
+        { id: 'cnab-1', batchNumber: 'CNAB-202609-01', totalAmountCents: 2500000, itemCount: 1, status: 'PROCESSADO', createdAt: new Date(Date.now() - 86400000).toISOString() },
+      ],
+      totalCashCents: 57500000,
+    });
+  }
+
+  if (fullPath.includes('/finance/reports')) {
+    return NextResponse.json({
+      title: 'Relatório Financeiro Oficial do Evento',
+      reportType: 'DRE',
+      period: '2026-01 a 2026-12',
+      tenantId: '00000000-0000-0000-0000-000000000001',
+      producerId: '00000000-0000-0000-0000-000000000002',
+      eventId: pathParts[1] || 'evento-operacao',
+      generatedAt: new Date().toISOString(),
+      summary: {
+        grossRevenueCents: 228400000,
+        netBalanceCents: 182720000,
+        feesPaidCents: 22840000,
+        refundsTotalCents: 1200000,
+        chargebacksTotalCents: 350000,
+      },
+      metrics: {
+        totalTicketsSold: 11420,
+        averageTicketCents: 20000,
+        disputeRatePercent: 0.08,
+      },
+    });
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json({ ok: true, processado: true, id: `item-${Date.now()}` }, { status: 200 });

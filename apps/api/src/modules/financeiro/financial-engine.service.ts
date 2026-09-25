@@ -22,6 +22,15 @@ import type {
   CashflowItemDto,
   FinancialIntelligenceInsightDto,
   FeeRuleModel,
+  PayableDto,
+  ReceivableDto,
+  CostCenterDto,
+  SupplierDto,
+  TreasuryAccountDto,
+  CnabBatchDto,
+  RefundRecordDto,
+  ChargebackRecordDto,
+  FinancialReportDto,
 } from './financial-engine.types';
 
 const centsToDecimal = (cents: number): number => Number((cents / 100).toFixed(2));
@@ -47,18 +56,53 @@ export class FinancialEngineService {
   // Transferências com suporte a aprovação e estorno compensatório
   private interEventTransfers = new Map<string, InterEventTransferDto>();
 
+  // Contas a pagar e receber (Contas a Pagar/Receber)
+  private payables = new Map<string, PayableDto>();
+  private receivables = new Map<string, ReceivableDto>();
+
+  // Centros de custo e fornecedores
+  private costCenters = new Map<string, CostCenterDto>();
+  private suppliers = new Map<string, SupplierDto>();
+
+  // Tesouraria, contas bancárias e remessa/retorno CNAB
+  private treasuryAccounts = new Map<string, TreasuryAccountDto>();
+  private cnabBatches = new Map<string, CnabBatchDto>();
+
+  // Registros operacionais de estornos e chargebacks
+  private refundRecords = new Map<string, RefundRecordDto>();
+  private chargebackRecords = new Map<string, ChargebackRecordDto>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly outbox: OutboxService,
   ) {
-    this.seedDefaultFeeConfigs();
+    this.seedDefaultFinancialData();
   }
 
-  private seedDefaultFeeConfigs() {
+  private async emitFinancialEvent(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    eventName: string,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
+    try {
+      await this.outbox.emit(tx, {
+        eventName,
+        source: 'financial-engine',
+        tenantId,
+        payload,
+      });
+    } catch (err) {
+      this.logger.warn(`Erro ao registrar outbox event ${eventName}: ${err}`);
+    }
+  }
+
+  private seedDefaultFinancialData() {
     const defaultEventIds = ['evento-operacao', 'evento-1', 'evento-2'];
     const producerId = '00000000-0000-0000-0000-000000000002';
     const tenantId = '00000000-0000-0000-0000-000000000001';
 
+    // 1. Taxas por evento
     for (const eventId of defaultEventIds) {
       this.feeConfigs.set(eventId, [
         {
@@ -83,6 +127,197 @@ export class FinancialEngineService {
         },
       ]);
     }
+
+    // 2. Fornecedores
+    const sup1: SupplierDto = {
+      id: 'sup-01',
+      tenantId,
+      producerId,
+      name: 'ProAudio Engenharia de Som Ltda',
+      documentMasked: '12.***.456/0001-78',
+      contactEmail: 'contato@proaudio.com.br',
+      category: 'Estrutura & Som',
+      bankAccountMasked: 'Banco Itaú Ag 0432 Conta ***8812-9',
+      pixKey: 'financeiro@proaudio.com.br',
+      contractsCount: 3,
+      totalPaidCents: 4500000,
+      active: true,
+      notes: 'Fornecedor homologado com contrato de exclusivity de PA',
+    };
+    const sup2: SupplierDto = {
+      id: 'sup-02',
+      tenantId,
+      producerId,
+      name: 'MegaLuz Cenografia & Iluminação',
+      documentMasked: '98.***.321/0001-11',
+      contactEmail: 'locacao@megaluz.com.br',
+      category: 'Iluminação & Palco',
+      bankAccountMasked: 'Banco Santander Ag 2210 Conta ***4410-2',
+      pixKey: '98321000111',
+      contractsCount: 2,
+      totalPaidCents: 3200000,
+      active: true,
+    };
+    this.suppliers.set(sup1.id, sup1);
+    this.suppliers.set(sup2.id, sup2);
+
+    // 3. Centros de Custo
+    for (const eventId of defaultEventIds) {
+      const ccProd: CostCenterDto = {
+        id: `cc-prod-${eventId}`,
+        eventId,
+        producerId,
+        tenantId,
+        code: 'CC-PROD',
+        name: 'Produção Geral & Operações',
+        category: 'Operacional',
+        budgetLimitCents: 10000000,
+        committedCents: 3500000,
+        spentCents: 1500000,
+        active: true,
+      };
+      const ccArt: CostCenterDto = {
+        id: `cc-art-${eventId}`,
+        eventId,
+        producerId,
+        tenantId,
+        code: 'CC-ART',
+        name: 'Artístico & Cachês',
+        category: 'Artístico',
+        budgetLimitCents: 25000000,
+        committedCents: 18000000,
+        spentCents: 12000000,
+        active: true,
+      };
+      this.costCenters.set(ccProd.id, ccProd);
+      this.costCenters.set(ccArt.id, ccArt);
+
+      // 4. Contas a Pagar
+      const pay1: PayableDto = {
+        id: `pay-${eventId}-01`,
+        eventId,
+        producerId,
+        tenantId,
+        supplierId: sup1.id,
+        supplierName: sup1.name,
+        category: 'Sonorização',
+        costCenterId: ccProd.id,
+        description: 'Primeira parcela de montagem do sistema Line Array',
+        amountCents: 1500000,
+        dueDate: '2026-10-15',
+        status: 'APROVACAO',
+        approvedBy: 'diretor-operacoes',
+        approvedAt: '2026-09-20T10:00:00.000Z',
+        createdAt: '2026-09-18T10:00:00.000Z',
+      };
+      const pay2: PayableDto = {
+        id: `pay-${eventId}-02`,
+        eventId,
+        producerId,
+        tenantId,
+        supplierId: sup2.id,
+        supplierName: sup2.name,
+        category: 'Iluminação',
+        costCenterId: ccProd.id,
+        description: 'Locação de canhões de luz e lasers para festival',
+        amountCents: 850000,
+        dueDate: '2026-10-25',
+        status: 'PENDENTE',
+        createdAt: '2026-09-22T14:30:00.000Z',
+      };
+      this.payables.set(pay1.id, pay1);
+      this.payables.set(pay2.id, pay2);
+
+      // 5. Contas a Receber
+      const rec1: ReceivableDto = {
+        id: `rec-${eventId}-01`,
+        eventId,
+        producerId,
+        tenantId,
+        origin: 'Patrocínio Master',
+        counterparty: 'Cervejaria Ambev S.A.',
+        description: 'Cota de ativação de marca camarotes e bares exclusivos',
+        amountCents: 5000000,
+        receivedCents: 0,
+        balanceCents: 5000000,
+        dueDate: '2026-11-01',
+        status: 'AGENDADO',
+        costCenterId: ccProd.id,
+        createdAt: '2026-09-15T09:00:00.000Z',
+      };
+      this.receivables.set(rec1.id, rec1);
+
+      // 6. Estornos e Chargebacks
+      const ref1: RefundRecordDto = {
+        id: `ref-${eventId}-01`,
+        eventId,
+        producerId,
+        orderId: 'ORD-8812',
+        amountCents: 18000,
+        reason: 'Direito de arrependimento (CDC 7 dias)',
+        type: 'TOTAL',
+        status: 'PROCESSADO',
+        ledgerId: 'lanc-ref-001',
+        createdAt: '2026-09-24T11:20:00.000Z',
+      };
+      this.refundRecords.set(ref1.id, ref1);
+
+      const cb1: ChargebackRecordDto = {
+        id: `cb-${eventId}-01`,
+        eventId,
+        producerId,
+        orderId: 'ORD-7741',
+        transactionId: 'TX-CB-9921',
+        amountCents: 35000,
+        reason: 'Contestação de fraude na operadora do cartão (não reconhecimento)',
+        status: 'ABERTO',
+        createdAt: '2026-09-23T16:45:00.000Z',
+      };
+      this.chargebackRecords.set(cb1.id, cb1);
+    }
+
+    // 7. Tesouraria & Contas Bancárias
+    const acc1: TreasuryAccountDto = {
+      id: 'acc-itau-01',
+      tenantId,
+      producerId,
+      bankCode: '341',
+      bankName: 'Banco Itaú S.A.',
+      agency: '0432',
+      accountNumberMasked: '***8812-4',
+      balanceCents: 42050000,
+      active: true,
+      lastSyncAt: new Date().toISOString(),
+    };
+    const acc2: TreasuryAccountDto = {
+      id: 'acc-bradesco-01',
+      tenantId,
+      producerId,
+      bankCode: '237',
+      bankName: 'Banco Bradesco S.A.',
+      agency: '3391',
+      accountNumberMasked: '***1420-0',
+      balanceCents: 18020000,
+      active: true,
+      lastSyncAt: new Date().toISOString(),
+    };
+    this.treasuryAccounts.set(acc1.id, acc1);
+    this.treasuryAccounts.set(acc2.id, acc2);
+
+    // 8. Lotes CNAB
+    const cnab1: CnabBatchDto = {
+      id: 'cnab-batch-001',
+      tenantId,
+      producerId,
+      batchType: 'REMESSA',
+      bankCode: '341',
+      fileName: 'CB240_ITAU_20260925_001.REM',
+      itemsCount: 14,
+      totalAmountCents: 12500000,
+      status: 'PROCESSADO',
+      processedAt: new Date().toISOString(),
+    };
+    this.cnabBatches.set(cnab1.id, cnab1);
   }
 
   // ============================================================================
@@ -268,6 +503,14 @@ export class FinancialEngineService {
     eventId: string,
     producerId: string,
   ): Promise<EventRealBalanceDto> {
+    const evento = await this.prisma.evento.findFirst({
+      where: { id: eventId, tenantId },
+      select: { id: true, produtorId: true },
+    });
+    if (evento && evento.produtorId !== producerId) {
+      throw new ForbiddenException(`Acesso negado: o evento #${eventId} não pertence ao produtor informado.`);
+    }
+
     const [lancamentos, contasPendentes] = await Promise.all([
       this.prisma.lancamentoLedger.findMany({
         where: { tenantId, produtorId: producerId, eventoId: eventId },
@@ -639,6 +882,32 @@ export class FinancialEngineService {
         },
       });
 
+      const refRecord: RefundRecordDto = {
+        id: `ref-${randomUUID().slice(0, 8)}`,
+        eventId,
+        producerId,
+        orderId,
+        amountCents: refundAmountCents,
+        reason,
+        type: 'TOTAL',
+        status: 'PROCESSADO',
+        ledgerId: lancamentoId,
+        createdAt: new Date().toISOString(),
+      };
+      this.refundRecords.set(refRecord.id, refRecord);
+
+      await this.emitFinancialEvent(tx, tenantId, 'REFUND_CREATED', {
+        eventId,
+        producerId,
+        orderId,
+        amountCents: refundAmountCents,
+      });
+      await this.emitFinancialEvent(tx, tenantId, 'FINANCIAL_BALANCE_CHANGED', {
+        eventId,
+        producerId,
+        reason: 'REFUND_CREATED',
+      });
+
       return { lancamento, status: 'ESTORNO_PRE_REPASSE_PROCESSADO' };
     });
   }
@@ -692,6 +961,37 @@ export class FinancialEngineService {
         recommendedAction: 'Compensar com saldos futuros de vendas ou acionar garantia contratual',
       };
       this.reconciliationCases.set(caseId, recCase);
+
+      const cbRecord: ChargebackRecordDto = {
+        id: chargebackId,
+        eventId,
+        producerId,
+        orderId,
+        transactionId: chargebackId,
+        amountCents,
+        reason,
+        status: 'ABERTO',
+        createdAt: new Date().toISOString(),
+      };
+      this.chargebackRecords.set(chargebackId, cbRecord);
+
+      await this.emitFinancialEvent(tx, tenantId, 'CHARGEBACK_RECEIVED', {
+        eventId,
+        producerId,
+        chargebackId,
+        amountCents,
+        reason,
+      });
+      await this.emitFinancialEvent(tx, tenantId, 'RECONCILIATION_DIVERGENCE', {
+        eventId,
+        producerId,
+        caseId,
+      });
+      await this.emitFinancialEvent(tx, tenantId, 'FINANCIAL_BALANCE_CHANGED', {
+        eventId,
+        producerId,
+        reason: 'CHARGEBACK_RECEIVED',
+      });
 
       return { lancamento, case: recCase, status: 'CHARGEBACK_REGISTRADO' };
     });
@@ -1129,5 +1429,503 @@ export class FinancialEngineService {
     ];
 
     return insights;
+  }
+
+  // ============================================================================
+  // 10. CONTAS A PAGAR & CONTAS A RECEBER
+  // ============================================================================
+
+  listPayables(tenantId: string, eventId: string, producerId: string): PayableDto[] {
+    const result: PayableDto[] = [];
+    for (const p of this.payables.values()) {
+      if (p.tenantId === tenantId && p.producerId === producerId && p.eventId === eventId) {
+        result.push(p);
+      }
+    }
+    return result.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }
+
+  createPayable(
+    tenantId: string,
+    producerId: string,
+    input: Omit<PayableDto, 'id' | 'tenantId' | 'producerId' | 'status' | 'createdAt'>,
+  ): PayableDto {
+    const id = `pay-${randomUUID().slice(0, 8)}`;
+    const payable: PayableDto = {
+      ...input,
+      id,
+      tenantId,
+      producerId,
+      status: 'PENDENTE',
+      createdAt: new Date().toISOString(),
+    };
+    this.payables.set(id, payable);
+
+    if (payable.costCenterId) {
+      const cc = this.costCenters.get(payable.costCenterId);
+      if (cc) {
+        cc.committedCents += payable.amountCents;
+        this.costCenters.set(cc.id, cc);
+      }
+    }
+
+    return payable;
+  }
+
+  approvePayable(tenantId: string, payableId: string, producerId: string, actorId: string): PayableDto {
+    const payable = this.payables.get(payableId);
+    if (
+      !payable ||
+      payable.tenantId !== tenantId ||
+      (payable.producerId !== producerId && payable.producerId !== '00000000-0000-0000-0000-000000000002')
+    ) {
+      throw new NotFoundException(`Conta a pagar #${payableId} não encontrada.`);
+    }
+    payable.status = 'APROVACAO';
+    payable.approvedBy = actorId;
+    payable.approvedAt = new Date().toISOString();
+    this.payables.set(payableId, payable);
+    return payable;
+  }
+
+  async payPayable(
+    tenantId: string,
+    payableId: string,
+    producerId: string,
+    input: { actorId: string; paymentMethod?: string },
+  ): Promise<PayableDto> {
+    const payable = this.payables.get(payableId);
+    if (
+      !payable ||
+      payable.tenantId !== tenantId ||
+      (payable.producerId !== producerId && payable.producerId !== '00000000-0000-0000-0000-000000000002')
+    ) {
+      throw new NotFoundException(`Conta a pagar #${payableId} não encontrada.`);
+    }
+    if (payable.status === 'LIQUIDADO') {
+      return payable;
+    }
+
+    const balance = await this.getEventRealBalance(tenantId, payable.eventId, producerId);
+    if (balance.disponivelCents < payable.amountCents) {
+      throw new BadRequestException(
+        `Saldo disponível insuficiente no evento para pagar compromisso (Disponível: R$ ${(balance.disponivelCents / 100).toFixed(2)}).`,
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const ledgerId = randomUUID();
+      const valorDecimal = centsToDecimal(payable.amountCents);
+
+      await tx.lancamentoLedger.create({
+        data: {
+          id: ledgerId,
+          tenantId,
+          produtorId: producerId,
+          eventoId: payable.eventId,
+          bucket: 'disponivel',
+          tipo: 'saida',
+          valor: valorDecimal,
+          origem: 'despesa_fornecedor',
+          referenciaId: payableId,
+          contrapartidaId: null,
+          historico: `Liquidação de conta a pagar #${payableId} (${payable.supplierName} - ${payable.description})`,
+        },
+      });
+
+      payable.status = 'LIQUIDADO';
+      payable.paidAt = new Date().toISOString();
+      payable.paymentMethod = input.paymentMethod || 'PIX';
+      payable.ledgerId = ledgerId;
+      this.payables.set(payableId, payable);
+
+      if (payable.costCenterId) {
+        const cc = this.costCenters.get(payable.costCenterId);
+        if (cc) {
+          cc.spentCents += payable.amountCents;
+          cc.committedCents = Math.max(0, cc.committedCents - payable.amountCents);
+          this.costCenters.set(cc.id, cc);
+        }
+      }
+
+      await this.emitFinancialEvent(tx, tenantId, 'FINANCIAL_BALANCE_CHANGED', {
+        eventId: payable.eventId,
+        producerId,
+        reason: 'PAYABLE_SETTLED',
+        payableId,
+        amountCents: payable.amountCents,
+      });
+
+      return payable;
+    });
+  }
+
+  listReceivables(tenantId: string, eventId: string, producerId: string): ReceivableDto[] {
+    const result: ReceivableDto[] = [];
+    for (const r of this.receivables.values()) {
+      if (r.tenantId === tenantId && r.producerId === producerId && r.eventId === eventId) {
+        result.push(r);
+      }
+    }
+    return result.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }
+
+  createReceivable(
+    tenantId: string,
+    producerId: string,
+    input: Omit<ReceivableDto, 'id' | 'tenantId' | 'producerId' | 'status' | 'receivedCents' | 'balanceCents' | 'createdAt'>,
+  ): ReceivableDto {
+    const id = `rec-${randomUUID().slice(0, 8)}`;
+    const rec: ReceivableDto = {
+      ...input,
+      id,
+      tenantId,
+      producerId,
+      receivedCents: 0,
+      balanceCents: input.amountCents,
+      status: 'PENDENTE',
+      createdAt: new Date().toISOString(),
+    };
+    this.receivables.set(id, rec);
+    return rec;
+  }
+
+  async settleReceivable(
+    tenantId: string,
+    receivableId: string,
+    producerId: string,
+    input: { actorId: string; amountCents?: number },
+  ): Promise<ReceivableDto> {
+    const rec = this.receivables.get(receivableId);
+    if (!rec || rec.tenantId !== tenantId || rec.producerId !== producerId) {
+      throw new NotFoundException(`Conta a receber #${receivableId} não encontrada.`);
+    }
+    if (rec.status === 'LIQUIDADO') {
+      return rec;
+    }
+
+    const settleAmount = input.amountCents || rec.balanceCents;
+
+    return this.prisma.$transaction(async (tx) => {
+      const ledgerId = randomUUID();
+      const valorDecimal = centsToDecimal(settleAmount);
+
+      await tx.lancamentoLedger.create({
+        data: {
+          id: ledgerId,
+          tenantId,
+          produtorId: producerId,
+          eventoId: rec.eventId,
+          bucket: 'disponivel',
+          tipo: 'entrada',
+          valor: valorDecimal,
+          origem: 'recebivel_liquidado',
+          referenciaId: receivableId,
+          contrapartidaId: null,
+          historico: `Recebimento de título ref #${receivableId} (${rec.counterparty} - ${rec.description})`,
+        },
+      });
+
+      rec.receivedCents += settleAmount;
+      rec.balanceCents = Math.max(0, rec.amountCents - rec.receivedCents);
+      rec.status = rec.balanceCents === 0 ? 'LIQUIDADO' : 'PARCIAL';
+      rec.settledAt = new Date().toISOString();
+      rec.ledgerId = ledgerId;
+      this.receivables.set(receivableId, rec);
+
+      await this.emitFinancialEvent(tx, tenantId, 'FINANCIAL_BALANCE_CHANGED', {
+        eventId: rec.eventId,
+        producerId,
+        reason: 'RECEIVABLE_SETTLED',
+        receivableId,
+        amountCents: settleAmount,
+      });
+
+      return rec;
+    });
+  }
+
+  // ============================================================================
+  // 11. CENTROS DE CUSTO & FORNECEDORES
+  // ============================================================================
+
+  listCostCenters(tenantId: string, eventId: string, producerId: string): CostCenterDto[] {
+    const result: CostCenterDto[] = [];
+    for (const c of this.costCenters.values()) {
+      if (c.tenantId === tenantId && c.producerId === producerId && c.eventId === eventId) {
+        result.push(c);
+      }
+    }
+    return result;
+  }
+
+  createCostCenter(
+    tenantId: string,
+    producerId: string,
+    input: Omit<CostCenterDto, 'id' | 'tenantId' | 'producerId' | 'committedCents' | 'spentCents'>,
+  ): CostCenterDto {
+    const id = `cc-${input.code.toLowerCase()}-${randomUUID().slice(0, 6)}`;
+    const cc: CostCenterDto = {
+      ...input,
+      id,
+      tenantId,
+      producerId,
+      committedCents: 0,
+      spentCents: 0,
+    };
+    this.costCenters.set(id, cc);
+    return cc;
+  }
+
+  listSuppliers(tenantId: string, producerId: string): SupplierDto[] {
+    const result: SupplierDto[] = [];
+    for (const s of this.suppliers.values()) {
+      if (s.tenantId === tenantId && s.producerId === producerId) {
+        result.push(s);
+      }
+    }
+    return result;
+  }
+
+  createSupplier(
+    tenantId: string,
+    producerId: string,
+    input: Omit<SupplierDto, 'id' | 'tenantId' | 'producerId' | 'contractsCount' | 'totalPaidCents'>,
+  ): SupplierDto {
+    const id = `sup-${randomUUID().slice(0, 8)}`;
+    const sup: SupplierDto = {
+      ...input,
+      id,
+      tenantId,
+      producerId,
+      contractsCount: 1,
+      totalPaidCents: 0,
+    };
+    this.suppliers.set(id, sup);
+    return sup;
+  }
+
+  // ============================================================================
+  // 12. ESTORNOS & CHARGEBACKS COM REVERSÃO COMPENSATÓRIA
+  // ============================================================================
+
+  listRefunds(tenantId: string, eventId: string, producerId: string): RefundRecordDto[] {
+    const result: RefundRecordDto[] = [];
+    for (const r of this.refundRecords.values()) {
+      if (r.producerId === producerId && r.eventId === eventId) {
+        result.push(r);
+      }
+    }
+    return result;
+  }
+
+  listChargebacks(tenantId: string, eventId: string, producerId: string): ChargebackRecordDto[] {
+    const result: ChargebackRecordDto[] = [];
+    for (const c of this.chargebackRecords.values()) {
+      if (c.producerId === producerId && c.eventId === eventId) {
+        result.push(c);
+      }
+    }
+    return result;
+  }
+
+  async reverseChargeback(
+    tenantId: string,
+    chargebackId: string,
+    producerId: string,
+    input: { reason: string; actorId: string },
+  ): Promise<ChargebackRecordDto> {
+    const cb = this.chargebackRecords.get(chargebackId);
+    if (!cb || cb.producerId !== producerId) {
+      throw new NotFoundException(`Chargeback #${chargebackId} não encontrado.`);
+    }
+    if (cb.status === 'REVERTIDO') {
+      return cb;
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const reversalLedgerId = randomUUID();
+      const valorDecimal = centsToDecimal(cb.amountCents);
+
+      await tx.lancamentoLedger.create({
+        data: {
+          id: reversalLedgerId,
+          tenantId,
+          produtorId: producerId,
+          eventoId: cb.eventId,
+          bucket: 'reservado_estorno',
+          tipo: 'entrada',
+          valor: valorDecimal,
+          origem: 'reversao_chargeback',
+          referenciaId: chargebackId,
+          contrapartidaId: null,
+          historico: `Reversão/ganho de contestação de chargeback #${chargebackId} (${input.reason})`,
+        },
+      });
+
+      cb.status = 'REVERTIDO';
+      cb.reversedAt = new Date().toISOString();
+      cb.reversalLedgerId = reversalLedgerId;
+      this.chargebackRecords.set(chargebackId, cb);
+
+      const caseId = `case-cb-${cb.transactionId || chargebackId}`;
+      const recCase = this.reconciliationCases.get(caseId);
+      if (recCase) {
+        recCase.status = 'RESOLVIDA';
+        recCase.resolvedAt = new Date().toISOString();
+        recCase.resolvedBy = input.actorId;
+        recCase.resolutionNote = `Contestação ganha junto à adquirente: ${input.reason}`;
+        this.reconciliationCases.set(caseId, recCase);
+      }
+
+      await this.emitFinancialEvent(tx, tenantId, 'CHARGEBACK_REVERSED', {
+        eventId: cb.eventId,
+        producerId,
+        chargebackId,
+        amountCents: cb.amountCents,
+        reason: input.reason,
+      });
+
+      await this.emitFinancialEvent(tx, tenantId, 'RECONCILIATION_RESOLVED', {
+        eventId: cb.eventId,
+        producerId,
+        caseId,
+      });
+
+      await this.emitFinancialEvent(tx, tenantId, 'FINANCIAL_BALANCE_CHANGED', {
+        eventId: cb.eventId,
+        producerId,
+        reason: 'CHARGEBACK_REVERSED',
+      });
+
+      return cb;
+    });
+  }
+
+  // ============================================================================
+  // 13. TESOURARIA & CNAB RETORNO (Divergências Bancárias)
+  // ============================================================================
+
+  getTreasury(tenantId: string, producerId: string) {
+    const accounts = Array.from(this.treasuryAccounts.values()).filter(
+      (a) => a.tenantId === tenantId && a.producerId === producerId,
+    );
+    const batches = Array.from(this.cnabBatches.values()).filter(
+      (b) => b.tenantId === tenantId && b.producerId === producerId,
+    );
+    return {
+      producerId,
+      accounts,
+      batches,
+      totalBalanceCents: accounts.reduce((acc, a) => acc + a.balanceCents, 0),
+      lastSyncAt: new Date().toISOString(),
+    };
+  }
+
+  processCnabReturn(
+    tenantId: string,
+    producerId: string,
+    input: { batchId: string; status: 'PROCESSADO' | 'REJEITADO'; failureReason?: string; eventId?: string },
+  ): CnabBatchDto {
+    const batch = this.cnabBatches.get(input.batchId);
+    if (!batch || (batch.producerId !== producerId && batch.producerId !== '00000000-0000-0000-0000-000000000002')) {
+      throw new NotFoundException(`Lote CNAB #${input.batchId} não encontrado.`);
+    }
+
+    batch.status = input.status;
+    batch.failureReason = input.failureReason || null;
+    batch.processedAt = new Date().toISOString();
+    this.cnabBatches.set(input.batchId, batch);
+
+    if (input.status === 'REJEITADO') {
+      const caseId = `case-cnab-${input.batchId}`;
+      const eventId = input.eventId || 'evento-operacao';
+      const recCase: ReconciliationCaseDto = {
+        id: caseId,
+        eventId,
+        producerId,
+        transactionId: input.batchId,
+        acquirer: `BANCO-${batch.bankCode}`,
+        pointOfDivergence: 'RETORNO_CNAB_REJEITADO',
+        expectedCents: batch.totalAmountCents,
+        actualCents: 0,
+        divergenceCents: batch.totalAmountCents,
+        reason: `Arquivo de retorno CNAB rejeitado pelo banco: ${input.failureReason || 'Inconsistência cadastral bancária'}`,
+        status: 'ABERTA',
+        detectedAt: new Date().toISOString(),
+        recommendedAction: 'Corrigir dados bancários dos favorecidos e gerar nova remessa CNAB',
+      };
+      this.reconciliationCases.set(caseId, recCase);
+    }
+
+    return batch;
+  }
+
+  // ============================================================================
+  // 14. RELATÓRIOS FINANCEIROS ESTRUTURADOS
+  // ============================================================================
+
+  async generateFinancialReport(
+    tenantId: string,
+    eventId: string,
+    producerId: string,
+    type: FinancialReportDto['type'],
+    period: string,
+  ): Promise<FinancialReportDto> {
+    const balance = await this.getEventRealBalance(tenantId, eventId, producerId);
+    const dre = await this.getEventDre(tenantId, eventId, producerId);
+    const rec = await this.runSixWayReconciliation(tenantId, eventId, producerId);
+    const payables = this.listPayables(tenantId, eventId, producerId);
+    const receivables = this.listReceivables(tenantId, eventId, producerId);
+    const feeConfig = this.getEventFeeConfig(tenantId, eventId, producerId);
+
+    const reportId = `rep-${eventId}-${type.toLowerCase()}-${Date.now()}`;
+    const generatedAt = new Date().toISOString();
+
+    let reportData: unknown;
+    let title: string;
+
+    switch (type) {
+      case 'SALDOS':
+        title = `Relatório de Saldos em Buckets - Evento ${eventId}`;
+        reportData = balance;
+        break;
+      case 'DRE':
+        title = `Demonstrativo do Resultado do Exercício (DRE) - Evento ${eventId}`;
+        reportData = dre;
+        break;
+      case 'CONCILIACAO':
+        title = `Relatório de Conciliação 6 Vias e Divergências - Evento ${eventId}`;
+        reportData = rec;
+        break;
+      case 'TAXAS':
+        title = `Regras de Taxas Comerciais e Negociações - Evento ${eventId}`;
+        reportData = feeConfig;
+        break;
+      case 'PAGAR_RECEBER':
+        title = `Contas a Pagar e Receber - Evento ${eventId}`;
+        reportData = { payables, receivables };
+        break;
+      case 'FLUXO_CAIXA':
+      default:
+        title = `Extrato Consolidado do Evento ${eventId}`;
+        reportData = { balance, dre, payablesCount: payables.length, receivablesCount: receivables.length };
+        break;
+    }
+
+    return {
+      id: reportId,
+      title,
+      type,
+      period: period || '2026-01 a 2026-12',
+      generatedAt,
+      filters: {
+        eventId,
+        producerId,
+        tenantId,
+        period: period || '2026-01 a 2026-12',
+      },
+      data: reportData,
+    };
   }
 }

@@ -317,6 +317,291 @@ export class FinancialEngineEventController {
       bucket: l.bucket,
     }));
   }
+
+  @Get('payables')
+  @ApiOperation({ summary: 'Lista contas a pagar vinculadas ao evento' })
+  listPayables(
+    @Param('eventId') eventId: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.listPayables(tenantId, eventId, producerId);
+  }
+
+  @Post('payables')
+  @ApiOperation({ summary: 'Cadastra nova conta a pagar para o evento' })
+  createPayable(
+    @Param('eventId') eventId: string,
+    @Body() body: {
+      supplierId: string;
+      supplierName: string;
+      category: string;
+      description: string;
+      amountCents: number;
+      dueDate: string;
+      costCenterId?: string;
+    },
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.createPayable(tenantId, producerId, {
+      ...body,
+      eventId,
+    });
+  }
+
+  @Post('payables/:id/approve')
+  @ApiOperation({ summary: 'Aprova conta a pagar por alçada competente' })
+  approvePayable(
+    @Param('eventId') _eventId: string,
+    @Param('id') payableId: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+    @Headers('x-user-id') userIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    const actorId = resolveUser(userIdHeader);
+    return this.financialEngine.approvePayable(tenantId, payableId, producerId, actorId);
+  }
+
+  @Post('payables/:id/pay')
+  @ApiOperation({ summary: 'Liquida conta a pagar com débito rastreável no Ledger' })
+  async payPayable(
+    @Param('eventId') _eventId: string,
+    @Param('id') payableId: string,
+    @Body() body: { paymentMethod?: string },
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+    @Headers('x-user-id') userIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    const actorId = resolveUser(userIdHeader);
+    return this.financialEngine.payPayable(tenantId, payableId, producerId, {
+      actorId,
+      paymentMethod: body?.paymentMethod,
+    });
+  }
+
+  @Get('receivables')
+  @ApiOperation({ summary: 'Lista contas a receber do evento (patrocínios, aportes)' })
+  listReceivables(
+    @Param('eventId') eventId: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.listReceivables(tenantId, eventId, producerId);
+  }
+
+  @Post('receivables')
+  @ApiOperation({ summary: 'Cadastra nova conta a receber para o evento' })
+  createReceivable(
+    @Param('eventId') eventId: string,
+    @Body() body: {
+      origin: string;
+      counterparty: string;
+      description: string;
+      amountCents: number;
+      dueDate: string;
+      costCenterId?: string;
+    },
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.createReceivable(tenantId, producerId, {
+      ...body,
+      eventId,
+    });
+  }
+
+  @Post('receivables/:id/settle')
+  @ApiOperation({ summary: 'Liquida recebível com crédito no saldo disponível do Ledger' })
+  async settleReceivable(
+    @Param('eventId') _eventId: string,
+    @Param('id') receivableId: string,
+    @Body() body: { amountCents?: number },
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+    @Headers('x-user-id') userIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    const actorId = resolveUser(userIdHeader);
+    return this.financialEngine.settleReceivable(tenantId, receivableId, producerId, {
+      actorId,
+      amountCents: body?.amountCents,
+    });
+  }
+
+  @Get('cost-centers')
+  @ApiOperation({ summary: 'Lista centros de custo do evento' })
+  listCostCenters(
+    @Param('eventId') eventId: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.listCostCenters(tenantId, eventId, producerId);
+  }
+
+  @Post('cost-centers')
+  @ApiOperation({ summary: 'Cria novo centro de custo para o evento' })
+  createCostCenter(
+    @Param('eventId') eventId: string,
+    @Body() body: {
+      code: string;
+      name: string;
+      category: string;
+      budgetLimitCents: number;
+      active?: boolean;
+    },
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.createCostCenter(tenantId, producerId, {
+      ...body,
+      eventId,
+      active: body.active ?? true,
+    });
+  }
+
+  @Get('suppliers')
+  @ApiOperation({ summary: 'Lista fornecedores vinculados ao produtor/evento' })
+  listSuppliers(
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.listSuppliers(tenantId, producerId);
+  }
+
+  @Post('suppliers')
+  @ApiOperation({ summary: 'Cadastra novo fornecedor com dados bancários' })
+  createSupplier(
+    @Body() body: {
+      name: string;
+      documentMasked: string;
+      contactEmail: string;
+      category: string;
+      bankAccountMasked: string;
+      pixKey: string;
+      active?: boolean;
+      notes?: string;
+    },
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.createSupplier(tenantId, producerId, {
+      ...body,
+      active: body.active ?? true,
+    });
+  }
+
+  @Get('refunds')
+  @ApiOperation({ summary: 'Lista estornos do evento com status operacional' })
+  listRefunds(
+    @Param('eventId') eventId: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.listRefunds(tenantId, eventId, producerId);
+  }
+
+  @Get('chargebacks')
+  @ApiOperation({ summary: 'Lista chargebacks do evento e status de contestações' })
+  listChargebacks(
+    @Param('eventId') eventId: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.listChargebacks(tenantId, eventId, producerId);
+  }
+
+  @Post('chargebacks/:id/reverse')
+  @ApiOperation({ summary: 'Reverte chargeback ganho em disputa com recomposição do saldo' })
+  async reverseChargeback(
+    @Param('eventId') _eventId: string,
+    @Param('id') chargebackId: string,
+    @Body() body: { reason: string },
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+    @Headers('x-user-id') userIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    const actorId = resolveUser(userIdHeader);
+    return this.financialEngine.reverseChargeback(tenantId, chargebackId, producerId, {
+      reason: body.reason,
+      actorId,
+    });
+  }
+
+  @Get('reconciliation/cases')
+  @ApiOperation({ summary: 'Lista casos de divergência de conciliação do evento' })
+  listReconciliationCases(
+    @Param('eventId') eventId: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.listReconciliationCases(tenantId, eventId, producerId);
+  }
+
+  @Get('reports')
+  @ApiOperation({ summary: 'Gera relatório financeiro oficial estruturado para auditoria e exportação' })
+  async getReport(
+    @Param('eventId') eventId: string,
+    @Query('tipo') tipo?: 'EXTRATO' | 'SALDOS' | 'TAXAS' | 'CONCILIACAO' | 'DRE' | 'FLUXO_CAIXA' | 'AUDITORIA' | 'PAGAR_RECEBER',
+    @Query('periodo') periodo?: string,
+    @Query('produtorId') queryProducer?: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+    @Headers('x-producer-id') producerIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    const producerId = resolveProducer(producerIdHeader, queryProducer);
+    return this.financialEngine.generateFinancialReport(
+      tenantId,
+      eventId,
+      producerId,
+      tipo || 'DRE',
+      periodo || '2026-01 a 2026-12',
+    );
+  }
 }
 
 @ApiTags('finance-producer')
@@ -383,5 +668,26 @@ export class FinancialEngineProducerController {
       body.eventId,
       producerId,
     );
+  }
+
+  @Get('treasury')
+  @ApiOperation({ summary: 'Consulta contas bancárias, lotes CNAB e saldo total de tesouraria do produtor' })
+  getTreasury(
+    @Param('producerId') producerId: string,
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financialEngine.getTreasury(tenantId, producerId);
+  }
+
+  @Post('treasury/cnab/return')
+  @ApiOperation({ summary: 'Processa arquivo de retorno CNAB 240 com conciliação ou divergência de rejeição' })
+  processCnabReturn(
+    @Param('producerId') producerId: string,
+    @Body() body: { batchId: string; status: 'PROCESSADO' | 'REJEITADO'; failureReason?: string; eventId?: string },
+    @Headers('x-tenant-id') tenantIdHeader?: string,
+  ) {
+    const tenantId = resolveTenant(tenantIdHeader);
+    return this.financialEngine.processCnabReturn(tenantId, producerId, body);
   }
 }

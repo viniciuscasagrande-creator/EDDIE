@@ -1,0 +1,16 @@
+codigo_operacao,descricao,origem,tipo_lancamento,bucket_origem,bucket_destino,regra_taxa,partidas_dobradas,impacto_dre,idempotencia_chave,evento_outbox
+OP-001,Venda de Ingresso Checkout,checkout_pedido,CREDITO,externo,retido,Aplica snapshot taxa vigente,SIM (Cliente -> Caixa -> Custodia),Receita Bruta (GMV),orderId,TICKET_PURCHASED
+OP-002,Retencao Taxa Servico Disk,taxa_plataforma,DEBITO,retido,receita_disk,Percentual ou Fixa por Evento,SIM (Custodia -> Receita Disk),Deducao Receita Produtor,orderId_fee,FINANCIAL_BALANCE_CHANGED
+OP-003,Tarifa Gateway Adquirente,custo_adquirente,DEBITO,retido,gateway_passivo,Aliquota contratual (2.5%),SIM (Custodia -> Passivo Gateway),Custo Operacional Gateway,orderId_gw,FINANCIAL_BALANCE_CHANGED
+OP-004,Liberacao Saldo Sessao/Regra,liberacao_custodia,TRANSFERENCIA,retido,disponivel,Regra D+X ou pos-evento,SIM (Retido -> Disponivel),Neutro (Muda disponibilidade),release_lot_id,FINANCIAL_BALANCE_CHANGED
+OP-005,Agendamento Lote Repasse,settlement_agendado,BLOQUEIO,disponivel,bloqueado,N/A,SIM (Disponivel -> Bloqueado),Neutro (Reserva Cautelar),settlementId_sched,SETTLEMENT_SCHEDULED
+OP-006,Liquidacao Bancaria Repasse,settlement_executado,DEBITO,bloqueado,banco_externo,N/A,SIM (Bloqueado -> Caixa/Banco),Baixa Repasses Liquidados,settlementId_exec,PAYOUT_EXECUTED
+OP-007,Transferencia Inter-Eventos (Origem),transferencia_evento,DEBITO,disponivel,transito_inter_eventos,N/A,SIM (Origem Disponivel -> Transito),Neutro (Transferencia Ativo),transferId_out,TRANSFER_COMPLETED
+OP-008,Transferencia Inter-Eventos (Destino),transferencia_evento,CREDITO,transito_inter_eventos,disponivel,N/A,SIM (Transito -> Destino Disponivel),Neutro (Transferencia Ativo),transferId_in,FINANCIAL_BALANCE_CHANGED
+OP-009,Simulacao/Efetivacao Advanced,antecipacao_spread,CREDITO_DESAGIO,retido,disponivel,Desagio pro-rata dia contrato,SIM (Custodia -> Custo Financ -> Disp),Despesa Financeira Antecipacao,advancedId,ADVANCED_DISPATCHED
+OP-010,Estorno CDC 7 Dias Pre-Repasse,estorno_compra,DEBITO,retido,cliente_estorno,Estorno proporcional taxa/face,SIM (Custodia -> Reembolso Cliente),Deducao Receita Bruta,refundId,REFUND_CREATED
+OP-011,Chargeback Recebido Pos-Repasse,chargeback_adquirente,DEBITO,disponivel/reserva,passivo_disputa,N/A,SIM (Disponivel -> Reserva/Perda),Deducao Margem Operacional,disputeId,CHARGEBACK_RECEIVED
+OP-012,Reversao Disputa Ganha,chargeback_revertido,COMPENSATORIO,passivo_disputa,disponivel,N/A,SIM (Compensatorio -> Disponivel),Recomposicao Margem,reversalId,CHARGEBACK_REVERSED
+OP-013,Liquidacao Conta a Pagar Fornecedor,pagamento_fornecedor,DEBITO,disponivel,fornecedor_passivo,Alcada aprovada,SIM (Disponivel -> Baixa Fornecedor),Despesa Fornecedores / OPEX,payableId,PAYABLE_SETTLED
+OP-014,Liquidacao Recebivel Patrocinio,recebimento_patrocinio,CREDITO,externo,disponivel,Contrato de Patrocinio,SIM (Ativo Recebivel -> Disponivel),Outras Receitas Operacionais,receivableId,RECEIVABLE_SETTLED
+OP-015,Rejeicao Retorno CNAB 240,cnab_retorno_rejeitado,DIVERGENCIA,bloqueado,bloqueado,N/A,Nao (Abre caso divergencia),Neutro (Auditoria Requerida),batchId_err,RECONCILIATION_DIVERGENCE
