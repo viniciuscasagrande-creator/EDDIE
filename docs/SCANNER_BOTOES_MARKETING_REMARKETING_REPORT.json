@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-09-25T12:53:14.244Z",
+  "timestamp": "2026-09-25T13:21:24.139Z",
   "versao": "EDDIE-11.16.14",
   "totais": {
-    "totalBotoes": 832,
-    "totalFuncionais": 832,
+    "totalBotoes": 910,
+    "totalFuncionais": 910,
     "totalBloqueadosPermissao": 0,
     "totalIndisponiveisIntegracao": 0,
     "totalMortos": 0
@@ -3400,7 +3400,7 @@
       "rota": "/remarketing/publicos",
       "modulo": "Remarketing",
       "nome": "Públicos",
-      "totalBotoesNaRota": 26,
+      "totalBotoesNaRota": 55,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -3523,8 +3523,50 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Sincronizar",
+          "texto": "Todos os Públicos",
           "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Estáticos",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Dinâmicos (AND/OR)",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Comportamentais",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Provedores Ads",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular tamanho atualizado com base nos critérios",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
@@ -3535,8 +3577,26 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Sincronizar",
+          "texto": "Usar em Ads",
           "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular tamanho atualizado com base nos critérios",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
@@ -3547,13 +3607,127 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
+          "texto": "Usar em Ads",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular tamanho atualizado com base nos critérios",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
           "texto": "Sincronizar",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
+          "texto": "Usar em Ads",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular tamanho atualizado com base nos critérios",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
           "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Ads",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular tamanho atualizado com base nos critérios",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Ads",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Duplicar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular tamanho atualizado com base nos critérios",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Sincronizar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Usar em Ads",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -3564,7 +3738,7 @@
       "rota": "/remarketing/segmentos",
       "modulo": "Remarketing",
       "nome": "Segmentos",
-      "totalBotoesNaRota": 24,
+      "totalBotoesNaRota": 44,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -3681,8 +3855,20 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Novo Segmento",
+          "texto": "Novo Segmento Dinâmico",
           "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Regras",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular contagem com base nas regras",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
@@ -3693,8 +3879,20 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Exportar Base",
+          "texto": "Criar Campanha",
           "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Regras",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular contagem com base nas regras",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
@@ -3705,7 +3903,103 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
+          "texto": "Criar Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Regras",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular contagem com base nas regras",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
           "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Regras",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular contagem com base nas regras",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Regras",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular contagem com base nas regras",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Campanha",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar Regras",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Recalcular",
+          "title": "Recalcular contagem com base nas regras",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Exportar Base",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Criar Campanha",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -3716,7 +4010,7 @@
       "rota": "/remarketing/jornadas",
       "modulo": "Remarketing",
       "nome": "Jornadas",
-      "totalBotoesNaRota": 20,
+      "totalBotoesNaRota": 32,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -3833,7 +4127,79 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
-          "texto": "Jornada Ativa",
+          "texto": "Nova Jornada",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausar Régua",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Construtor Visual & Nós",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Trilha de Auditoria (Logs)",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Régua Multi-Etapas: Resgate Inteligente com Opt-out",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Configurar Nó",
           "title": "",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
@@ -4884,7 +5250,7 @@
       "rota": "/remarketing/automacoes",
       "modulo": "Remarketing",
       "nome": "Automações",
-      "totalBotoesNaRota": 20,
+      "totalBotoesNaRota": 37,
       "detalhes": [
         {
           "texto": "Recolher barra lateral",
@@ -5001,8 +5367,110 @@
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         },
         {
+          "texto": "Nova Regra de Automação",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
           "texto": "Testar Webhook",
           "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar",
+          "title": "Simular disparo de teste",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Logs",
+          "title": "Ver histórico de execuções",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar",
+          "title": "Simular disparo de teste",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Logs",
+          "title": "Ver histórico de execuções",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar",
+          "title": "Simular disparo de teste",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Logs",
+          "title": "Ver histórico de execuções",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Editar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Pausar",
+          "title": "",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Testar",
+          "title": "Simular disparo de teste",
+          "classificacao": "FUNCIONAL",
+          "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
+        },
+        {
+          "texto": "Logs",
+          "title": "Ver histórico de execuções",
           "classificacao": "FUNCIONAL",
           "justificativa": "Elemento interativo com manipulador operacional ou modal associado."
         }

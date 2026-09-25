@@ -46,6 +46,12 @@ import { ModuleNavigation } from '../navigation/ModuleNavigation';
 import { CompactOperationalAlert } from '../navigation/CompactOperationalAlert';
 import { useMarketingAction } from '../marketing/useMarketingAction';
 import { MarketingActionModal } from '../marketing/MarketingActionModal';
+import { AudienceManagementModal } from './AudienceManagementModal';
+import { JourneyBuilderModal } from './JourneyBuilderModal';
+import { JourneyLogsModal } from './JourneyLogsModal';
+import { AutomationManagementModal } from './AutomationManagementModal';
+import type { Audience, AudienceType, AudienceOrigin } from './audience-types';
+import type { JourneyDefinition, JourneyExecutionLog, AutomationRule, JourneyStatus } from './journey-types';
 import type { MarketingAction, Provider } from '../../lib/marketing-actions/action-types';
 
 export type RemarketingTab =
@@ -107,6 +113,348 @@ const normalizeTab = (t?: string): RemarketingTab => {
   return valid.includes(t as RemarketingTab) ? (t as RemarketingTab) : 'dashboard';
 };
 
+const INITIAL_AUDIENCES: Audience[] = [
+  {
+    id: 'aud-01',
+    nome: 'Carrinho Abandonado Últimas 48h (VIP)',
+    descricao: 'Participantes que adicionaram ingressos ao carrinho e não concluíram em 48 horas',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    tipo: 'DYNAMIC',
+    origem: 'CARRINHO_ABANDONADO',
+    tamanhoCalculado: 382,
+    statusCalculo: 'CALCULADO',
+    status: 'ATIVO',
+    segmentacao: {
+      conjuncaoPrincipal: 'AND',
+      grupos: [
+        {
+          id: 'grp-1',
+          conjuncao: 'AND',
+          regras: [
+            { id: 'r-1', dimensao: 'carrinho_abandonado', operador: 'EQUALS', valor: 'true' },
+            { id: 'r-2', dimensao: 'consentimento_whatsapp', operador: 'EQUALS', valor: 'true' },
+          ],
+        },
+      ],
+    },
+    provedoresSync: [
+      { provider: 'META', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 382, ultimoSyncEm: '2026-09-24T18:00:00Z' },
+      { provider: 'GOOGLE', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 382, ultimoSyncEm: '2026-09-24T18:00:00Z' },
+    ],
+    criadoEm: '2026-09-01T10:00:00Z',
+    atualizadoEm: '2026-09-24T18:00:00Z',
+    ultimaAtivacao: '2026-09-24T18:00:00Z',
+  },
+  {
+    id: 'aud-02',
+    nome: 'PIX Gerado e Não Pago (< 15 min)',
+    descricao: 'Chaves PIX geradas no checkout sem liquidação confirmada',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    tipo: 'BEHAVIORAL',
+    origem: 'GATEWAY_PAGAMENTOS',
+    tamanhoCalculado: 48,
+    statusCalculo: 'CALCULADO',
+    status: 'ATIVO',
+    segmentacao: {
+      conjuncaoPrincipal: 'AND',
+      grupos: [
+        {
+          id: 'grp-2',
+          conjuncao: 'AND',
+          regras: [
+            { id: 'r-3', dimensao: 'checkout_iniciado', operador: 'EQUALS', valor: 'true' },
+            { id: 'r-4', dimensao: 'pedido_pago', operador: 'EQUALS', valor: 'false' },
+          ],
+        },
+      ],
+    },
+    provedoresSync: [
+      { provider: 'META', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 48, ultimoSyncEm: '2026-09-25T08:30:00Z' },
+    ],
+    criadoEm: '2026-09-02T10:00:00Z',
+    atualizadoEm: '2026-09-25T08:30:00Z',
+  },
+  {
+    id: 'aud-03',
+    nome: 'Visitou Página do Evento sem Comprar (7d)',
+    descricao: 'Visitantes que visualizaram o evento nos últimos 7 dias sem registrar compra',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    tipo: 'DYNAMIC',
+    origem: 'VISITOU_NAO_COMPROU',
+    tamanhoCalculado: 2840,
+    statusCalculo: 'CALCULADO',
+    status: 'ATIVO',
+    segmentacao: {
+      conjuncaoPrincipal: 'AND',
+      grupos: [
+        {
+          id: 'grp-3',
+          conjuncao: 'AND',
+          regras: [
+            { id: 'r-5', dimensao: 'visita_sem_compra', operador: 'LAST_N_DAYS', valor: '7' },
+          ],
+        },
+      ],
+    },
+    provedoresSync: [
+      { provider: 'META', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 2840, ultimoSyncEm: '2026-09-25T08:00:00Z' },
+      { provider: 'TIKTOK', status: 'NAO_SUPORTADO', capabilitySuportada: false, mensagemErro: 'Conta TikTok sem acesso de Custom Audience liberado' },
+    ],
+    criadoEm: '2026-09-05T10:00:00Z',
+    atualizadoEm: '2026-09-25T08:00:00Z',
+  },
+  {
+    id: 'aud-04',
+    nome: 'Compradores de Edições Anteriores',
+    descricao: 'Base histórica do produtor que comprou edições passadas do festival',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    tipo: 'STATIC',
+    origem: 'COMPRADORES_ANTERIORES',
+    tamanhoCalculado: 1420,
+    statusCalculo: 'CALCULADO',
+    status: 'ATIVO',
+    segmentacao: {
+      conjuncaoPrincipal: 'AND',
+      grupos: [
+        {
+          id: 'grp-4',
+          conjuncao: 'AND',
+          regras: [
+            { id: 'r-6', dimensao: 'quantidade_ingressos', operador: 'GREATER_THAN', valor: 0 },
+            { id: 'r-7', dimensao: 'consentimento_email', operador: 'EQUALS', valor: 'true' },
+          ],
+        },
+      ],
+    },
+    provedoresSync: [
+      { provider: 'META', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 1420, ultimoSyncEm: '2026-09-23T12:00:00Z' },
+      { provider: 'GOOGLE', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 1420, ultimoSyncEm: '2026-09-23T12:00:00Z' },
+    ],
+    criadoEm: '2026-09-01T10:00:00Z',
+    atualizadoEm: '2026-09-23T12:00:00Z',
+  },
+  {
+    id: 'aud-05',
+    nome: 'Clientes Recorrentes VIP (2+ Compras)',
+    descricao: 'Compradores fiéis com LTV acima de R$ 800,00',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    tipo: 'DYNAMIC',
+    origem: 'CLIENTES_RECORRENTES',
+    tamanhoCalculado: 2140,
+    statusCalculo: 'CALCULADO',
+    status: 'ATIVO',
+    segmentacao: {
+      conjuncaoPrincipal: 'AND',
+      grupos: [
+        {
+          id: 'grp-5',
+          conjuncao: 'AND',
+          regras: [
+            { id: 'r-8', dimensao: 'ticket_medio_cents', operador: 'GREATER_THAN', valor: 40000 },
+          ],
+        },
+      ],
+    },
+    provedoresSync: [
+      { provider: 'META', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 2140, ultimoSyncEm: '2026-09-25T09:00:00Z' },
+    ],
+    criadoEm: '2026-09-01T10:00:00Z',
+    atualizadoEm: '2026-09-25T09:00:00Z',
+  },
+  {
+    id: 'aud-06',
+    nome: 'Custom Audience Meta Ads Lookalike 1%',
+    descricao: 'Audiência semelhante calculada a partir dos melhores compradores',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    tipo: 'PROVIDER',
+    origem: 'CRM_PRODUTOR',
+    tamanhoCalculado: 5120,
+    statusCalculo: 'CALCULADO',
+    status: 'ATIVO',
+    segmentacao: {
+      conjuncaoPrincipal: 'AND',
+      grupos: [
+        {
+          id: 'grp-6',
+          conjuncao: 'AND',
+          regras: [
+            { id: 'r-9', dimensao: 'pedido_pago', operador: 'EQUALS', valor: 'true' },
+          ],
+        },
+      ],
+    },
+    provedoresSync: [
+      { provider: 'META', status: 'SINCRONIZADO', capabilitySuportada: true, tamanhoRetornado: 5120, ultimoSyncEm: '2026-09-25T09:30:00Z' },
+    ],
+    criadoEm: '2026-09-10T10:00:00Z',
+    atualizadoEm: '2026-09-25T09:30:00Z',
+  },
+];
+
+const INITIAL_JOURNEYS: JourneyDefinition[] = [
+  {
+    id: 'jrn-01',
+    name: 'Régua Multi-Etapas: Resgate Inteligente com Opt-out',
+    description: 'Visitou sem comprar → 30min WhatsApp → espera 6h → checagem de compra → E-mail + Ads → conversão',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    status: 'ACTIVE',
+    nodes: [
+      { id: 'node-1', type: 'TRIGGER', config: { titulo: 'Gatilho: Visitou Evento & Não Comprou', gatilhoTipo: 'VISITOU_EVENTO', descricao: 'Pixel dispara após permanência de 3 min sem comprar' }, participantesNoNo: 1840 },
+      { id: 'node-2', type: 'WAIT', config: { titulo: 'Espera: 30 Minutos de Reflexão', esperaTempoMinutos: 30, descricao: 'Janela de respeito ao usuário' }, participantesNoNo: 420 },
+      { id: 'node-3', type: 'ACTION', config: { titulo: 'Ação: WhatsApp Oficial de Boas-vindas', acaoCanal: 'WHATSAPP', acaoTemplateNome: 'carrinho_resgate_15m', frequencyCap: { maxPorDia: 1, maxPorSemana: 2 } }, participantesNoNo: 380, taxaSucesso: '98.5%' },
+      { id: 'node-4', type: 'WAIT', config: { titulo: 'Espera: 6 Horas', esperaTempoMinutos: 360, descricao: 'Tempo para processamento ou pagamento PIX' }, participantesNoNo: 110 },
+      { id: 'node-5', type: 'CONDITION', config: { titulo: 'Condição: Comprou o Ingresso?', condicaoTipo: 'COMPROU_INGRESSO', descricao: 'Consulta outbox em tempo real' }, participantesNoNo: 95 },
+      { id: 'node-6', type: 'ACTION', config: { titulo: 'Ação (NÃO): E-mail + Sincronização Ads', acaoCanal: 'EMAIL', acaoCupomDesconto: 'VOLTA5', acaoTemplateNome: 'cupom_incentivo_5pct' }, participantesNoNo: 62, taxaSucesso: '99.1%' },
+      { id: 'node-7', type: 'CONVERSION', config: { titulo: 'Conversão: Ingresso Comprado com Atribuição', metaConversao: 'PEDIDO_PAGO' }, participantesNoNo: 215 },
+      { id: 'node-8', type: 'EXIT', config: { titulo: 'Encerramento: Remoção da Régua', motivoEncerramento: 'CONVERSAO_REALIZADA', descricao: 'Remove comprador de novos disparos' }, participantesNoNo: 580 },
+    ],
+    edges: [
+      { from: 'node-1', to: 'node-2' },
+      { from: 'node-2', to: 'node-3' },
+      { from: 'node-3', to: 'node-4' },
+      { from: 'node-4', to: 'node-5' },
+      { from: 'node-5', to: 'node-7', condition: 'SIM' },
+      { from: 'node-5', to: 'node-6', condition: 'NAO' },
+      { from: 'node-6', to: 'node-7' },
+      { from: 'node-7', to: 'node-8' },
+    ],
+    metricas: {
+      totalEntradas: 2450,
+      emAndamento: 580,
+      conversoes: 342,
+      taxaConversao: '13.9%',
+      receitaAtribuidaCents: 6840000,
+    },
+    criadoEm: '2026-09-01T10:00:00Z',
+    atualizadoEm: '2026-09-25T09:00:00Z',
+    ultimoDisparoEm: '2026-09-25T09:40:00Z',
+  },
+];
+
+const INITIAL_AUTOMATIONS: AutomationRule[] = [
+  {
+    id: 'aut-01',
+    nome: 'Recuperação Imediata Carrinho 15m',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    gatilho: 'Carrinho Abandonado (15 min)',
+    publicoAlvo: 'Visitantes com Carrinho Pendente',
+    canais: ['WhatsApp 1-Clique', 'E-mail Transacional'],
+    status: 'ATIVA',
+    execucoes: 1420,
+    conversoes: 312,
+    taxaConversao: '21.9%',
+    receitaRecuperadaCents: 6240000,
+    frequencyCapTexto: '1 msg/dia, 2/sem',
+    consentimentoExigido: true,
+    criadoEm: '2026-09-01T10:00:00Z',
+    ultimaExecucaoEm: 'há 12 min',
+  },
+  {
+    id: 'aut-02',
+    nome: 'Alerta de PIX Expirando em 10 Minutos',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    gatilho: 'PIX Gerado e Não Pago (10 min antes)',
+    publicoAlvo: 'Chave PIX Ativa',
+    canais: ['WhatsApp 1-Clique', 'SMS Transacional'],
+    status: 'ATIVA',
+    execucoes: 840,
+    conversoes: 412,
+    taxaConversao: '49.0%',
+    receitaRecuperadaCents: 8240000,
+    frequencyCapTexto: '1 msg por chave',
+    consentimentoExigido: true,
+    criadoEm: '2026-09-02T10:00:00Z',
+    ultimaExecucaoEm: 'há 4 min',
+  },
+  {
+    id: 'aut-03',
+    nome: 'Aviso de Virada de Lote D-2 Multi-Canal',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    gatilho: 'Virada de Lote D-2 (48h antes)',
+    publicoAlvo: 'Visitantes sem Compra (7d)',
+    canais: ['E-mail', 'WhatsApp', 'Meta Ads CAPI'],
+    status: 'ATIVA',
+    execucoes: 2100,
+    conversoes: 480,
+    taxaConversao: '22.8%',
+    receitaRecuperadaCents: 14400000,
+    frequencyCapTexto: '1 disparo por virada',
+    consentimentoExigido: true,
+    criadoEm: '2026-09-05T10:00:00Z',
+    ultimaExecucaoEm: 'há 1 hora',
+  },
+  {
+    id: 'aut-04',
+    nome: 'Boas-Vindas & Ingresso no WhatsApp 1-Clique',
+    eventoId: 'evento-operacao',
+    eventoNome: 'Festival DiskIngressos Live 2026',
+    gatilho: 'Compra Aprovada (Confirmação de Pagamento)',
+    publicoAlvo: 'Novos Compradores',
+    canais: ['WhatsApp 1-Clique'],
+    status: 'ATIVA',
+    execucoes: 3200,
+    conversoes: 3200,
+    taxaConversao: '100%',
+    receitaRecuperadaCents: 64000000,
+    frequencyCapTexto: 'Transacional imediato',
+    consentimentoExigido: true,
+    criadoEm: '2026-09-01T10:00:00Z',
+    ultimaExecucaoEm: 'há 2 min',
+  },
+];
+
+const INITIAL_LOGS: JourneyExecutionLog[] = [
+  {
+    id: 'log-01',
+    correlationId: 'corr-9821-ab41-2026',
+    journeyId: 'jrn-01',
+    nodeId: 'node-3',
+    nodeType: 'ACTION',
+    nodeTitulo: 'Ação: WhatsApp Oficial de Boas-vindas',
+    clienteAnonimizado: 'M*** S*** (41) 98***-**21',
+    canal: 'WHATSAPP',
+    status: 'SUCESSO',
+    detalhes: 'Template carrinho_resgate_15m entregue com sucesso via Meta Cloud API.',
+    timestamp: '2026-09-25T10:02:14Z',
+  },
+  {
+    id: 'log-02',
+    correlationId: 'corr-9820-cd52-2026',
+    journeyId: 'jrn-01',
+    nodeId: 'node-7',
+    nodeType: 'CONVERSION',
+    nodeTitulo: 'Conversão: Ingresso Comprado com Atribuição',
+    clienteAnonimizado: 'C*** E*** (11) 99***-**44',
+    canal: 'PORTAL_PDT',
+    status: 'CONVERTIDO',
+    detalhes: 'Pedido ped-991 confirmado e pago via PIX. Receita atribuída à jornada: R$ 450,00.',
+    timestamp: '2026-09-25T09:48:22Z',
+  },
+  {
+    id: 'log-03',
+    correlationId: 'corr-9818-ef63-2026',
+    journeyId: 'jrn-01',
+    nodeId: 'node-6',
+    nodeType: 'ACTION',
+    nodeTitulo: 'Ação (NÃO): E-mail + Sincronização Ads',
+    clienteAnonimizado: 'R*** A*** (51) 98***-**00',
+    canal: 'EMAIL',
+    status: 'SUCESSO',
+    detalhes: 'E-mail transacional com cupom VOLTA5 enviado e lead adicionado na Custom Audience Meta Ads.',
+    timestamp: '2026-09-25T08:15:30Z',
+  },
+];
+
 export default function RemarketingWorkspace({
   initialTab = 'dashboard',
   contextEventoId,
@@ -127,6 +475,26 @@ export default function RemarketingWorkspace({
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [feedback, setFeedback] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+
+  // Estados EDDIE 11.16.16: Públicos, Segmentação, Jornadas e Automações
+  const [audiences, setAudiences] = useState<Audience[]>(INITIAL_AUDIENCES);
+  const [filtroTipoAudience, setFiltroTipoAudience] = useState<string>('TODOS');
+  const [buscaAudience, setBuscaAudience] = useState('');
+  const [modalAudienceOpen, setModalAudienceOpen] = useState(false);
+  const [activeAudienceForEdit, setActiveAudienceForEdit] = useState<Audience | null>(null);
+
+  const [journeys, setJourneys] = useState<JourneyDefinition[]>(INITIAL_JOURNEYS);
+  const [activeJourneyId, setActiveJourneyId] = useState<string>('jrn-01');
+  const [modalJourneyOpen, setModalJourneyOpen] = useState(false);
+  const [activeJourneyForEdit, setActiveJourneyForEdit] = useState<JourneyDefinition | null>(null);
+
+  const [automations, setAutomations] = useState<AutomationRule[]>(INITIAL_AUTOMATIONS);
+  const [modalAutomationOpen, setModalAutomationOpen] = useState(false);
+  const [activeAutomationForEdit, setActiveAutomationForEdit] = useState<AutomationRule | null>(null);
+
+  const [logs, setLogs] = useState<JourneyExecutionLog[]>(INITIAL_LOGS);
+  const [modalLogsOpen, setModalLogsOpen] = useState(false);
+  const [activeJourneyLogsNome, setActiveJourneyLogsNome] = useState('Régua Multi-Etapas: Resgate Inteligente');
 
   // Filtros de carrinhos
   const [filtroStatusCarrinho, setFiltroStatusCarrinho] = useState<'TODOS' | 'ABERTO' | 'DISPARADO' | 'RECUPERADO'>('TODOS');
@@ -311,6 +679,153 @@ export default function RemarketingWorkspace({
       prev.map((c) => (c.status === 'ABERTO' ? { ...c, status: 'DISPARADO' } : c))
     );
   };
+
+  // Handlers EDDIE 11.16.16: Públicos, Segmentação, Jornadas e Automações
+  const handleSaveAudience = (aud: Audience) => {
+    setAudiences((prev) => {
+      const idx = prev.findIndex((a) => a.id === aud.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = aud;
+        return next;
+      }
+      return [aud, ...prev];
+    });
+    setFeedback({ tipo: 'success', texto: `Público "${aud.nome}" salvo com sucesso!` });
+  };
+
+  const handleDuplicateAudience = (aud: Audience) => {
+    const dup: Audience = {
+      ...aud,
+      id: `aud-${Date.now()}`,
+      nome: `${aud.nome} (Cópia)`,
+      criadoEm: new Date().toISOString(),
+      atualizadoEm: new Date().toISOString(),
+    };
+    setAudiences((prev) => [dup, ...prev]);
+    setFeedback({ tipo: 'success', texto: `Público "${aud.nome}" duplicado com sucesso!` });
+  };
+
+  const handleRecalculateAudience = (aud: Audience) => {
+    const novoTamanho = Math.max(45, Math.round((aud.tamanhoCalculado || 400) * (0.95 + Math.random() * 0.1)));
+    setAudiences((prev) =>
+      prev.map((a) =>
+        a.id === aud.id
+          ? { ...a, tamanhoCalculado: novoTamanho, statusCalculo: 'CALCULADO', atualizadoEm: new Date().toISOString() }
+          : a
+      )
+    );
+    setFeedback({ tipo: 'success', texto: `Público recalculado: ${novoTamanho.toLocaleString('pt-BR')} pessoas elegíveis.` });
+  };
+
+  const handleSyncAudience = (aud: Audience) => {
+    setAudiences((prev) =>
+      prev.map((a) =>
+        a.id === aud.id
+          ? {
+              ...a,
+              statusCalculo: 'CALCULADO',
+              atualizadoEm: new Date().toISOString(),
+              provedoresSync: (a.provedoresSync || []).map((p) => ({
+                ...p,
+                status: p.capabilitySuportada ? 'SINCRONIZADO' : p.status,
+                ultimoSyncEm: new Date().toISOString(),
+              })),
+            }
+          : a
+      )
+    );
+    triggerAction('SYNC', {
+      produtorId,
+      eventoId: activeEventoId,
+      audienceName: aud.nome,
+      provider: 'META',
+    });
+  };
+
+  const handleArchiveAudience = (aud: Audience) => {
+    setAudiences((prev) =>
+      prev.map((a) =>
+        a.id === aud.id ? { ...a, status: a.status === 'ARQUIVADO' ? 'ATIVO' : 'ARQUIVADO' } : a
+      )
+    );
+    setFeedback({
+      tipo: 'success',
+      texto: `Público "${aud.nome}" ${aud.status === 'ARQUIVADO' ? 'reativado' : 'arquivado'}.`,
+    });
+  };
+
+  const handleSaveJourney = (jrn: JourneyDefinition) => {
+    setJourneys((prev) => {
+      const idx = prev.findIndex((j) => j.id === jrn.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = jrn;
+        return next;
+      }
+      return [jrn, ...prev];
+    });
+    setFeedback({ tipo: 'success', texto: `Jornada "${jrn.name}" salva com ${jrn.nodes.length} nós persistidos!` });
+  };
+
+  const handleTogglePauseJourney = (jrn: JourneyDefinition) => {
+    const isPaused = jrn.status === 'PAUSED';
+    const newStatus: JourneyStatus = isPaused ? 'ACTIVE' : 'PAUSED';
+    setJourneys((prev) =>
+      prev.map((j) => (j.id === jrn.id ? { ...j, status: newStatus } : j))
+    );
+    setFeedback({
+      tipo: 'success',
+      texto: `Jornada "${jrn.name}" agora está ${newStatus === 'ACTIVE' ? 'ATIVA' : 'PAUSADA'}.`,
+    });
+  };
+
+  const handleSaveAutomation = (rule: AutomationRule) => {
+    setAutomations((prev) => {
+      const idx = prev.findIndex((a) => a.id === rule.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = rule;
+        return next;
+      }
+      return [rule, ...prev];
+    });
+    setFeedback({ tipo: 'success', texto: `Automação "${rule.nome}" salva com sucesso!` });
+  };
+
+  const handleToggleAutomation = (rule: AutomationRule) => {
+    const isPaused = rule.status === 'PAUSADA';
+    const nextStatus = isPaused ? 'ATIVA' : 'PAUSADA';
+    setAutomations((prev) =>
+      prev.map((a) => (a.id === rule.id ? { ...a, status: nextStatus } : a))
+    );
+    setFeedback({
+      tipo: 'success',
+      texto: `Automação "${rule.nome}" ${nextStatus === 'ATIVA' ? 'ativada' : 'pausada'}.`,
+    });
+  };
+
+  const handleOpenJourneyLogs = (jrnId: string) => {
+    const found = journeys.find((j) => j.id === jrnId);
+    setActiveJourneyLogsNome(found?.name || 'Régua de Remarketing');
+    setModalLogsOpen(true);
+  };
+
+  const audiencesFiltradas = useMemo(() => {
+    return audiences.filter((aud) => {
+      const matchTipo = filtroTipoAudience === 'TODOS' || aud.tipo === filtroTipoAudience;
+      const matchBusca =
+        !buscaAudience ||
+        aud.nome.toLowerCase().includes(buscaAudience.toLowerCase()) ||
+        (aud.descricao && aud.descricao.toLowerCase().includes(buscaAudience.toLowerCase())) ||
+        aud.origem.toLowerCase().includes(buscaAudience.toLowerCase());
+      return matchTipo && matchBusca;
+    });
+  }, [audiences, filtroTipoAudience, buscaAudience]);
+
+  const jornadaSelecionada = useMemo(() => {
+    return journeys.find((j) => j.id === activeJourneyId) || journeys[0] || INITIAL_JOURNEYS[0]!;
+  }, [journeys, activeJourneyId]);
 
   const carrinhosFiltrados = useMemo(() => {
     return carrinhos.filter((c) => {
@@ -568,107 +1083,204 @@ export default function RemarketingWorkspace({
       {/* 2. ABA PÚBLICOS COMPORTAMENTAIS */}
       {tab === 'publicos' && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Users size={18} className="text-sky-400" /> Públicos Comportamentais Sincronizados
+                  <Users size={18} className="text-sky-400" /> Central de Públicos & Audiências Sincronizadas
                 </h2>
-                <p className="text-xs text-slate-400">Audiências dinâmicas geradas a partir de eventos do checkout e navegação</p>
+                <p className="text-xs text-slate-400">
+                  Segmentos comportamentais e audiências dinâmicas integradas a Meta Ads, Google Ads e TikTok Ads
+                </p>
               </div>
               <button
-                onClick={() =>
-                  triggerAction('CREATE_AUDIENCE', {
-                    produtorId,
-                    eventoId: activeEventoId,
-                    audienceName: 'Públicos Comportamentais Sincronizados',
-                    provider: 'META',
-                  })
-                }
-                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+                onClick={() => {
+                  setActiveAudienceForEdit(null);
+                  setModalAudienceOpen(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition shadow-lg shadow-orange-600/20"
               >
                 <Plus size={14} /> Criar Novo Público
               </button>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {[
-                {
-                  nome: 'Carrinho Abandonado (Últimas 24h)',
-                  tamanho: 382,
-                  canais: ['WhatsApp Cloud', 'Meta Ads CAPI', 'Google Ads'],
-                  origem: 'Pixel do Checkout',
-                  taxaAtivacao: '92%',
-                },
-                {
-                  nome: 'PIX Gerado e Não Pago (< 15 min)',
-                  tamanho: 48,
-                  canais: ['WhatsApp 1-Clique', 'SMS Transacional'],
-                  origem: 'Gateway Pagamentos',
-                  taxaAtivacao: '98%',
-                },
-                {
-                  nome: 'Visitou Página do Evento sem Comprar (7d)',
-                  tamanho: 2840,
-                  canais: ['Meta Ads (Instagram/FB)', 'TikTok Ads'],
-                  origem: 'Pixel DiskIngressos',
-                  taxaAtivacao: '74%',
-                },
-                {
-                  nome: 'Compradores de Edições Anteriores',
-                  tamanho: 1420,
-                  canais: ['E-mail Marketing VIP', 'WhatsApp Pré-venda'],
-                  origem: 'CRM Produtor',
-                  taxaAtivacao: '61%',
-                },
-                {
-                  nome: 'Tentativa de Cartão Recusada',
-                  tamanho: 64,
-                  canais: ['WhatsApp Recuperação Pagamento'],
-                  origem: 'Antifraude / Adquirente',
-                  taxaAtivacao: '88%',
-                },
-                {
-                  nome: 'Leads de Alta Intensidade (> 3 visitas)',
-                  tamanho: 512,
-                  canais: ['Meta Ads Lookalike', 'Google Search'],
-                  origem: 'GA4 / Pixel',
-                  taxaAtivacao: '81%',
-                },
-              ].map((pub) => (
-                <div key={pub.nome} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <span className="text-xs font-bold text-white">{pub.nome}</span>
-                    <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-mono font-bold">
-                      {fmtNum(pub.tamanho)} pessoas
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-400">Origem: <b className="text-slate-200">{pub.origem}</b></div>
-                  <div className="flex flex-wrap gap-1">
-                    {pub.canais.map((c) => (
-                      <span key={c} className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300 font-medium">
-                        {c}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="pt-2 border-t border-slate-800/80 flex justify-between items-center text-xs">
-                    <span className="text-slate-400 text-[11px]">Sincronização: <b className="text-emerald-400">{pub.taxaAtivacao}</b></span>
-                    <button
-                      onClick={() =>
-                        triggerAction('SYNC', {
-                          produtorId,
-                          eventoId: activeEventoId,
-                          audienceName: pub.nome,
-                          provider: 'META',
-                        })
-                      }
-                      className="text-orange-400 hover:text-orange-300 font-semibold"
-                    >
-                      Sincronizar
-                    </button>
-                  </div>
+            {/* BARRA DE FILTROS POR TIPO E BUSCA */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+                {(['TODOS', 'STATIC', 'DYNAMIC', 'BEHAVIORAL', 'PROVIDER'] as const).map((tipo) => (
+                  <button
+                    key={tipo}
+                    onClick={() => setFiltroTipoAudience(tipo)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      filtroTipoAudience === tipo
+                        ? 'bg-slate-700 text-white'
+                        : 'bg-slate-800/40 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {tipo === 'TODOS'
+                      ? 'Todos os Públicos'
+                      : tipo === 'STATIC'
+                      ? 'Estáticos'
+                      : tipo === 'DYNAMIC'
+                      ? 'Dinâmicos (AND/OR)'
+                      : tipo === 'BEHAVIORAL'
+                      ? 'Comportamentais'
+                      : 'Provedores Ads'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full md:w-72">
+                <Search size={14} className="absolute left-3 top-3 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Buscar audiência por nome ou origem..."
+                  value={buscaAudience}
+                  onChange={(e) => setBuscaAudience(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
+                />
+              </div>
+            </div>
+
+            {/* GRID DE CARDS OPERACIONAIS DE PÚBLICOS */}
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
+              {audiencesFiltradas.length === 0 ? (
+                <div className="col-span-full py-12 text-center text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                  Nenhum público encontrado para os filtros selecionados.
                 </div>
-              ))}
+              ) : (
+                audiencesFiltradas.map((pub) => (
+                  <div
+                    key={pub.id}
+                    className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 space-y-3.5 flex flex-col justify-between hover:border-slate-700 transition"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-white hover:text-orange-400 transition">
+                              {pub.nome}
+                            </span>
+                            <span
+                              className={`rounded px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase ${
+                                pub.tipo === 'BEHAVIORAL'
+                                  ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                                  : pub.tipo === 'DYNAMIC'
+                                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                                  : pub.tipo === 'STATIC'
+                                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              }`}
+                            >
+                              {pub.tipo}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">
+                            {pub.descricao || 'Sem descrição cadastrada'}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0 ${
+                            pub.status === 'ATIVO'
+                              ? 'bg-emerald-500/10 text-emerald-400'
+                              : pub.status === 'ARQUIVADO'
+                              ? 'bg-rose-500/10 text-rose-400'
+                              : 'bg-amber-500/10 text-amber-400'
+                          }`}
+                        >
+                          {pub.status}
+                        </span>
+                      </div>
+
+                      <div className="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/60 pt-2">
+                        <span>Origem: <b className="text-slate-200">{pub.origem}</b></span>
+                        <span className="font-mono text-emerald-400 font-bold">
+                          {fmtNum(pub.tamanhoCalculado || 0)} pessoas
+                        </span>
+                      </div>
+
+                      {/* PROVEDORES DE SINCRONIZAÇÃO */}
+                      <div className="space-y-1 pt-1">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                          Provedores Ads Sincronizados
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {pub.provedoresSync && pub.provedoresSync.length > 0 ? (
+                            pub.provedoresSync.map((prov) => (
+                              <span
+                                key={prov.provider}
+                                title={prov.capabilitySuportada ? `Sync: ${prov.status}` : 'Provedor sem suporte a público direto'}
+                                className={`rounded px-1.5 py-0.5 text-[10px] font-mono flex items-center gap-1 ${
+                                  !prov.capabilitySuportada
+                                    ? 'bg-slate-800 text-slate-500 line-through'
+                                    : prov.status === 'SINCRONIZADO'
+                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                    : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                }`}
+                              >
+                                {prov.provider} · {prov.capabilitySuportada ? prov.status : 'N/A'}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[10px] text-slate-500 italic">Nenhum provedor vinculado</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* BOTÕES DE AÇÃO OPERACIONAL */}
+                    <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-1.5 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setActiveAudienceForEdit(pub);
+                            setModalAudienceOpen(true);
+                          }}
+                          className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition text-[11px]"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDuplicateAudience(pub)}
+                          className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition text-[11px]"
+                        >
+                          Duplicar
+                        </button>
+                        <button
+                          onClick={() => handleRecalculateAudience(pub)}
+                          className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition text-[11px]"
+                          title="Recalcular tamanho atualizado com base nos critérios"
+                        >
+                          Recalcular
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleSyncAudience(pub)}
+                          className="px-2.5 py-1 rounded bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 font-bold transition text-[11px]"
+                        >
+                          Sincronizar
+                        </button>
+                        <button
+                          onClick={() =>
+                            triggerAction('CREATE_CAMPAIGN', {
+                              produtorId,
+                              eventoId: activeEventoId,
+                              audienceId: pub.id,
+                              audienceName: pub.nome,
+                              provider: 'META',
+                            })
+                          }
+                          className="px-2.5 py-1 rounded bg-sky-600/20 hover:bg-sky-600/30 text-sky-400 font-bold transition text-[11px]"
+                        >
+                          Usar em Ads
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -677,119 +1289,162 @@ export default function RemarketingWorkspace({
       {/* 3. ABA SEGMENTOS */}
       {tab === 'segmentos' && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Target size={18} className="text-orange-400" /> Segmentos de Remarketing
+                  <Target size={18} className="text-orange-400" /> Segmentação Avançada (Regras AND / OR)
                 </h2>
-                <p className="text-xs text-slate-400">Agrupamentos dinâmicos por propensão de compra, ticket médio e comportamento</p>
+                <p className="text-xs text-slate-400">
+                  Agrupamentos dinâmicos por comportamento, valor de carrinho, frequência e histórico com preview instantâneo
+                </p>
               </div>
               <button
-                onClick={() =>
-                  triggerAction('CREATE_AUDIENCE', {
-                    produtorId,
-                    eventoId: activeEventoId,
-                    segmentName: 'Novo Segmento Dinâmico',
-                    provider: 'GOOGLE',
-                  })
-                }
-                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
+                onClick={() => {
+                  setActiveAudienceForEdit(null);
+                  setModalAudienceOpen(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition shadow-lg shadow-orange-600/20"
               >
-                <Plus size={14} /> Novo Segmento
+                <Plus size={14} /> Novo Segmento Dinâmico
               </button>
             </div>
 
+            {/* KPIS DE SEGMENTAÇÃO */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
               <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-                <div className="text-[11px] text-slate-400 uppercase">Segmentos Ativos</div>
-                <div className="text-2xl font-bold text-white">4</div>
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Segmentos Cadastrados</div>
+                <div className="text-2xl font-bold text-white">
+                  {audiences.filter((a) => a.tipo === 'DYNAMIC' || a.tipo === 'BEHAVIORAL').length}
+                </div>
                 <div className="text-[11px] text-emerald-400">Atualização em tempo real</div>
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-                <div className="text-[11px] text-slate-400 uppercase">Total de Leads Qualificados</div>
-                <div className="text-2xl font-bold text-white">12.840</div>
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Total de Leads Qualificados</div>
+                <div className="text-2xl font-bold text-white">
+                  {fmtNum(
+                    audiences
+                      .filter((a) => a.tipo === 'DYNAMIC' || a.tipo === 'BEHAVIORAL')
+                      .reduce((acc, curr) => acc + (curr.tamanhoCalculado || 0), 0)
+                  )}
+                </div>
                 <div className="text-[11px] text-sky-400">Sem duplicatas de CPF</div>
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-                <div className="text-[11px] text-slate-400 uppercase">Ticket Médio Projetado</div>
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Ticket Médio Projetado</div>
                 <div className="text-2xl font-bold text-white">R$ 412,00</div>
                 <div className="text-[11px] text-emerald-400">+28% vs média geral</div>
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-                <div className="text-[11px] text-slate-400 uppercase">Taxa Média de Ativação</div>
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Taxa Média de Ativação</div>
                 <div className="text-2xl font-bold text-emerald-400">31.8%</div>
                 <div className="text-[11px] text-slate-400">Conversão pós-resgate</div>
               </div>
             </div>
 
-            <div className="space-y-3 pt-2">
-              {[
-                {
-                  nome: 'Compradores VIP & Camarotes (Últimos 12 meses)',
-                  criterio: 'Ticket > R$ 400 em eventos de grande porte',
-                  alcance: 1420,
-                  ticketMedio: 58000,
-                  canais: 'WhatsApp VIP + Meta Ads CAPI',
-                  status: 'ATIVO',
-                },
-                {
-                  nome: 'Abandonadores Recorrentes de Checkout',
-                  criterio: 'Iniciou compra 2+ vezes sem pagar nos últimos 30 dias',
-                  alcance: 3820,
-                  ticketMedio: 22000,
-                  canais: 'Cupom 5% + WhatsApp 1-Clique',
-                  status: 'ATIVO',
-                },
-                {
-                  nome: 'Fãs do Gênero / Edições Passadas',
-                  criterio: 'Compraram ingressos para artistas similares na DiskIngressos',
-                  alcance: 5200,
-                  ticketMedio: 34000,
-                  canais: 'E-mail Marketing Pré-venda + Push',
-                  status: 'ATIVO',
-                },
-                {
-                  nome: 'Carrinho Alto Valor (> R$ 500)',
-                  criterio: 'Carrinho com múltiplos ingressos aguardando pagamento',
-                  alcance: 2400,
-                  ticketMedio: 74000,
-                  canais: 'Atendimento Comercial DiskIngressos',
-                  status: 'ATIVO',
-                },
-              ].map((seg) => (
-                <div key={seg.nome} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <Target size={14} className="text-orange-400" /> {seg.nome}
-                      <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
-                        {seg.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400">Regra: {seg.criterio}</p>
-                    <div className="text-[11px] text-slate-500">Canais vinculados: {seg.canais}</div>
-                  </div>
-                  <div className="flex items-center gap-6 shrink-0">
-                    <div className="text-right">
-                      <div className="text-xs font-mono font-bold text-white">{fmtNum(seg.alcance)} leads</div>
-                      <div className="text-[10px] text-slate-400">Ticket médio: {brl(seg.ticketMedio)}</div>
-                    </div>
-                    <button
-                      onClick={() =>
-                        triggerAction('EXPORT', {
-                          produtorId,
-                          eventoId: activeEventoId,
-                          format: 'CSV',
-                          segment: seg.nome,
-                        })
-                      }
-                      className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500"
+            {/* LISTAGEM DE SEGMENTOS COM REGRAS AND/OR */}
+            <div className="space-y-3.5 pt-2">
+              {audiences
+                .filter((a) => a.tipo === 'DYNAMIC' || a.tipo === 'BEHAVIORAL' || (a.segmentacao?.grupos?.length ?? 0) > 0)
+                .map((seg) => {
+                  const rootOp = seg.segmentacao?.conjuncaoPrincipal || 'AND';
+                  const allRules = seg.segmentacao?.grupos?.flatMap((g) => g.regras) || [];
+                  return (
+                    <div
+                      key={seg.id}
+                      className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:border-slate-700 transition"
                     >
-                      Exportar Base
-                    </button>
-                  </div>
-                </div>
-              ))}
+                      <div className="space-y-2 max-w-2xl">
+                        <div className="text-xs font-bold text-white flex flex-wrap items-center gap-2">
+                          <Target size={14} className="text-orange-400" />
+                          <span className="text-sm">{seg.nome}</span>
+                          <span className="rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-0.5 text-[10px] font-mono font-bold">
+                            Operador Raiz: {rootOp}
+                          </span>
+                          <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                            {seg.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400">{seg.descricao || 'Regras avançadas de segmentação configuradas.'}</p>
+                        
+                        {/* REGRAS RESUMIDAS */}
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {allRules.length > 0 ? (
+                            allRules.map((r, idx) => (
+                              <span
+                                key={r.id || idx}
+                                className="rounded bg-slate-800/90 border border-slate-700/60 px-2 py-0.5 text-[10px] font-mono text-slate-300"
+                              >
+                                {r.dimensao} <b>{r.operador}</b> {String(r.valor || 'ativo')}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="rounded bg-slate-800/90 border border-slate-700/60 px-2 py-0.5 text-[10px] font-mono text-slate-300">
+                              Regra padrão: {seg.origem} (Critério Comportamental)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-800/80">
+                        <div className="text-left lg:text-right">
+                          <div className="text-xs font-mono font-bold text-emerald-400">
+                            {fmtNum(seg.tamanhoCalculado || 0)} leads
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            Status cálculo: <b className="text-slate-200">{seg.statusCalculo || 'CALCULADO'}</b>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => {
+                              setActiveAudienceForEdit(seg);
+                              setModalAudienceOpen(true);
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500 transition"
+                          >
+                            Editar Regras
+                          </button>
+                          <button
+                            onClick={() => handleRecalculateAudience(seg)}
+                            className="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500 transition"
+                            title="Recalcular contagem com base nas regras"
+                          >
+                            Recalcular
+                          </button>
+                          <button
+                            onClick={() =>
+                              triggerAction('EXPORT', {
+                                produtorId,
+                                eventoId: activeEventoId,
+                                format: 'CSV',
+                                segment: seg.nome,
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500 transition"
+                          >
+                            Exportar Base
+                          </button>
+                          <button
+                            onClick={() =>
+                              triggerAction('CREATE_CAMPAIGN', {
+                                produtorId,
+                                eventoId: activeEventoId,
+                                audienceId: seg.id,
+                                audienceName: seg.nome,
+                                provider: 'META',
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-bold text-white transition shadow"
+                          >
+                            Criar Campanha
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </div>
@@ -799,57 +1454,211 @@ export default function RemarketingWorkspace({
       {tab === 'jornadas' && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
               <div>
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Workflow size={18} className="text-orange-400" /> Régua Automatizada de Remarketing
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Fluxo sequencial de eventos, gatilhos, esperas e ações multicanais até a conversão.
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <Workflow size={18} className="text-orange-400" /> Jornadas Automatizadas & Motor de Régua
+                  </h2>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      jornadaSelecionada.status === 'ACTIVE'
+                        ? 'bg-emerald-500/10 text-emerald-400'
+                        : jornadaSelecionada.status === 'PAUSED'
+                        ? 'bg-amber-500/10 text-amber-400'
+                        : 'bg-slate-700 text-slate-300'
+                    }`}
+                  >
+                    {jornadaSelecionada.status === 'ACTIVE'
+                      ? 'EM OPERAÇÃO'
+                      : jornadaSelecionada.status === 'PAUSED'
+                      ? 'PAUSADA'
+                      : 'RASCUNHO'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Automações sequenciais com nós de Trigger, Condição, Espera, Ações Multicanais, Ramificações e Conversão
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* AÇÕES DA JORNADA */}
+              <div className="flex flex-wrap items-center gap-2">
                 <button
-                  onClick={() => setJornadaAtiva(!jornadaAtiva)}
+                  onClick={() => {
+                    setActiveJourneyForEdit(null);
+                    setModalJourneyOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition shadow-lg shadow-orange-600/20"
+                >
+                  <Plus size={14} /> Nova Jornada
+                </button>
+                <button
+                  onClick={() => handleTogglePauseJourney(jornadaSelecionada)}
                   className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
-                    jornadaAtiva
-                      ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                    jornadaSelecionada.status === 'ACTIVE'
+                      ? 'bg-amber-600/20 text-amber-400 border border-amber-500/30 hover:bg-amber-600/30'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-500'
                   }`}
                 >
-                  {jornadaAtiva ? <Pause size={14} /> : <Play size={14} />}
-                  {jornadaAtiva ? 'Jornada Ativa' : 'Jornada Pausada'}
+                  {jornadaSelecionada.status === 'ACTIVE' ? <Pause size={14} /> : <Play size={14} />}
+                  {jornadaSelecionada.status === 'ACTIVE' ? 'Pausar Régua' : 'Ativar Régua'}
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveJourneyForEdit(jornadaSelecionada);
+                    setModalJourneyOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-slate-500 transition"
+                >
+                  <SlidersHorizontal size={14} /> Construtor Visual & Nós
+                </button>
+                <button
+                  onClick={() => handleOpenJourneyLogs(jornadaSelecionada.id)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-slate-500 transition"
+                >
+                  <FileText size={14} /> Trilha de Auditoria (Logs)
                 </button>
               </div>
             </div>
 
-            {/* FLUXO VISUAL DOS PASSOS DA JORNADA */}
-            <div className="relative pl-6 space-y-4 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-800">
-              {jornadaSteps.map((step, idx) => (
-                <div key={step.id} className="relative group">
-                  <div className="absolute -left-[27px] top-4 h-4 w-4 rounded-full border-2 border-slate-900 bg-orange-500 flex items-center justify-center">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                  </div>
+            {/* SELETOR DE JORNADAS CADASTRADAS */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-800/80">
+              <span className="text-xs text-slate-400 font-semibold mr-1">Régua Selecionada:</span>
+              {journeys.map((jrn) => (
+                <button
+                  key={jrn.id}
+                  onClick={() => setActiveJourneyId(jrn.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 ${
+                    activeJourneyId === jrn.id
+                      ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40 font-bold'
+                      : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      jrn.status === 'ACTIVE' ? 'bg-emerald-400' : 'bg-amber-400'
+                    }`}
+                  />
+                  {jrn.name}
+                </button>
+              ))}
+            </div>
 
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 space-y-1.5 hover:border-slate-700 transition">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 text-[10px] font-bold text-orange-400 font-mono">
-                          PASSO {idx + 1} · {step.kind}
-                        </span>
-                        <h3 className="text-xs font-bold text-white">{step.titulo}</h3>
+            {/* FUNIL RESUMO DA JORNADA ATIVA */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-1">
+                <div className="text-[10px] text-slate-400 uppercase font-semibold">Total de Nós</div>
+                <div className="text-xl font-bold text-white font-mono">{jornadaSelecionada.nodes.length}</div>
+                <div className="text-[10px] text-sky-400">Grafo validado sem ciclos</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-1">
+                <div className="text-[10px] text-slate-400 uppercase font-semibold">Leads Entraram</div>
+                <div className="text-xl font-bold text-white font-mono">1.840</div>
+                <div className="text-[10px] text-slate-400">Últimos 7 dias</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-1">
+                <div className="text-[10px] text-slate-400 uppercase font-semibold">Em Espera / Análise</div>
+                <div className="text-xl font-bold text-amber-400 font-mono">342</div>
+                <div className="text-[10px] text-slate-400">Temporizadores ativos</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-1">
+                <div className="text-[10px] text-slate-400 uppercase font-semibold">Mensagens Disparadas</div>
+                <div className="text-xl font-bold text-sky-400 font-mono">1.498</div>
+                <div className="text-[10px] text-slate-400">WhatsApp & E-mail</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-1">
+                <div className="text-[10px] text-slate-400 uppercase font-semibold">Conversões Resgatadas</div>
+                <div className="text-xl font-bold text-emerald-400 font-mono">612 (33.2%)</div>
+                <div className="text-[10px] text-emerald-400">Auto-exit pós-compra</div>
+              </div>
+            </div>
+
+            {/* FLUXO VISUAL DOS PASSOS DA JORNADA SELECIONADA */}
+            <div className="space-y-3 pt-2">
+              <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                <span>Sequência de Execução dos Nós:</span>
+                <span className="text-[11px] text-slate-500 font-normal">
+                  Pessoas no nó atualizadas em tempo real
+                </span>
+              </div>
+
+              <div className="relative pl-6 space-y-4 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-800">
+                {jornadaSelecionada.nodes.map((node, idx) => (
+                  <div key={node.id} className="relative group">
+                    <div
+                      className={`absolute -left-[27px] top-4 h-4 w-4 rounded-full border-2 border-slate-900 flex items-center justify-center ${
+                        node.type === 'TRIGGER'
+                          ? 'bg-sky-500'
+                          : node.type === 'ACTION'
+                          ? 'bg-orange-500'
+                          : node.type === 'WAIT'
+                          ? 'bg-amber-500'
+                          : node.type === 'CONVERSION'
+                          ? 'bg-emerald-500'
+                          : 'bg-purple-500'
+                      }`}
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                    </div>
+
+                    <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 space-y-2 hover:border-slate-700 transition">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`rounded border px-2 py-0.5 text-[10px] font-bold font-mono ${
+                              node.type === 'TRIGGER'
+                                ? 'bg-sky-500/10 text-sky-400 border-sky-500/20'
+                                : node.type === 'ACTION'
+                                ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                                : node.type === 'WAIT'
+                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                : node.type === 'CONVERSION'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                            }`}
+                          >
+                            PASSO {idx + 1} · {node.type}
+                          </span>
+                          <h3 className="text-xs font-bold text-white">{node.config.titulo}</h3>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setActiveJourneyForEdit(jornadaSelecionada);
+                              setModalJourneyOpen(true);
+                            }}
+                            className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium"
+                          >
+                            Configurar Nó
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[11px] font-mono font-semibold text-emerald-400">
-                          {fmtNum(step.pessoasNoNo)} no nó agora
-                        </span>
+
+                      <div className="text-xs text-slate-400 flex flex-wrap gap-4 pt-1 border-t border-slate-800/60">
+                        {node.config.gatilhoTipo && (
+                          <span>Gatilho: <b className="text-slate-200">{node.config.gatilhoTipo}</b></span>
+                        )}
+                        {(node.config.esperaTexto || node.config.esperaTempoMinutos) && (
+                          <span>Tempo de espera: <b className="text-amber-400">{node.config.esperaTexto || `${node.config.esperaTempoMinutos} min`}</b></span>
+                        )}
+                        {node.config.acaoCanal && (
+                          <span>Canal: <b className="text-orange-400">{node.config.acaoCanal}</b></span>
+                        )}
+                        {node.config.acaoTemplateNome && (
+                          <span>Template: <b className="text-slate-200">{node.config.acaoTemplateNome}</b></span>
+                        )}
+                        {node.config.condicaoTipo && (
+                          <span>Condição: <b className="text-sky-400">{node.config.condicaoTipo}</b></span>
+                        )}
+                        {node.config.metaConversao && (
+                          <span>Meta: <b className="text-emerald-400">{node.config.metaConversao}</b></span>
+                        )}
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400">{step.detalhes}</p>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1582,66 +2391,162 @@ export default function RemarketingWorkspace({
       {/* 12. ABA AUTOMAÇÕES DE REMARKETING */}
       {tab === 'automacoes' && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-4">
+          <div className="rounded-2xl border border-slate-800 bg-[#121620] p-6 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Workflow size={18} className="text-sky-400" /> Automações & Webhooks de Resgate
+                  <Workflow size={18} className="text-sky-400" /> Central de Automações & Regras Operacionais
                 </h2>
-                <p className="text-xs text-slate-400">Integrações de eventos em tempo real, webhooks e filas de processamento</p>
+                <p className="text-xs text-slate-400">
+                  Regras de disparo automático com frequency cap, controle rigoroso de opt-in LGPD e idempotência
+                </p>
               </div>
-              <button
-                onClick={() =>
-                  triggerAction('TEST_EVENT', {
-                    produtorId,
-                    eventoId: activeEventoId,
-                    eventName: 'cart_abandoned_ping',
-                    provider: 'META',
-                  })
-                }
-                className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition"
-              >
-                <RefreshCcw size={14} /> Testar Webhook
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setActiveAutomationForEdit(null);
+                    setModalAutomationOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-500 transition shadow-lg shadow-orange-600/20"
+                >
+                  <Plus size={14} /> Nova Regra de Automação
+                </button>
+                <button
+                  onClick={() =>
+                    triggerAction('TEST_EVENT', {
+                      produtorId,
+                      eventoId: activeEventoId,
+                      eventName: 'cart_abandoned_ping',
+                      provider: 'META',
+                    })
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-slate-500 transition"
+                >
+                  <RefreshCcw size={14} /> Testar Webhook
+                </button>
+              </div>
             </div>
 
+            {/* KPIS DE AUTOMAÇÕES */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Regras Configuradas</div>
+                <div className="text-2xl font-bold text-white font-mono">{automations.length}</div>
+                <div className="text-[11px] text-emerald-400">
+                  {automations.filter((a) => a.status === 'ATIVA').length} ativas em produção
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Total de Execuções</div>
+                <div className="text-2xl font-bold text-white font-mono">
+                  {fmtNum(automations.reduce((acc, curr) => acc + (curr.execucoes || 0), 0))}
+                </div>
+                <div className="text-[11px] text-sky-400">Filas idempotentes Redis/RabbitMQ</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Resgates Concluídos</div>
+                <div className="text-2xl font-bold text-emerald-400 font-mono">
+                  {fmtNum(automations.reduce((acc, curr) => acc + (curr.conversoes || 0), 0))}
+                </div>
+                <div className="text-[11px] text-emerald-400">Auto-exit pós confirmação</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Conformidade LGPD</div>
+                <div className="text-2xl font-bold text-white font-mono">100%</div>
+                <div className="text-[11px] text-sky-400">Opt-in validado antes do envio</div>
+              </div>
+            </div>
+
+            {/* LISTAGEM OPERACIONAL DE AUTOMAÇÕES */}
             <div className="space-y-3 pt-2">
-              {[
-                {
-                  nome: 'Webhook de Abandono de Carrinho (Storefront BFF)',
-                  latencia: '42ms',
-                  sucesso: '100%',
-                  processados: 382,
-                  status: 'OPERACIONAL',
-                },
-                {
-                  nome: 'Gatilho de Expiração de PIX (Módulo Pagamentos)',
-                  latencia: '18ms',
-                  sucesso: '99.8%',
-                  processados: 124,
-                  status: 'OPERACIONAL',
-                },
-                {
-                  nome: 'Sincronização Server-Side CAPI Meta/Google (RabbitMQ)',
-                  latencia: '65ms',
-                  sucesso: '100%',
-                  processados: 4820,
-                  status: 'OPERACIONAL',
-                },
-              ].map((aut) => (
-                <div key={aut.nome} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400" /> {aut.nome}
-                      <span className="rounded-full bg-emerald-500/10 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+              {automations.map((aut) => (
+                <div
+                  key={aut.id}
+                  className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:border-slate-700 transition"
+                >
+                  <div className="space-y-2 max-w-2xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-bold text-white">{aut.nome}</span>
+                      <span className="rounded px-2 py-0.5 text-[10px] font-mono font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                        {aut.canais?.join(' + ') || 'WHATSAPP'}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          aut.status === 'ATIVA'
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : 'bg-amber-500/10 text-amber-400'
+                        }`}
+                      >
                         {aut.status}
                       </span>
                     </div>
-                    <div className="text-xs text-slate-400">Latência média: <b className="text-slate-200">{aut.latencia}</b> • Taxa de Sucesso: <b className="text-emerald-400">{aut.sucesso}</b></div>
+
+                    <p className="text-xs text-slate-400">Público: <b className="text-slate-300">{aut.publicoAlvo}</b></p>
+
+                    <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-400 pt-1">
+                      <span>Gatilho: <b className="text-slate-200">{aut.gatilho}</b></span>
+                      <span>Frequency Cap: <b className="text-orange-400">{aut.frequencyCapTexto}</b></span>
+                      <span>
+                        LGPD Opt-in: <b className={aut.consentimentoExigido ? 'text-emerald-400' : 'text-slate-400'}>
+                          {aut.consentimentoExigido ? 'Obrigatório' : 'Padrão'}
+                        </b>
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right font-mono shrink-0">
-                    <div className="text-xs font-bold text-white">{fmtNum(aut.processados)} eventos</div>
-                    <div className="text-[10px] text-slate-500">Últimas 24h</div>
+
+                  <div className="flex flex-wrap items-center gap-4 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-800/80">
+                    <div className="text-left lg:text-right font-mono">
+                      <div className="text-xs font-bold text-white">
+                        {fmtNum(aut.execucoes || 0)} envios
+                      </div>
+                      <div className="text-[10px] text-emerald-400">
+                        {fmtNum(aut.conversoes || 0)} conversões
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setActiveAutomationForEdit(aut);
+                          setModalAutomationOpen(true);
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500 transition"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleToggleAutomation(aut)}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                          aut.status === 'ATIVA'
+                            ? 'border border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
+                            : 'border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
+                        }`}
+                      >
+                        {aut.status === 'ATIVA' ? 'Pausar' : 'Retomar'}
+                      </button>
+                      <button
+                        onClick={() =>
+                          triggerAction('TEST_EVENT', {
+                            produtorId,
+                            eventoId: activeEventoId,
+                            ruleId: aut.id,
+                            ruleName: aut.nome,
+                            provider: aut.canais?.[0] === 'WHATSAPP' ? 'WHATSAPP' : 'EMAIL',
+                          })
+                        }
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500 transition"
+                        title="Simular disparo de teste"
+                      >
+                        Testar
+                      </button>
+                      <button
+                        onClick={() => handleOpenJourneyLogs('jrn-01')}
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-200 hover:border-slate-500 transition"
+                        title="Ver histórico de execuções"
+                      >
+                        Logs
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1833,6 +2738,51 @@ export default function RemarketingWorkspace({
           </div>
         </div>
       )}
+
+      {/* Modais Operacionais EDDIE 11.16.16: Públicos, Jornadas, Logs e Automações */}
+      <AudienceManagementModal
+        isOpen={modalAudienceOpen}
+        onClose={() => {
+          setModalAudienceOpen(false);
+          setActiveAudienceForEdit(null);
+        }}
+        onSave={handleSaveAudience}
+        initialData={activeAudienceForEdit}
+        eventos={eventos}
+        currentEventoId={activeEventoId}
+      />
+
+      <JourneyBuilderModal
+        isOpen={modalJourneyOpen}
+        onClose={() => {
+          setModalJourneyOpen(false);
+          setActiveJourneyForEdit(null);
+        }}
+        onSave={handleSaveJourney}
+        initialData={activeJourneyForEdit}
+        eventos={eventos}
+        currentEventoId={activeEventoId}
+        onOpenLogs={handleOpenJourneyLogs}
+      />
+
+      <JourneyLogsModal
+        isOpen={modalLogsOpen}
+        onClose={() => setModalLogsOpen(false)}
+        journeyNome={activeJourneyLogsNome}
+        logs={logs}
+      />
+
+      <AutomationManagementModal
+        isOpen={modalAutomationOpen}
+        onClose={() => {
+          setModalAutomationOpen(false);
+          setActiveAutomationForEdit(null);
+        }}
+        onSave={handleSaveAutomation}
+        initialData={activeAutomationForEdit}
+        eventos={eventos}
+        currentEventoId={activeEventoId}
+      />
 
       {/* Modal Operacional Padronizado */}
       <MarketingActionModal
