@@ -671,7 +671,7 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
         { step: 'page_view', qtd: 42850, pct: '100%' },
         { step: 'view_item', qtd: 24200, pct: '56.4%' },
         { step: 'add_to_cart', qtd: 8400, pct: '19.6%' },
-        { step: 'begin_checkout', qtd: 4100, pct: '9.5%' },
+        { step: 'begin_checkout', qtd: 4100, pct: '9.6%' },
         { step: 'purchase', qtd: 1840, pct: '4.2%' },
       ]);
     }
@@ -914,7 +914,7 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     return NextResponse.json([
       {
         id: '00000000-0000-0000-0000-000000000002',
-        razaoSocial: 'Live Nation Entretenimento Brasil Ltda',
+        razaoSocial: 'Live Nation Brasil Produtora Ltda',
         nomeFantasia: 'Live Nation Brasil',
         cnpj: '12.345.678/0001-90',
         responsavelNome: 'Carlos Menezes',

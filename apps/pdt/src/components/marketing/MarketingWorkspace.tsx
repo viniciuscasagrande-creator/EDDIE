@@ -4961,7 +4961,7 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                     { step: '1. page_view', qtd: '42.850', pct: '100%' },
                     { step: '2. view_item', qtd: '24.200', pct: '56.4%' },
                     { step: '3. add_to_cart', qtd: '8.400', pct: '19.6%' },
-                    { step: '4. begin_checkout', qtd: '4.100', pct: '9.5%' },
+                    { step: '4. begin_checkout', qtd: '4.100', pct: '9.6%' },
                     { step: '5. purchase', qtd: '1.840', pct: '4.2%' },
                   ].map((f, i) => (
                     <div key={i} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 text-center">
