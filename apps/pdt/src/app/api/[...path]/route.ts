@@ -2708,6 +2708,323 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     ]);
   }
 
+  // ==========================================================================
+  //  EDDIE 11.22 — REVENUE ASSURANCE & FINANCIAL INTEGRITY OS
+  // ==========================================================================
+  if (fullPath.includes('revenue-assurance/summary') || fullPath.includes('revenue-assurance/health')) {
+    return NextResponse.json({
+      totalTransacoesAnalisadas: 14250,
+      transacoesIntegras: 14248,
+      transacoesDivergentes: 2,
+      casosAbertos: 2,
+      casosResolvidos: 48,
+      volumeAnalisadoCents: 48250000,
+      volumeDivergenteCents: 23000,
+      taxaIntegridadeGeral: 99.98,
+      coberturaGeral: 100.0,
+      isPartialAudit: false,
+      avisoAuditoria: null,
+      sourceHealth: {
+        ingressos: 'OK',
+        pedidos: 'OK',
+        pagamentos: 'OK',
+        gateways: 'OK',
+        taxas: 'OK',
+        ledger: 'OK',
+        repasses: 'OK',
+        bancos: 'OK',
+        contabilidade: 'OK',
+      },
+      divergenciasPorTipo: {
+        PEDIDO_SEM_LEDGER: 1,
+        BANCO_DIVERGENTE: 1,
+      },
+      lastScanAt: new Date().toISOString(),
+    });
+  }
+
+  if (fullPath.includes('revenue-assurance/integrity')) {
+    return NextResponse.json([
+      {
+        correlationId: 'corr-live-849102',
+        orderId: 'ped-849102',
+        paymentId: 'pay-849102',
+        ticketId: 'tkt-849102',
+        gatewayNsu: 'nsu-stone-99120',
+        feeSnapshot: '10.0% (v1)',
+        ledgerEntryId: 'led-849102-pdt',
+        settlementId: 'stl-849102',
+        bankReturnCode: 'RET-PIX-849102',
+        accountingJournalId: 'lan-849102-contab',
+        status: 'INTEGRO',
+        divergenceType: null,
+        divergenceAmountCents: 0,
+        evidenceHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        correlationId: 'corr-live-849098',
+        orderId: 'ped-849098',
+        paymentId: 'pay-849098',
+        ticketId: 'tkt-849098',
+        gatewayNsu: 'nsu-stone-99121',
+        feeSnapshot: '10.0% (v1)',
+        ledgerEntryId: 'led-849098-pdt',
+        settlementId: 'stl-849098',
+        bankReturnCode: 'RET-TED-849098',
+        accountingJournalId: 'lan-849098-contab',
+        status: 'INTEGRO',
+        divergenceType: null,
+        divergenceAmountCents: 0,
+        evidenceHash: 'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        correlationId: 'corr-live-849050',
+        orderId: 'ped-849050',
+        paymentId: 'pay-849050',
+        ticketId: 'tkt-849050',
+        gatewayNsu: 'nsu-stone-99125',
+        feeSnapshot: '10.0% (v1)',
+        ledgerEntryId: null,
+        settlementId: null,
+        bankReturnCode: null,
+        accountingJournalId: null,
+        status: 'DIVERGENTE',
+        divergenceType: 'PEDIDO_SEM_LEDGER',
+        divergenceAmountCents: 15000,
+        evidenceHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        correlationId: 'corr-live-849040',
+        orderId: 'ped-849040',
+        paymentId: 'pay-849040',
+        ticketId: 'tkt-849040',
+        gatewayNsu: 'nsu-stone-99130',
+        feeSnapshot: '10.0% (v1)',
+        ledgerEntryId: 'led-849040-pdt',
+        settlementId: 'stl-849040',
+        bankReturnCode: 'RET-REJEITADO-040',
+        accountingJournalId: 'lan-849040-contab',
+        status: 'DIVERGENTE',
+        divergenceType: 'BANCO_DIVERGENTE',
+        divergenceAmountCents: 8000,
+        evidenceHash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a',
+        updatedAt: new Date().toISOString(),
+      },
+    ]);
+  }
+
+  if (fullPath.includes('revenue-assurance/chains/')) {
+    const correlationId = pathParts[pathParts.length - 1];
+    return NextResponse.json({
+      correlationId,
+      orderId: 'ped-849102',
+      ticketId: 'tkt-849102',
+      paymentId: 'pay-849102',
+      gatewayNsu: 'nsu-stone-99120',
+      eventoId: 'evento-operacao',
+      produtorId: '00000000-0000-0000-0000-000000000002',
+      grossAmountCents: 35000,
+      feeAmountCents: 3500,
+      expectedFeeAmountCents: 3500,
+      feeVersionApplied: 1,
+      feeModelApplied: 'PERCENTUAL',
+      ledgerEntryId: 'led-849102-pdt',
+      ledgerDuplicateCount: 1,
+      settlementId: 'stl-849102',
+      payoutAmountCents: 31500,
+      bankReturnCode: 'RET-PIX-849102',
+      bankReturnAmountCents: 31500,
+      accountingJournalId: 'lan-849102-contab',
+      status: 'INTEGRO',
+      divergenceType: null,
+      divergenceAmountCents: 0,
+      evidenceHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      sourcesVerified: {
+        ingressos: true,
+        pedidos: true,
+        pagamentos: true,
+        gateways: true,
+        taxas: true,
+        ledger: true,
+        repasses: true,
+        bancos: true,
+        contabilidade: true,
+      },
+      verifiedAt: new Date().toISOString(),
+    });
+  }
+
+  if (fullPath.includes('revenue-assurance/cases')) {
+    return NextResponse.json([
+      {
+        id: 'case-ra-01',
+        correlationId: 'corr-live-849050',
+        divergenceType: 'PEDIDO_SEM_LEDGER',
+        severity: 'CRITICO',
+        status: 'ABERTO',
+        assignedTo: null,
+        domainResponsible: 'FINANCEIRO',
+        amountCents: 15000,
+        evidenceHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
+        evidenceDetails: { orderId: 'ped-849050', paymentId: 'pay-849050', grossAmountCents: 15000 },
+        eventoId: 'evento-operacao',
+        produtorId: '00000000-0000-0000-0000-000000000002',
+        createdAt: '2026-09-26T10:15:00Z',
+        updatedAt: '2026-09-26T10:15:00Z',
+        auditTrail: [
+          {
+            timestamp: '2026-09-26T10:15:00Z',
+            actorId: 'motor_assurance_v1',
+            action: 'CRIACAO',
+            details: 'Divergência detectada pelo monitor incremental.',
+          },
+        ],
+      },
+      {
+        id: 'case-ra-02',
+        correlationId: 'corr-live-849040',
+        divergenceType: 'BANCO_DIVERGENTE',
+        severity: 'ALTO',
+        status: 'EM_INVESTIGACAO',
+        assignedTo: 'analista-conciliacao-01',
+        domainResponsible: 'TESOURARIA',
+        amountCents: 8000,
+        evidenceHash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a',
+        evidenceDetails: { settlementId: 'stl-849040', bankReturnCode: 'RET-REJEITADO-040', expectedCents: 8000 },
+        eventoId: 'evento-operacao',
+        produtorId: '00000000-0000-0000-0000-000000000002',
+        createdAt: '2026-09-26T09:30:00Z',
+        updatedAt: '2026-09-26T11:00:00Z',
+        auditTrail: [
+          {
+            timestamp: '2026-09-26T09:30:00Z',
+            actorId: 'motor_assurance_v1',
+            action: 'CRIACAO',
+            details: 'Divergência de liquidação bancária detectada.',
+          },
+          {
+            timestamp: '2026-09-26T11:00:00Z',
+            actorId: 'auditor_chefe',
+            action: 'ATRIBUICAO',
+            details: 'Encaminhado para verificação de comprovante na Tesouraria.',
+          },
+        ],
+      },
+    ]);
+  }
+
+  if (fullPath.includes('revenue-assurance/rules')) {
+    return NextResponse.json([
+      {
+        id: 'rule-ra-01',
+        codigo: 'RA_PAYMENT_ORDER',
+        versao: 1,
+        nome: 'Pagamento deve possuir Pedido Correspondente',
+        descricao: 'Detecta pagamentos aprovados no gateway sem transação de pedido no banco de dados.',
+        severidade: 'CRITICO',
+        ativa: true,
+        toleranciaCentavos: 0,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+        criadoPor: 'sistema_assurance',
+      },
+      {
+        id: 'rule-ra-02',
+        codigo: 'RA_ORDER_LEDGER',
+        versao: 1,
+        nome: 'Pedido Pago deve possuir Entrada no Ledger',
+        descricao: 'Garante que toda venda confirmada produza o registro contábil de crédito no saldo.',
+        severidade: 'CRITICO',
+        ativa: true,
+        toleranciaCentavos: 0,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+        criadoPor: 'sistema_assurance',
+      },
+      {
+        id: 'rule-ra-03',
+        codigo: 'RA_LEDGER_DUPLICATE',
+        versao: 1,
+        nome: 'Detecção de Duplicidade no Ledger',
+        descricao: 'Identifica lançamentos duplicados com mesma origem e referência no mesmo bucket.',
+        severidade: 'CRITICO',
+        ativa: true,
+        toleranciaCentavos: 0,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+        criadoPor: 'sistema_assurance',
+      },
+      {
+        id: 'rule-ra-05',
+        codigo: 'RA_FEE_INTEGRITY',
+        versao: 1,
+        nome: 'Integridade de Taxa Disk por Evento',
+        descricao: 'Compara taxa cobrada contra o snapshot negociado para o evento (Percentual ou Fixa).',
+        severidade: 'ALTO',
+        ativa: true,
+        toleranciaCentavos: 2,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+        criadoPor: 'sistema_assurance',
+      },
+      {
+        id: 'rule-ra-12',
+        codigo: 'RA_BANK_RECONCILIATION',
+        versao: 1,
+        nome: 'Retorno Bancário deve Corresponder ao Payout',
+        descricao: 'Confronta o código e valor do extrato/retorno bancário com o lançamento do repasse.',
+        severidade: 'ALTO',
+        ativa: true,
+        toleranciaCentavos: 0,
+        vigenciaInicio: '2026-01-01T00:00:00.000Z',
+        criadoPor: 'sistema_assurance',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('revenue-assurance/scans')) {
+    return NextResponse.json([
+      {
+        id: 'scan-inc-01',
+        tipo: 'INCREMENTAL',
+        status: 'CONCLUIDO',
+        checkpointCursor: 'ckpt-14250',
+        itensProcessados: 14250,
+        divergenciasEncontradas: 2,
+        iniciadoEm: new Date(Date.now() - 3600000).toISOString(),
+        finalizadoEm: new Date(Date.now() - 3550000).toISOString(),
+        duracaoMs: 50000,
+        actorId: 'scheduler_assurance',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('revenue-assurance/intelligence')) {
+    return NextResponse.json([
+      {
+        id: 'leak-01',
+        categoria: 'PERDA_TAXA',
+        titulo: 'Alinhamento Perfeito de Taxas Disk por Evento',
+        descricao: '99.98% das transações aplicaram perfeitamente a taxa do snapshot contratado (10.0% v1).',
+        severidade: 'BAIXA',
+        impactoPotencialCents: 0,
+        probabilidade: 0.01,
+        recomendacao: 'Manter monitoramento de snapshots em alterações comerciais de lotes.',
+        requerIntervencaoHumana: false,
+      },
+      {
+        id: 'leak-02',
+        categoria: 'REPASSE_INCORRETO',
+        titulo: 'Rejeição de Retorno Bancário em 1 Repasse',
+        descricao: 'Detectado 1 payout com retorno de rejeição no extrato bancário (R$ 80,00). O valor não foi debitado indevidamente.',
+        severidade: 'MEDIA',
+        impactoPotencialCents: 8000,
+        probabilidade: 0.95,
+        recomendacao: 'Verificar chave PIX do favorecido na Tesouraria e realizar reenvio após confirmação cadastral.',
+        requerIntervencaoHumana: true,
+      },
+    ]);
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json({ ok: true, processado: true, id: `item-${Date.now()}` }, { status: 200 });
