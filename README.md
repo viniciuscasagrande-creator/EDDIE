@@ -67,6 +67,7 @@ Estorno      pagamento.estornado ──┬──► Contabilidade (reversão)
 | `marketing` | `marketing` | Campanhas, links UTM, conversões, tracking CAPI multi-pixel e jornadas |
 | `sac` | `sac` | Chamados ITIL, SLA, fila de atendimento e inteligência artificial |
 | `suporte` | `suporte` | Suporte operacional de campo e atendimento no evento |
+| `dashboard` | `platform` | Super Dashboard & Centro de Comando 360º Agregador Executivo (BFF) |
 
 ## Módulos em Planejamento / Próximos Passos
 

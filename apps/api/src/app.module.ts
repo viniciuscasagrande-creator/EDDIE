@@ -21,6 +21,7 @@ import { PortariaModule } from './modules/portaria/portaria.module';
 import { OperacaoModule } from './modules/operacao/operacao.module';
 import { RevenueAssuranceModule } from './modules/revenue-assurance/revenue-assurance.module';
 import { ProducerPortalModule } from './modules/producer-portal/producer-portal.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
@@ -49,6 +50,7 @@ import { ProducerPortalModule } from './modules/producer-portal/producer-portal.
     OperacaoModule,
     RevenueAssuranceModule,
     ProducerPortalModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}
