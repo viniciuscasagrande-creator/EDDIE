@@ -49,25 +49,32 @@ Estorno      pagamento.estornado ──┬──► Contabilidade (reversão)
                                    └──► SAC           (fecha chamado)
 ```
 
-## O que já está implementado
+## Módulos Implementados no Backend (`apps/api/src/modules/`)
 
-- Infra do modulith: Outbox, EventBus (RabbitMQ + DLQ), idempotência, audit log
-- Contratos de 21 eventos de domínio versionados em Zod
-- Módulo **Eventos** completo (catálogo, sessões, setores, lotes, publicar, cancelar)
-- Módulo **Estorno** (máquina de estados + política CDC + testes)
-- Telemetria OpenTelemetry -> Tempo/Prometheus/Grafana
+| Módulo | Schema Postgres | Descrição |
+|---|---|---|
+| `eventos` | `eventos` | Catálogo de eventos, sessões, setores, lotes, precificação e produtores |
+| `pedidos` | `pedidos` | Gestão de pedidos, emissão de ingressos e checkout |
+| `portaria` | `platform` / `pedidos` | Controle de acesso, catracas, validação de ingressos e check-in |
+| `comercial` | `crm` | CRM B2B de produtores, oportunidades, condições comerciais e metas |
+| `financeiro` | `financeiro` | EDDIE 11.19/11.20: Ledger imutável, conta gráfica, repasses, split, conciliação e Control Tower |
+| `contabilidade` | `contabilidade` | EDDIE 11.21: Plano de contas, lançamentos por partidas dobradas, balancete e DRE |
+| `revenue-assurance` | `platform` / `financeiro` | EDDIE 11.22: Garantia de receita, matriz de integridade ponta a ponta e detecção de anomalias |
+| `producer-portal` | `financeiro` / `platform` | EDDIE 11.23: Portal do Produtor, extratos, saldos, agenda de repasses e autoatendimento |
+| `operacao` | `platform` / `eventos` | EDDIE 11.18: Command Center operacional, monitor de alertas, incidentes e SLA |
+| `relatorios` | `financeiro` / `eventos` | Relatórios consolidados, DRE gerencial por evento e exportações analíticas |
+| `estorno` | `estorno` | Máquina de estados de reembolso, CDC e chargeback |
+| `marketing` | `marketing` | Campanhas, links UTM, conversões, tracking CAPI multi-pixel e jornadas |
+| `sac` | `sac` | Chamados ITIL, SLA, fila de atendimento e inteligência artificial |
+| `suporte` | `suporte` | Suporte operacional de campo e atendimento no evento |
 
-## Próximos módulos (nesta ordem)
+## Módulos em Planejamento / Próximos Passos
 
-1. `inventario` — reserva com TTL, carrinho, cupons
-2. `pagamentos` — Pix, cartão, split, antifraude
-3. `acesso` — QR assinado, check-in offline-first
-4. `financeiro` — AR/AP, conciliação, repasse
-5. `contabilidade` — plano de contas, NFS-e, SPED
-6. `crm`, `sac`, `marketing`, `remarketing`, `developer`
-
-Use `.gemini/prompts/novo-modulo.md` para gerar cada um.
+1. `EDDIE 11.24 — Fechamento do Evento & Producer Settlement Final`
+2. `inventario` — motor de reserva com TTL e locks distribuídos
+3. `pagamentos` — integração direta multi-adquirente e split nativo
 
 ## Regras que não se negociam
 
 Estão em `GEMINI.md`. Leia antes de escrever a primeira linha.
+

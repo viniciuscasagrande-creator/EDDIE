@@ -203,10 +203,8 @@ export class FinanceiroPublicService {
       offset?: number;
     },
   ) {
-    if (produtorId) {
-      return this.financeiroService.obterExtrato(tenantId, produtorId, query);
-    }
     const where: any = { tenantId };
+    if (produtorId) where.produtorId = produtorId;
     if (query?.eventoId) where.eventoId = query.eventoId;
     const [total, itens] = await Promise.all([
       this.prisma.lancamentoLedger.count({ where }),

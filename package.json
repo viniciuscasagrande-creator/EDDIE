@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "build": "pnpm --filter @ticketing/contracts build && pnpm --filter @ticketing/pdt build && node -e \"const fs=require('fs'); if(fs.existsSync('apps/pdt/.next')){fs.cpSync('apps/pdt/.next','.next',{recursive:true});}\"",
+    "build": "pnpm --filter @ticketing/contracts build && pnpm --filter @ticketing/api build && pnpm --filter @eddie/api-storefront build && pnpm --filter @ticketing/pdt build && node -e \"const fs=require('fs'); if(fs.existsSync('apps/pdt/.next')){fs.cpSync('apps/pdt/.next','.next',{recursive:true});}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "db:migrate": "pnpm --filter @ticketing/api exec prisma migrate dev",
@@ -16,6 +16,7 @@
     "infra:up": "docker compose -f .devcontainer/docker-compose.yml up -d",
     "infra:down": "docker compose -f .devcontainer/docker-compose.yml down",
     "preflight": "node scripts/preflight-go-live.mjs",
+    "check:architecture": "node scripts/check-modules-sync.mjs",
     "audit:data": "node scripts/audit-production-data.mjs",
     "audit:production": "node scripts/audit-production.mjs"
   },

@@ -37,7 +37,7 @@ export class CatalogController {
   ): Promise<MapaAssentosSetorDto> {
     // Retorna apenas disponibilidade booleana (DISPONIVEL / RESERVADO / OCUPADO)
     return {
-      setorId,
+      setorId: sectorId,
       sessaoId: sessionId,
       assentos: [],
     };

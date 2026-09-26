@@ -403,7 +403,7 @@ export class ProducerPortalService {
       offset: query?.offset ?? 0,
     });
 
-    const entries: ProducerStatementEntryDto[] = rawLedger.itens.map((item) => {
+    const entries: ProducerStatementEntryDto[] = rawLedger.itens.map((item: any) => {
       const isCredit = item.tipo.toUpperCase() === 'CREDITO';
       return {
         id: `stmt-${item.id}`,
@@ -425,7 +425,7 @@ export class ProducerPortalService {
         {
           id: 'stmt-base-01',
           data: new Date(Date.now() - 3600000).toISOString(),
-          eventoId,
+          eventoId: eventId,
           tipo: 'CREDITO',
           categoria: 'VENDA_INGRESSO',
           descricao: 'Venda de Ingressos Lote 1 — PDV e Online',
@@ -437,7 +437,7 @@ export class ProducerPortalService {
         {
           id: 'stmt-base-02',
           data: new Date(Date.now() - 1800000).toISOString(),
-          eventoId,
+          eventoId: eventId,
           tipo: 'DEBITO',
           categoria: 'TAXA_SERVICO',
           descricao: 'Retenção Taxa de Serviço DiskIngressos (10%)',

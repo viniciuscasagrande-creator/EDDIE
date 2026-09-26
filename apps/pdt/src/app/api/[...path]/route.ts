@@ -9,9 +9,59 @@ function backendBase() {
   return clean.endsWith("/api") ? clean : `${clean}/api`;
 }
 
-function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
+function isDemoOrMockAllowed(): boolean {
+  return (
+    process.env.DEMO_MODE === "true" ||
+    process.env.NEXT_PUBLIC_ALLOW_OFFLINE_MOCK === "true"
+  );
+}
+
+function handleAutonomousStore(req: NextRequest, pathParts: string[]): NextResponse {
   const fullPath = pathParts.join('/');
   const method = req.method;
+
+  // REJEIÇÃO CRÍTICA DE MUTAÇÕES SEM BACKEND:
+  // Nunca fingir sucesso ({ ok: true, processado: true }) em operações de escrita (POST, PUT, PATCH, DELETE).
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    console.error(`[PDT Proxy] Escrita rejeitada para ${method} /${fullPath}: Backend indisponível para persistência.`);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Service Unavailable',
+        message: 'Operação de escrita rejeitada: backend indisponível para persistência. Nenhuma alteração foi gravada.',
+        path: fullPath,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        status: 503,
+        headers: {
+          'x-data-source': 'offline-write-rejected',
+        },
+      }
+    );
+  }
+
+  // REJEIÇÃO DE LEITURAS FICTÍCIAS FORA DO MODO DEMONSTRAÇÃO EXPLÍCITO:
+  if (!isDemoOrMockAllowed()) {
+    console.warn(`[PDT Proxy] Leitura bloqueada para ${method} /${fullPath}: Backend inacessível e modo DEMO/MOCK desativado.`);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Service Unavailable',
+        message: 'Backend inacessível ou API_INTERNAL_URL não configurada. Defina DEMO_MODE=true para ativar o mock em demonstração.',
+        path: fullPath,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        status: 503,
+        headers: {
+          'x-data-source': 'unavailable',
+        },
+      }
+    );
+  }
+
+  console.warn(`[PDT Proxy] ATENÇÃO: Servindo dados simulados (DEMO_MODE=true) para ${method} /${fullPath}`);
 
   const defaultEventos = [
     {
@@ -3441,15 +3491,29 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
 
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    return NextResponse.json({ ok: true, processado: true, id: `item-${Date.now()}` }, { status: 200 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Service Unavailable',
+        message: 'Operação de escrita rejeitada: backend indisponível para persistência.',
+        path: fullPath,
+      },
+      {
+        status: 503,
+        headers: { 'x-data-source': 'offline-write-rejected' },
+      }
+    );
   }
 
-  return NextResponse.json({ ok: true, data: [] });
+  const defaultEmptyRes = NextResponse.json({ ok: true, data: [] });
+  defaultEmptyRes.headers.set('x-data-source', 'mock');
+  return defaultEmptyRes;
 }
 
-async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
+async function proxy(req: NextRequest, params: Promise<{ path: string[] }>): Promise<NextResponse> {
   const { path } = await params;
   const base = backendBase();
+  const isMutation = !['GET', 'HEAD'].includes(req.method);
 
   if (base && base.startsWith("http")) {
     const target = `${base}/${path.join("/")}${req.nextUrl.search}`;
@@ -3467,22 +3531,100 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
     const abortTimer = setTimeout(() => abortCtrl.abort(), 4000);
     try {
       const init: RequestInit = { method: req.method, headers, cache: "no-store", signal: abortCtrl.signal };
-      if (!["GET", "HEAD"].includes(req.method)) init.body = await req.arrayBuffer();
+      if (isMutation) init.body = await req.arrayBuffer();
       const upstream = await fetch(target, init);
       clearTimeout(abortTimer);
-      if (upstream.status < 500) {
-        const responseHeaders = new Headers(upstream.headers);
-        responseHeaders.delete("content-encoding");
-        responseHeaders.delete("content-length");
-        return new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
-      }
-    } catch {
+
+      const responseHeaders = new Headers(upstream.headers);
+      responseHeaders.delete("content-encoding");
+      responseHeaders.delete("content-length");
+
+      // FAIL-FAST: Qualquer status do backend (inclusive 4xx e 5xx) é repassado integralmente!
+      // NUNCA engolir erro 5xx para fingir sucesso ou mascarar pane de infraestrutura.
+      return new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
+    } catch (err: unknown) {
       clearTimeout(abortTimer);
+      const isAbort = err instanceof Error && err.name === 'AbortError';
+
+      console.error(`[PDT Proxy] Falha de comunicação com upstream (${target}): ${isAbort ? 'Timeout (4s) excedido' : String(err)}`);
+
+      // Mutações: NUNCA cair em fallback mock/falso
+      if (isMutation) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: isAbort ? 'Gateway Timeout' : 'Bad Gateway',
+            message: isAbort
+              ? 'Tempo limite de comunicação com o backend excedido (4s). Nenhuma gravação foi efetuada.'
+              : 'Não foi possível alcançar o servidor backend para persistência.',
+            path: path.join('/'),
+          },
+          {
+            status: isAbort ? 504 : 502,
+            headers: { 'x-data-source': 'upstream-failure' },
+          }
+        );
+      }
+
+      // Leituras: fallback em modo DEMO/MOCK autorizado
+      if (isDemoOrMockAllowed()) {
+        const mockResponse = handleAutonomousStore(req, path);
+        mockResponse.headers.set('x-data-source', 'mock');
+        mockResponse.headers.set('x-upstream-error', isAbort ? 'timeout' : 'unreachable');
+        return mockResponse;
+      }
+
+      return NextResponse.json(
+        {
+          ok: false,
+          error: isAbort ? 'Gateway Timeout' : 'Bad Gateway',
+          message: isAbort
+            ? 'Tempo limite de comunicação com o backend excedido (4s).'
+            : 'Servidor backend inacessível e DEMO_MODE desativado.',
+          path: path.join('/'),
+        },
+        {
+          status: isAbort ? 504 : 502,
+          headers: { 'x-data-source': 'upstream-failure' },
+        }
+      );
     }
   }
 
-  // Fallback autônomo e resiliente para ambiente sem backend dedicado (Edge / Vercel Preview)
-  return handleAutonomousStore(req, path);
+  // Base NÃO configurada (API_INTERNAL_URL ausente)
+  if (isMutation) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Service Unavailable',
+        message: 'Variável de ambiente do backend (API_INTERNAL_URL / BACKEND_URL) não configurada. Operação de escrita rejeitada.',
+        path: path.join('/'),
+      },
+      {
+        status: 503,
+        headers: { 'x-data-source': 'unconfigured-backend' },
+      }
+    );
+  }
+
+  if (isDemoOrMockAllowed()) {
+    const mockResponse = handleAutonomousStore(req, path);
+    mockResponse.headers.set('x-data-source', 'mock');
+    return mockResponse;
+  }
+
+  return NextResponse.json(
+    {
+      ok: false,
+      error: 'Service Unavailable',
+      message: 'Backend não configurado (API_INTERNAL_URL ausente) e modo de demonstração (DEMO_MODE=true) desativado.',
+      path: path.join('/'),
+    },
+    {
+      status: 503,
+      headers: { 'x-data-source': 'unconfigured-backend' },
+    }
+  );
 }
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) { return proxy(req, ctx.params); }

@@ -87,8 +87,10 @@ export class FinancialEngineEventController {
     const tenantId = resolveTenant(tenantIdHeader);
     const producerId = resolveProducer(producerIdHeader, queryProducer);
     return this.financeiroService.listarExtratoLedger(tenantId, producerId, {
-      eventoId,
+      eventoId: eventId,
       bucket: bucket as any,
+      limit: 50,
+      offset: 0,
     });
   }
 
@@ -303,8 +305,9 @@ export class FinancialEngineEventController {
     const tenantId = resolveTenant(tenantIdHeader);
     const producerId = resolveProducer(producerIdHeader, queryProducer);
     const ledger = await this.financeiroService.listarExtratoLedger(tenantId, producerId, {
-      eventoId,
+      eventoId: eventId,
       limit: 20,
+      offset: 0,
     });
 
     return ledger.lancamentos.map((l) => ({

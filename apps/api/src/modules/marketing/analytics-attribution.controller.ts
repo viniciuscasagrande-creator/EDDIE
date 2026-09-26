@@ -13,7 +13,12 @@ import {
   HttpStatus,
   Res,
 } from '@nestjs/common';
-import type { Response } from 'express';
+
+interface ExpressResponseLike {
+  setHeader(name: string, value: string): void;
+  send(body: any): any;
+}
+
 import { AnalyticsAttributionService } from './analytics-attribution.service';
 import type {
   AttributionModel,
@@ -209,7 +214,7 @@ export class AnalyticsAttributionController {
     @Param('eventId') eventId: string,
     @Body() body: { format?: 'CSV' | 'JSON'; model?: AttributionModel },
     @Headers('x-producer-id') producerHeader?: string,
-    @Res() res?: Response
+    @Res() res?: ExpressResponseLike
   ) {
     const producerId = this.getEffectiveProducerId(producerHeader);
     const result = this.analyticsService.exportReport(

@@ -63,7 +63,7 @@ pare e pergunte: essa rota vai para `apps/api` (PDT) ou `apps/api-storefront`
 7. **Toda escrita em Financeiro, Contabilidade e Estorno gera audit log** imutável.
 8. Datas em UTC, ISO 8601. O fuso de exibição é responsabilidade do frontend.
 9. **Repositório oficial exclusivo: GitHub (`origin`).** Nunca fazer push para GitLab. O projeto e a esteira de CI/CD da Vercel operam exclusivamente sobre o repositório GitHub (`origin/main`).
-10. **Commits, Git e Pushes Automáticos Autorizados (Regra Geral Fixada):** O usuário autorizou expressamente como regra geral e definitiva a realização autônoma de commits, operações de git e pushes automáticos para o repositório oficial no GitHub (`origin/main`) para todo o projeto EDDIE, sempre que as fases, módulos e melhorias forem homologados e validados nos testes, sem necessidade de confirmações manuais adicionais.
+10. **Commits, Git e Pushes Automáticos Autorizados (Regra Geral Fixada):** O usuário autorizou expressamente como regra geral e definitiva a realização autônoma de commits, operações de git e pushes automáticos para o repositório oficial no GitHub (`origin/main`) para todo o projeto EDDIE, sempre que as fases, módulos e melhorias forem homologados com suíte de testes 100% verde (`pnpm test`), typecheck/lint sem erros (`pnpm lint`), sincronia arquitetural verificada (`pnpm check:architecture`) e build completo dos pacotes e apps (`pnpm build`), passando pelas validações do pipeline de CI/CD (`.ci/workflows/ci.yml`), sem necessidade de confirmações manuais adicionais.
 
 ## Estrutura
 
@@ -75,22 +75,33 @@ apps/storefront/                     # newdawn.diskingressos.com.br — site pú
 packages/contracts/                  # eventos de domínio (Zod) — fonte da verdade
 ```
 
-## Módulos
+## Módulos Ativos no Backend (`apps/api/src/modules/`)
 
-| Módulo | Schema | Responsabilidade |
+| Módulo | Schema Postgres | Responsabilidade |
 |---|---|---|
-| `eventos` | `eventos` | Evento, sessão, mapa de assentos, lotes, produtores |
-| `inventario` | `inventario` | Reserva com TTL, carrinho, cupons |
-| `pagamentos` | `pagamentos` | Pix, cartão, boleto, split, antifraude |
-| `acesso` | `acesso` | QR assinado, check-in, catracas |
-| `crm` | `crm` | Clientes, segmentos, pipeline B2B |
-| `financeiro` | `financeiro` | AP/AR, conciliação, repasse ao produtor |
-| `contabilidade` | `contabilidade` | Plano de contas, lançamentos, NFS-e, SPED |
-| `marketing` | `marketing` | Campanhas, UTM, atribuição |
-| `remarketing` | `remarketing` | Carrinho abandonado, reengajamento |
-| `sac` | `sac` | Chamados ITIL, SLA, IA (RAG) |
-| `estorno` | `estorno` | Máquina de estados de reembolso e chargeback |
-| `developer` | `platform` | Telemetria, outbox, flags, audit, custo |
+| `eventos` | `eventos` | Catálogo de eventos, sessões, setores, lotes, precificação e produtores |
+| `pedidos` | `pedidos` | Criação e gestão de pedidos, ingressos gerados e checkout |
+| `portaria` | `platform` / `pedidos` | Controle de acesso, catracas, validação de ingressos e check-in |
+| `comercial` | `crm` | CRM B2B de produtores, oportunidades, condições comerciais e metas |
+| `financeiro` | `financeiro` | EDDIE 11.19/11.20: Ledger imutável, conta gráfica, repasses, split, conciliação e Control Tower |
+| `contabilidade` | `contabilidade` | EDDIE 11.21: Plano de contas, lançamentos por partidas dobradas, balancete e DRE |
+| `revenue-assurance` | `platform` / `financeiro` | EDDIE 11.22: Garantia de receita, matriz de integridade ponta a ponta e detecção de anomalias |
+| `producer-portal` | `financeiro` / `platform` | EDDIE 11.23: Portal do Produtor, extratos, saldos, agenda de repasses e autoatendimento |
+| `operacao` | `platform` / `eventos` | EDDIE 11.18: Command Center operacional, monitor de alertas, incidentes e SLA |
+| `relatorios` | `financeiro` / `eventos` | Relatórios consolidados, DRE gerencial por evento e exportações analíticas |
+| `estorno` | `estorno` | Máquina de estados de reembolso, CDC e chargeback |
+| `marketing` | `marketing` | Campanhas, links UTM, conversões, tracking CAPI multi-pixel e jornadas |
+| `sac` | `sac` | Chamados ITIL, SLA, fila de atendimento e inteligência artificial |
+| `suporte` | `suporte` | Suporte operacional de campo e atendimento no evento |
+
+## Módulos Planejados / Reservados (Evolução Futura)
+
+| Módulo | Schema | Status |
+|---|---|---|
+| `inventario` | `inventario` | Reserva temporária com TTL e locks distribuídos (em planejamento) |
+| `pagamentos` | `pagamentos` | Gateway direto e conciliação de adquirentes nativa (em planejamento) |
+| `remarketing` | `marketing` | No frontend possui telas dedicadas; no backend é atendido pelo módulo `marketing` (jornadas/públicos) |
+| `developer` | `platform` | Infraestrutura central de Outbox e telemetria hoje reside em `apps/api/src/shared/` |
 
 ## Ordem de geração de código (siga sempre)
 

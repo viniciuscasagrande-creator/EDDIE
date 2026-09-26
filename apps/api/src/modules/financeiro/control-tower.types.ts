@@ -192,13 +192,13 @@ export interface MassPayoutResultDto {
 export interface EnterpriseMatchingCandidateDto {
   id: string;
   sourceA: {
-    origin: 'GATEWAY' | 'PEDIDO' | 'LEDGER';
+    origin: 'GATEWAY' | 'PEDIDO' | 'LEDGER' | 'BANCO' | 'PAGAMENTO' | 'SETTLEMENT';
     referenceId: string;
     amountCents: number;
     date: string;
   };
   sourceB: {
-    origin: 'BANCO' | 'PAGAMENTO' | 'SETTLEMENT';
+    origin: 'BANCO' | 'PAGAMENTO' | 'SETTLEMENT' | 'GATEWAY' | 'PEDIDO' | 'LEDGER';
     referenceId: string;
     amountCents: number;
     date: string;

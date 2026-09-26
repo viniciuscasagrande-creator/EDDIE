@@ -5,10 +5,10 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../shared/prisma.module';
 import { FinancialEngineService } from './financial-engine.service';
 import { FinanceiroService } from './financeiro.service';
-import { OutboxService } from '../developer/outbox/outbox.service';
+import { OutboxService } from '../../shared/outbox/outbox.service';
 import {
   OperationQueueItemDto,
   QueueType,
