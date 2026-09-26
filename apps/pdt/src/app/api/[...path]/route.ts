@@ -3025,6 +3025,420 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]) {
     ]);
   }
 
+  // ==========================================================================
+  //  EDDIE 11.23 — PRODUCER FINANCIAL PORTAL & SELF-SERVICE
+  // ==========================================================================
+  if (fullPath.includes('producer/finance/summary')) {
+    return NextResponse.json({
+      producerId: '00000000-0000-0000-0000-000000000002',
+      consolidatedBalance: {
+        disponivelCents: 10750000,
+        aReceberCents: 32250000,
+        reservadoEstornoCents: -50000,
+        emLiquidacaoCents: 2500000,
+        bloqueadoCents: 0,
+        contabilCents: 42950000,
+        totalRecebidoAcumuladoCents: 21500000,
+      },
+      proximoRepasse: {
+        dataProgramada: new Date(Date.now() + 5 * 86400000).toISOString(),
+        valorEstimadoCents: 8600000,
+        status: 'AGENDADO',
+        eventoNome: 'Festival DiskIngressos Live 2026',
+      },
+      metricasOperacionais: {
+        totalEventosAtivos: 2,
+        ingressosVendidosTotal: 6570,
+        totalEstornosCents: 50000,
+        totalChargebacksCents: 0,
+        taxaEfetivaMediaPercent: 10.0,
+      },
+      solicitacoesAbertasCount: 1,
+      pendenciasCadastraisCount: 0,
+      notificacoesNaoLidasCount: 1,
+      lastUpdatedAt: new Date().toISOString(),
+    });
+  }
+
+  if (fullPath.includes('producer/finance/events') && fullPath.includes('/balance')) {
+    return NextResponse.json({
+      eventId: 'evento-operacao',
+      nome: 'Festival DiskIngressos Live 2026',
+      slug: 'festival-diskingressos-live',
+      status: 'PUBLICADO',
+      dataInicio: '2026-11-14T20:00:00Z',
+      local: 'Pedreira Paulo Leminski - Curitiba/PR',
+      ingressosVendidos: 4120,
+      capacidadeTotal: 5000,
+      receitaBrutaCents: 48250000,
+      balance: {
+        disponivelCents: 8000000,
+        retidoCents: 43425000,
+        reservadoEstornoCents: -25000,
+        emLiquidacaoCents: 1250000,
+        bloqueadoCents: 0,
+        contabilCents: 43400000,
+      },
+      taxaContratada: {
+        modelo: 'PERCENTUAL',
+        taxaPercentual: 10.0,
+        versao: 1,
+      },
+    });
+  }
+
+  if (fullPath.includes('producer/finance/events') && fullPath.includes('/statement')) {
+    return NextResponse.json({
+      total: 3,
+      entries: [
+        {
+          id: 'stmt-01',
+          data: new Date(Date.now() - 3600000).toISOString(),
+          eventoId: 'evento-operacao',
+          tipo: 'CREDITO',
+          categoria: 'VENDA_INGRESSO',
+          descricao: 'Vendas de Ingressos — Lote 1 e Lote 2',
+          valorCents: 48250000,
+          saldoResultanteCents: 48250000,
+          referenciaId: 'ord-batch-live',
+          status: 'CONFIRMADO',
+        },
+        {
+          id: 'stmt-02',
+          data: new Date(Date.now() - 1800000).toISOString(),
+          eventoId: 'evento-operacao',
+          tipo: 'DEBITO',
+          categoria: 'TAXA_SERVICO',
+          descricao: 'Taxa de Serviço DiskIngressos (10.0% contratada)',
+          valorCents: 4825000,
+          saldoResultanteCents: 43425000,
+          referenciaId: 'fee-batch-live',
+          status: 'CONFIRMADO',
+        },
+        {
+          id: 'stmt-03',
+          data: new Date(Date.now() - 900000).toISOString(),
+          eventoId: 'evento-operacao',
+          tipo: 'DEBITO',
+          categoria: 'ESTORNO_COMPENSACAO',
+          descricao: 'Compensação de estorno autorizado pedido #849050',
+          valorCents: 25000,
+          saldoResultanteCents: 43400000,
+          referenciaId: 'ref-849050',
+          status: 'CONFIRMADO',
+        },
+      ],
+    });
+  }
+
+  if (fullPath.includes('producer/finance/events') && fullPath.includes('/fees')) {
+    return NextResponse.json({
+      eventId: 'evento-operacao',
+      eventoNome: 'Festival DiskIngressos Live 2026',
+      taxaVigente: {
+        modelo: 'PERCENTUAL',
+        taxaPercentual: 10.0,
+        versao: 1,
+        vigenciaInicio: '2026-01-01T00:00:00Z',
+        observacoes: 'Taxa comercial contratual de distribuição.',
+      },
+      historicoVersoes: [
+        {
+          versao: 1,
+          modelo: 'PERCENTUAL',
+          taxaPercentual: 10.0,
+          vigenciaInicio: '2026-01-01T00:00:00Z',
+          motivoAlteracao: 'Cadastramento comercial do evento.',
+        },
+      ],
+      preservacaoHistorica: true,
+    });
+  }
+
+  if (fullPath.includes('producer/finance/events')) {
+    return NextResponse.json([
+      {
+        eventId: 'evento-operacao',
+        nome: 'Festival DiskIngressos Live 2026',
+        slug: 'festival-diskingressos-live',
+        status: 'PUBLICADO',
+        dataInicio: '2026-11-14T20:00:00Z',
+        local: 'Pedreira Paulo Leminski - Curitiba/PR',
+        ingressosVendidos: 4120,
+        capacidadeTotal: 5000,
+        receitaBrutaCents: 48250000,
+        balance: {
+          disponivelCents: 8000000,
+          retidoCents: 43425000,
+          reservadoEstornoCents: -25000,
+          emLiquidacaoCents: 1250000,
+          bloqueadoCents: 0,
+          contabilCents: 43400000,
+        },
+        taxaContratada: {
+          modelo: 'PERCENTUAL',
+          taxaPercentual: 10.0,
+          versao: 1,
+        },
+      },
+      {
+        eventId: 'evento-1',
+        nome: 'Turnê Nacional Rock Fest 2026',
+        slug: 'turne-nacional-rock-fest',
+        status: 'PUBLICADO',
+        dataInicio: '2026-12-05T19:00:00Z',
+        local: 'Teatro Positivo - Curitiba/PR',
+        ingressosVendidos: 2450,
+        capacidadeTotal: 3000,
+        receitaBrutaCents: 31200000,
+        balance: {
+          disponivelCents: 2750000,
+          retidoCents: 28080000,
+          reservadoEstornoCents: -25000,
+          emLiquidacaoCents: 1250000,
+          bloqueadoCents: 0,
+          contabilCents: 28055000,
+        },
+        taxaContratada: {
+          modelo: 'PERCENTUAL',
+          taxaPercentual: 10.0,
+          versao: 1,
+        },
+      },
+    ]);
+  }
+
+  if (fullPath.includes('producer/finance/settlements') && fullPath.includes('/receipt')) {
+    return NextResponse.json({
+      id: 'settlement-rep-01',
+      authCode: 'AUTH-DISKINGRESSOS-99120-PIX',
+      comprovanteTexto: 'COMPROVANTE DE TRANSFERÊNCIA BANCÁRIA - DISKINGRESSOS PDT\nFavorecido: Disk Produções Artísticas Ltda\nValor Líquido: R$ 45.000,00\nData da Liquidação: 2026-09-15T14:32:10Z',
+      dataLiquidacao: '2026-09-15T14:32:10Z',
+    });
+  }
+
+  if (fullPath.includes('producer/finance/settlements')) {
+    return NextResponse.json([
+      {
+        id: 'settlement-rep-01',
+        eventId: 'evento-operacao',
+        eventoNome: 'Festival DiskIngressos Live 2026',
+        valorBrutoBaseCents: 5000000,
+        retencoesTaxaCents: 500000,
+        descontosAutorizadosCents: 0,
+        valorLiquidoCents: 4500000,
+        status: 'PAGO',
+        dataProgramada: '2026-09-15T12:00:00Z',
+        dataLiquidacao: '2026-09-15T14:32:10Z',
+        destinoBancarioMascarado: 'Banco Bradesco (237) - Agência ****-0 - Conta ******-1',
+        codigoRetornoBancario: 'PIX-E2E-20260915-OK',
+        temComprovante: true,
+        comprovanteUrl: '/api/producer/finance/settlements/settlement-rep-01/receipt',
+        referencia: 'REP-LOTE-20260915-01',
+      },
+      {
+        id: 'settlement-rep-02',
+        eventId: 'evento-operacao',
+        eventoNome: 'Festival DiskIngressos Live 2026',
+        valorBrutoBaseCents: 9550000,
+        retencoesTaxaCents: 950000,
+        descontosAutorizadosCents: 0,
+        valorLiquidoCents: 8600000,
+        status: 'AGENDADO',
+        dataProgramada: new Date(Date.now() + 5 * 86400000).toISOString(),
+        dataLiquidacao: null,
+        destinoBancarioMascarado: 'Banco Bradesco (237) - Agência ****-0 - Conta ******-1',
+        codigoRetornoBancario: null,
+        temComprovante: false,
+        referencia: 'REP-LOTE-20261001-02',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('producer/finance/refunds')) {
+    return NextResponse.json([
+      {
+        id: 'ref-item-01',
+        eventId: 'evento-operacao',
+        eventoNome: 'Festival DiskIngressos Live 2026',
+        pedidoNumero: 'PED-849050',
+        valorCents: 25000,
+        taxaDiskCents: 2500,
+        motivo: 'Direito de arrependimento (Art. 49 CDC)',
+        dataSolicitacao: '2026-09-22T10:00:00Z',
+        dataProcessamento: '2026-09-22T11:30:00Z',
+        status: 'CONCLUIDO',
+        impactoSaldo: 'Debitado do bucket de Reserva de Estorno (não compromete saldo disponível imediato).',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('producer/finance/chargebacks')) {
+    return NextResponse.json([
+      {
+        id: 'cb-item-01',
+        eventId: 'evento-operacao',
+        eventoNome: 'Festival DiskIngressos Live 2026',
+        pedidoNumero: 'PED-848800',
+        valorCents: 35000,
+        dataNotificacao: '2026-09-24T08:00:00Z',
+        prazoDefesaAte: '2026-10-04T23:59:59Z',
+        status: 'EM_CONTESTACAO',
+        motivoAlegado: 'Desacordo comercial / Não reconhecimento da compra pelo portador do cartão',
+        reflexoFinanceiro: 'Valor retido preventivamente na Reserva Técnica até decisão da operadora.',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('producer/finance/cashflow')) {
+    return NextResponse.json({
+      periodo: '2026-09 a 2026-12',
+      realizado: {
+        entradasCents: 32250000,
+        saidasTaxasCents: 3225000,
+        repassesEfetuadosCents: 21500000,
+        saldoLiquidoRealizadoCents: 7525000,
+        itens: [
+          {
+            data: '2026-09-15T14:32:10Z',
+            descricao: 'Repasse Liquidado Lote #849102',
+            tipo: 'SAIDA',
+            valorCents: 21500000,
+          },
+          {
+            data: '2026-09-20T18:00:00Z',
+            descricao: 'Vendas Liquidadas Semanais (Cartão/PIX)',
+            tipo: 'ENTRADA',
+            valorCents: 32250000,
+          },
+        ],
+      },
+      projetado: {
+        entradasPrevistasCents: 32250000,
+        repassesAgendadosCents: 8600000,
+        saldoLiquidoProjetadoCents: 23650000,
+        itens: [
+          {
+            dataEstimada: new Date(Date.now() + 5 * 86400000).toISOString(),
+            descricao: 'Previsão de Repasse Quinzenal Programado',
+            tipo: 'REPASSE_AGENDADO',
+            valorCents: 8600000,
+          },
+          {
+            dataEstimada: '2026-10-05T00:00:00Z',
+            descricao: 'Vendas Parceladas a Receber de Gateways (D+30)',
+            tipo: 'RECEBIMENTO_PREVISTO',
+            valorCents: 32250000,
+          },
+        ],
+      },
+      avisoSegregacao:
+        'Fluxo de caixa segregando rigorosamente valores realizados (efetivamente transitados pelo Ledger) de valores projetados (previsão futura de liquidação).',
+    });
+  }
+
+  if (fullPath.includes('producer/finance/dre')) {
+    return NextResponse.json({
+      producerId: '00000000-0000-0000-0000-000000000002',
+      eventId: null,
+      periodo: '2026-01 a 2026-12',
+      receitaBrutaIngressosCents: 79450000,
+      ingressosVendidosTotal: 6570,
+      taxasServicoDiskCents: 7945000,
+      taxasProcessamentoGatewayCents: 1986250,
+      estornosEChargebacksCents: 50000,
+      repassesLiquidadosCents: 35000000,
+      despesasOperacionaisCadastradasCents: 6300000,
+      resultadoLiquidoProdutorCents: 63168750,
+      disclaimer:
+        'DRE gerencial para acompanhamento operacional do produtor. Não substitui demonstrações contábeis oficiais nem escrituração fiscal.',
+    });
+  }
+
+  if (fullPath.includes('producer/finance/documents')) {
+    return NextResponse.json([
+      {
+        id: 'doc-prod-01',
+        titulo: 'Informe de Rendimentos e Retenções 2026',
+        categoria: 'INFORME_RENDIMENTOS',
+        dataEmissao: '2026-09-01T00:00:00Z',
+        tamanhoBytes: 245000,
+        formato: 'PDF',
+        downloadUrl: '/api/producer/finance/documents/doc-prod-01/download',
+      },
+      {
+        id: 'doc-prod-02',
+        titulo: 'Comprovante Bancário Repasse Lote #849102',
+        categoria: 'COMPROVANTE_REPASSE',
+        eventoId: 'evento-operacao',
+        dataEmissao: '2026-09-15T14:32:00Z',
+        tamanhoBytes: 128000,
+        formato: 'PDF',
+        downloadUrl: '/api/producer/finance/documents/doc-prod-02/download',
+      },
+    ]);
+  }
+
+  if (fullPath.includes('producer/finance/bank-account')) {
+    return NextResponse.json({
+      bancoNome: 'Banco Bradesco S.A.',
+      bancoCodigo: '237',
+      agenciaMascarada: '****-0',
+      contaMascarada: '******-1',
+      tipoConta: 'CORRENTE',
+      titularNome: 'Disk Produções Artísticas Ltda',
+      titularCpfCnpjMascarado: '**.***.456/0001-**',
+      chavePixMascarada: 'financeiro@diskingressos.com.br',
+      statusVerificacao: 'VERIFICADA',
+      ultimaAlteracaoEm: '2026-07-15T09:00:00Z',
+      temSolicitacaoEmAndamento: false,
+    });
+  }
+
+  if (fullPath.includes('producer/finance/requests')) {
+    return NextResponse.json([
+      {
+        id: 'req-01',
+        protocolo: 'TRF-PROD-849102',
+        categoria: 'TRANSFERENCIA_EVENTOS',
+        titulo: 'Transferência de saldo entre eventos Festival Live → Rock Fest',
+        descricao: 'Aporte de R$ 5.000,00 para despesas de infraestrutura.',
+        status: 'EM_ANALISE',
+        criadoEm: '2026-09-25T11:00:00Z',
+        atualizadoEm: '2026-09-25T14:30:00Z',
+        timeline: [
+          {
+            data: '2026-09-25T11:00:00Z',
+            autor: 'Produtor (Portal Self-Service)',
+            evento: 'Solicitação registrada',
+            detalhes: 'Protocolo TRF-PROD-849102 gerado.',
+          },
+          {
+            data: '2026-09-25T14:30:00Z',
+            autor: 'Control Tower Financeiro',
+            evento: 'Em análise de conformidade',
+            detalhes: 'Verificação de saldo retido no evento de origem.',
+          },
+        ],
+      },
+    ]);
+  }
+
+  if (fullPath.includes('producer/finance/notifications')) {
+    return NextResponse.json([
+      {
+        id: 'notif-01',
+        titulo: 'Repasse Quinzenal Liquidado',
+        mensagem: 'O repasse referente ao Lote #849102 no valor de R$ 45.000,00 foi confirmado em sua conta bancária.',
+        categoria: 'REPASSE',
+        severidade: 'INFO',
+        lida: false,
+        data: new Date(Date.now() - 86400000).toISOString(),
+        acaoUrl: '/financeiro/portal-produtor?tab=repasses',
+      },
+    ]);
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json({ ok: true, processado: true, id: `item-${Date.now()}` }, { status: 200 });

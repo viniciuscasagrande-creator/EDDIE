@@ -1,0 +1,21 @@
+recurso,endpoint,produtor_admin,produtor_financeiro,produtor_operacional,disk_compliance,produtor_terceiro
+InicioFinanceiroConsolidado,GET /api/producer/finance/summary,PERMITIDO,PERMITIDO,PERMITIDO,PERMITIDO,BLOQUEADO_403
+SaldosEventosProprios,GET /api/producer/finance/events,PERMITIDO,PERMITIDO,PERMITIDO,PERMITIDO,BLOQUEADO_403
+SaldoEventoEspecifico,GET /api/producer/finance/events/:id/balance,PERMITIDO,PERMITIDO,PERMITIDO,PERMITIDO,BLOQUEADO_403
+ExtratoFinanceiro,GET /api/producer/finance/events/:id/statement,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+TaxasNegociadas,GET /api/producer/finance/events/:id/fees,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+AgendaRepasses,GET /api/producer/finance/settlements,PERMITIDO,PERMITIDO,PERMITIDO,PERMITIDO,BLOQUEADO_403
+ComprovanteBancario,GET /api/producer/finance/settlements/:id/receipt,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+TransferenciaEventosProprios,POST /api/producer/finance/transfers,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+TransferenciaCrossProducer,POST /api/producer/finance/transfers,BLOQUEADO_403,BLOQUEADO_403,BLOQUEADO_403,BLOQUEADO_403,BLOQUEADO_403
+EstornosReserva,GET /api/producer/finance/refunds,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+ChargebacksDefesa,GET /api/producer/finance/chargebacks,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+FluxoCaixaSegregado,GET /api/producer/finance/cashflow,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+DreGerencial,GET /api/producer/finance/dre,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+DocumentosFiscais,GET /api/producer/finance/documents,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+DownloadDocumento,GET /api/producer/finance/documents/:id/download,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+DadosBancariosMascarados,GET /api/producer/finance/bank-account,PERMITIDO,PERMITIDO,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+SolicitarAlteracaoBancaria,POST /api/producer/finance/bank-account/request-change,PERMITIDO,BLOQUEADO_403,BLOQUEADO_403,PERMITIDO,BLOQUEADO_403
+CentralSolicitacoes,GET /api/producer/finance/requests,PERMITIDO,PERMITIDO,PERMITIDO,PERMITIDO,BLOQUEADO_403
+ConsultaProtocolo,GET /api/producer/finance/requests/:protocol,PERMITIDO,PERMITIDO,PERMITIDO,PERMITIDO,BLOQUEADO_403
+NotificacoesSeguras,GET /api/producer/finance/notifications,PERMITIDO,PERMITIDO,PERMITIDO,PERMITIDO,BLOQUEADO_403
