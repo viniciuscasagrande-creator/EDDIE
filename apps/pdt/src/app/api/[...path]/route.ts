@@ -3489,6 +3489,80 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]): NextRespo
     ]);
   }
 
+  // 17. SUPER DASHBOARD / CENTRO DE COMANDO 360º (DEMO MODE)
+  if (fullPath.includes('admin/dashboard/summary') || fullPath.includes('dashboard/summary')) {
+    return NextResponse.json({
+      timestamp: new Date().toISOString(),
+      systemHealth: 'operational',
+      revenueToday: 42500.8,
+      revenueTodayCents: 4250080,
+      ticketsSoldToday: 342,
+      checkinsToday: 128,
+      conversionRatePercent: 3.85,
+      activeUsers: 840,
+      salesPulse: {
+        gmvTodayCents: 4250080,
+        ticketsSoldToday: 342,
+        averageTicketCents: 12427,
+        pixPercent: 62.4,
+        creditCardPercent: 37.6,
+        gatewayAnomalyDetected: false,
+      },
+      gateOperations: {
+        activeEventsCount: 2,
+        currentOccupancyPercent: 68.4,
+        checkinPacePerMinute: 42,
+        deniedAttemptsCount: 3,
+        gateStatus: 'OPERACIONAL',
+      },
+      pendingActions: [
+        {
+          id: 'act_1',
+          domain: 'ESTORNO',
+          type: 'REFUND_REQUEST',
+          title: 'Estorno Pendente CDC — Pedido #8892',
+          urgency: 'high',
+          actionType: 'APROVAR_ESTORNO',
+          amountCents: 35000,
+          metadata: { orderId: 'ord-8892', motivo: 'Arrependimento em 7 dias (CDC)' },
+        },
+        {
+          id: 'act_2',
+          domain: 'EVENTO',
+          type: 'EVENT_APPROVAL',
+          title: 'Aprovar novo lote: Festival de Verão 2027',
+          urgency: 'medium',
+          actionType: 'APROVAR_LOTE',
+          metadata: { eventoId: 'ev-verao-2027', lote: 'Lote VIP 2' },
+        },
+        {
+          id: 'act_3',
+          domain: 'REPASSE',
+          type: 'PAYOUT_READY',
+          title: 'Repasse Quitado pronto para liberação (R$ 45.000,00)',
+          urgency: 'high',
+          actionType: 'LIBERAR_REPASSE',
+          amountCents: 4500000,
+          metadata: { settlementId: 'SET-202609-01' },
+        },
+      ],
+      marketingHealth: {
+        blendedRoas: 4.82,
+        activeCampaignsCount: 6,
+        capiSuccessRatePercent: 99.4,
+        trackingHealth: 'OPERACIONAL',
+      },
+      salesChartData: [
+        { time: '08:00', salesCents: 425000, ordersCount: 34 },
+        { time: '10:00', salesCents: 1062500, ordersCount: 85 },
+        { time: '12:00', salesCents: 2125000, ordersCount: 171 },
+        { time: '14:00', salesCents: 2975000, ordersCount: 239 },
+        { time: '16:00', salesCents: 3612500, ordersCount: 290 },
+        { time: '18:00', salesCents: 4250080, ordersCount: 342 },
+      ],
+    });
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json(

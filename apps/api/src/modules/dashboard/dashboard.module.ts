@@ -2,10 +2,12 @@
 // EDDIE — Super Dashboard & Centro de Comando 360º Module
 
 import { Module } from '@nestjs/common';
+import { PrismaModule } from '../../shared/prisma.module';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [DashboardController],
   providers: [DashboardService],
   exports: [DashboardService],

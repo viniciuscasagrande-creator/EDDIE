@@ -42,4 +42,31 @@ describe('DashboardModule (Centro de Comando 360º)', () => {
     // Live sales chart data
     expect(summary.salesChartData.length).toBeGreaterThan(0);
   });
+
+  it('deve executar ações rápidas com sucesso (Actionable UI)', async () => {
+    // 1. Aprovar Estorno CDC
+    const resEstorno = await controller.executeAction({
+      alertId: 'act_1',
+      actionType: 'APROVAR_ESTORNO',
+    });
+    expect(resEstorno.ok).toBe(true);
+    expect(resEstorno.alertId).toBe('act_1');
+    expect(resEstorno.message).toContain('aprovado');
+
+    // 2. Liberar Repasse
+    const resRepasse = await controller.executeAction({
+      alertId: 'act_3',
+      actionType: 'LIBERAR_REPASSE',
+    });
+    expect(resRepasse.ok).toBe(true);
+    expect(resRepasse.message).toContain('autorizado');
+
+    // 3. Aprovar Lote
+    const resLote = await controller.executeAction({
+      alertId: 'act_2',
+      actionType: 'APROVAR_LOTE',
+    });
+    expect(resLote.ok).toBe(true);
+  });
 });
+
