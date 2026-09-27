@@ -3563,6 +3563,41 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]): NextRespo
     });
   }
 
+  // 18. EVENT CLOSING & SETTLEMENT FINAL (EDDIE 11.24 DEMO MODE)
+  if (fullPath.includes('fechamento')) {
+    return NextResponse.json({
+      eventId: 'evento-operacao',
+      eventName: 'Festival DiskIngressos Live 2026',
+      currentStatus: 'ENCERRADO',
+      currentVersion: 'v1',
+      isReadyToClose: true,
+      blockingGatesCount: 0,
+      gates: [
+        { gateNumber: 1, name: 'Cutoff de Vendas & Ingressos', domain: 'VENDAS', status: 'APROVADO', isBlocking: true, summary: 'Lotes e sessões encerrados com sucesso.' },
+        { gateNumber: 2, name: 'Portaria & Check-in Conciliado', domain: 'PORTARIA', status: 'APROVADO', isBlocking: true, summary: 'Catracas sincronizadas sem divergências de catraca.' },
+        { gateNumber: 3, name: 'Conciliação de Adquirentes', domain: 'PAGAMENTOS', status: 'APROVADO', isBlocking: true, summary: 'Transações 100% conciliadas.' },
+        { gateNumber: 4, name: 'Estornos & CDC Art. 49 Zerados', domain: 'ESTORNO', status: 'APROVADO', isBlocking: true, summary: 'Zero solicitações pendentes de reembolso.' },
+        { gateNumber: 5, name: 'Auditoria de Receita (Revenue Assurance)', domain: 'REVENUE_ASSURANCE', status: 'APROVADO', isBlocking: true, summary: 'Matriz de integridade sem anomalias.' },
+        { gateNumber: 6, name: 'Partidas Dobradas & DRE do Evento', domain: 'CONTABILIDADE', status: 'APROVADO', isBlocking: true, summary: 'Balancete analítico equilibrado.' },
+        { gateNumber: 7, name: 'Provisões & Retenção de Segurança', domain: 'RISCO_FINANCEIRO', status: 'INFORMATIVO', isBlocking: false, summary: 'Retenção de 5% provisionada para 30 dias.' },
+        { gateNumber: 8, name: 'Cálculo do Settlement Final', domain: 'LEDGER_SETTLEMENT', status: 'APROVADO', isBlocking: true, summary: 'Saldo líquido apurado.' },
+        { gateNumber: 9, name: 'Segregação de Funções (SoD)', domain: 'GOVERNANCA', status: 'APROVADO', isBlocking: true, summary: 'Exige operador e diretor aprovador distintos.' },
+        { gateNumber: 10, name: 'Dossiê Final & Carimbo SHA-256', domain: 'COMPLIANCE', status: 'APROVADO', isBlocking: true, summary: 'Snapshot imutável com hash criptográfico SHA-256 gerado.' },
+      ],
+      settlement: {
+        gmvCents: 48250000,
+        platformFeeCents: 4825000,
+        paymentProcessingFeeCents: 1206250,
+        cdcRefundsCents: 350000,
+        chargebacksCents: 0,
+        priorPayoutsCents: 19300000,
+        securityHoldCents: 2412500,
+        netFinalPayoutCents: 20156250,
+      },
+      dossierSnapshot: null,
+    });
+  }
+
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return NextResponse.json(

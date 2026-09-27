@@ -1,0 +1,12 @@
+# Gate Final — EDDIE 11.24
+- [ ] Central de Fechamento implementada no PDT
+- [ ] 10 Gates de validação auditados
+- [ ] Bloqueio obrigatório de fechamento com pendências críticas
+- [ ] Cálculo de Settlement Final em centavos (GMV - Taxas - CDC - Adiantamentos - Retenções)
+- [ ] Segregação de Funções (SoD) na aprovação
+- [ ] Geração do Dossiê Final Imutável com Hash SHA-256
+- [ ] Protocolo de Reabertura Versionada (v1, v2) com trilha de auditoria
+- [ ] RBAC e isolamento por produtor/tenant
+- [ ] Cobertura de testes unitários e E2E 100% verde
+- [ ] TypeScript strict e zero 'any'
+- [ ] Build de produção compilando limpo

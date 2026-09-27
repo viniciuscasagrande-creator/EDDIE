@@ -68,12 +68,12 @@ Estorno      pagamento.estornado ──┬──► Contabilidade (reversão)
 | `sac` | `sac` | Chamados ITIL, SLA, fila de atendimento e inteligência artificial |
 | `suporte` | `suporte` | Suporte operacional de campo e atendimento no evento |
 | `dashboard` | `platform` | Super Dashboard & Centro de Comando 360º Agregador Executivo (BFF) |
+| `event-closing` | `eventos` / `financeiro` | EDDIE 11.24: Fechamento de eventos, auditoria de 10 gates, settlement e dossiê imutável |
 
 ## Módulos em Planejamento / Próximos Passos
 
-1. `EDDIE 11.24 — Fechamento do Evento & Producer Settlement Final`
-2. `inventario` — motor de reserva com TTL e locks distribuídos
-3. `pagamentos` — integração direta multi-adquirente e split nativo
+1. `inventario` — motor de reserva com TTL e locks distribuídos
+2. `pagamentos` — integração direta multi-adquirente e split nativo
 
 ## Regras que não se negociam
 

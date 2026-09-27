@@ -94,6 +94,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `sac` | `sac` | Chamados ITIL, SLA, fila de atendimento e inteligência artificial |
 | `suporte` | `suporte` | Suporte operacional de campo e atendimento no evento |
 | `dashboard` | `platform` | Super Dashboard & Centro de Comando 360º Agregador Executivo (BFF) |
+| `event-closing` | `eventos` / `financeiro` | EDDIE 11.24: Fechamento de eventos, auditoria de 10 gates, settlement e dossiê imutável |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 

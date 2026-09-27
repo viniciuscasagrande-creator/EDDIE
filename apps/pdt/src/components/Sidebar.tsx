@@ -23,6 +23,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 
 const menuItems = [
@@ -73,6 +74,12 @@ const menuItems = [
     href: '/contabilidade',
     icon: Scale,
     badge: 'DRE',
+  },
+  {
+    label: 'Fechamento & Settlement',
+    href: '/fechamento',
+    icon: Lock,
+    badge: '11.24',
   },
   {
     label: 'Estornos & CDC',

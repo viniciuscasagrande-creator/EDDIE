@@ -22,6 +22,7 @@ import { OperacaoModule } from './modules/operacao/operacao.module';
 import { RevenueAssuranceModule } from './modules/revenue-assurance/revenue-assurance.module';
 import { ProducerPortalModule } from './modules/producer-portal/producer-portal.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { EventClosingModule } from './modules/event-closing/event-closing.module';
 
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
@@ -51,6 +52,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     RevenueAssuranceModule,
     ProducerPortalModule,
     DashboardModule,
+    EventClosingModule,
   ],
 })
 export class AppModule {}
