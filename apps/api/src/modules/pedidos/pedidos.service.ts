@@ -2,12 +2,14 @@ import { BadRequestException, Injectable, NotFoundException, Optional } from '@n
 import { createHash, randomUUID } from 'crypto';
 import { PrismaService } from '../../shared/prisma.module';
 import { InventarioPublicService } from '../inventario/inventario.public-service';
+import { PagamentosPublicService } from '../pagamentos/pagamentos.public-service';
 
 @Injectable()
 export class PedidosService {
   constructor(
     private readonly prisma: PrismaService,
     @Optional() private readonly inventario?: InventarioPublicService,
+    @Optional() private readonly pagamentos?: PagamentosPublicService,
   ) {}
   private db() { return this.prisma as any; }
   private numero(prefix:string){ return `${prefix}-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${randomUUID().slice(0,8).toUpperCase()}`; }
@@ -37,6 +39,27 @@ export class PedidosService {
       await tx.itemPedidoVenda.create({data:{pedidoId:pedido.id,loteId:lote.id,quantidade:reserva.quantidade,valorUnitario:unit,subtotal}});
       await tx.pagamentoVenda.create({data:{pedidoId:pedido.id,tenantId,status:'PENDENTE',metodo:input.metodoPagamento||'pix',valor:total}});
       await tx.reservaVenda.update({where:{id:reserva.id},data:{status:'CONSUMIDA'}});
+
+      if (this.pagamentos) {
+        this.pagamentos.criarIntencao({
+          tenantId,
+          pedidoId: pedido.id,
+          eventoId: reserva.eventoId,
+          produtorId,
+          idempotencyKey: `idemp-ped-${pedido.id}`,
+          metodo: input.metodoPagamento === 'cartao' ? 'CARTAO_CREDITO' : 'PIX',
+          valorTotal: total,
+          valorIngressos: subtotal,
+          taxaServico: taxa,
+          splitProdutor: subtotal,
+          splitPlataforma: taxa,
+          compradorNome: input.comprador.nome,
+          compradorDocumento: input.comprador.documento,
+          compradorEmail: input.comprador.email,
+          compradorTelefone: input.comprador.telefone,
+        }).catch(() => {});
+      }
+
       return pedido;
     });
   }
@@ -47,11 +70,52 @@ export class PedidosService {
     const itens=await this.db().itemPedidoVenda.findMany({where:{pedidoId}});
     return this.db().$transaction(async(tx:any)=>{
       const pagamento=await tx.pagamentoVenda.findFirst({where:{pedidoId,tenantId}});
-      await tx.pagamentoVenda.update({where:{id:pagamento.id},data:{status:'PAGO',adquirente:input.adquirente,transacaoId:input.transacaoId,nsu:input.nsu,pagoEm:new Date()}});
-      for(const item of itens) for(let i=0;i<item.quantidade;i++){ const token=randomUUID(); await tx.ingressoVenda.create({data:{numero:this.numero('ING'),pedidoId,eventoId:pedido.eventoId,loteId:item.loteId,qrTokenHash:createHash('sha256').update(token).digest('hex')}}); }
+      if (pagamento) {
+        await tx.pagamentoVenda.update({where:{id:pagamento.id},data:{status:'PAGO',adquirente:input.adquirente,transacaoId:input.transacaoId,nsu:input.nsu,pagoEm:new Date()}});
+      }
+      const ingressosCriados: any[] = [];
+      for(const item of itens) for(let i=0;i<item.quantidade;i++){
+        const token=randomUUID();
+        const ing = await tx.ingressoVenda.create({data:{numero:this.numero('ING'),pedidoId,eventoId:pedido.eventoId,loteId:item.loteId,qrTokenHash:createHash('sha256').update(token).digest('hex')}});
+        ingressosCriados.push(ing);
+      }
       if (this.inventario && pedido.reservaId) {
         this.inventario.confirmarHold(pedido.reservaId, { pedidoId }).catch(() => {});
       }
+
+      // Publica pedido.pago.v1 no Outbox para acionar Ledger, Contabilidade e Marketing
+      if (tx.outboxMessage) {
+        await tx.outboxMessage.create({
+          data: {
+            eventName: 'pedido.pago.v1',
+            source: 'pedidos',
+            tenantId,
+            payload: {
+              pedidoId: pedido.id,
+              compradorId: tenantId,
+              compradorEmail: pedido.compradorEmail,
+              compradorNome: pedido.compradorNome,
+              metodoPagamento: input.adquirente ? 'CREDIT_CARD' : 'PIX',
+              transacaoId: input.transacaoId || 'TRX-DEFAULT',
+              valorTotalCents: Math.round(Number(pedido.total) * 100),
+              valorIngressosCents: Math.round(Number(pedido.subtotal) * 100),
+              valorTaxasCents: Math.round(Number(pedido.taxaDisk) * 100),
+              splitProdutorCents: Math.round(Number(pedido.repasseProdutor) * 100),
+              splitPlataformaCents: Math.round(Number(pedido.taxaDisk) * 100),
+              itens: ingressosCriados.map((ing) => ({
+                ingressoId: ing.id,
+                loteId: ing.loteId,
+                sessaoId: randomUUID(),
+                eventoId: ing.eventoId,
+                precoCents: Math.round((Number(pedido.subtotal) / (ingressosCriados.length || 1)) * 100),
+                taxaConvenienciaCents: Math.round((Number(pedido.taxaDisk) / (ingressosCriados.length || 1)) * 100),
+              })),
+              pagoEm: new Date().toISOString(),
+            },
+          },
+        }).catch(() => {});
+      }
+
       return tx.pedidoVenda.update({where:{id:pedidoId},data:{status:'PAGO',paidAt:new Date()}});
     });
   }

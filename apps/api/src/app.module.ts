@@ -29,6 +29,7 @@ import { FinancialPlanningModule } from './modules/financial-planning/financial-
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { TesourariaModule } from './modules/tesouraria/tesouraria.module';
 import { InventarioModule } from './modules/inventario/inventario.module';
+import { PagamentosModule } from './modules/pagamentos/pagamentos.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -67,6 +68,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     UsuariosModule,
     TesourariaModule,
     InventarioModule,
+    PagamentosModule,
   ],
 })
 export class AppModule {}

@@ -35,8 +35,52 @@ export const PagamentoFalhouPayloadSchema = z.object({
   falhouEm: z.string().datetime(),
 });
 
+export const PagamentoConfirmadoPayloadSchema = z.object({
+  paymentIntentId: z.string().uuid(),
+  pedidoId: z.string().uuid(),
+  tenantId: z.string().uuid(),
+  eventoId: z.string().uuid(),
+  produtorId: z.string().uuid(),
+  metodo: z.enum(['PIX', 'CARTAO_CREDITO', 'CARTAO_DEBITO', 'BOLETO']),
+  adquirente: z.string(),
+  transacaoId: z.string(),
+  nsu: z.string().optional(),
+  valorTotalCents: z.number().int().positive(),
+  splitProdutorCents: z.number().int().positive(),
+  splitPlataformaCents: z.number().int().nonnegative(),
+  taxaMdrCents: z.number().int().nonnegative().optional(),
+  confirmadoEm: z.string().datetime(),
+});
+
+export const PixGeradoPayloadSchema = z.object({
+  paymentIntentId: z.string().uuid(),
+  pedidoId: z.string().uuid(),
+  txid: z.string(),
+  chavePix: z.string(),
+  qrCodeCopiaECola: z.string(),
+  valorCents: z.number().int().positive(),
+  expiraEm: z.string().datetime(),
+});
+
+export const ConciliacaoAdquirentePayloadSchema = z.object({
+  loteId: z.string().uuid(),
+  adquirente: z.string(),
+  quantidadeTransacoes: z.number().int().nonnegative(),
+  valorBrutoTotalCents: z.number().int().nonnegative(),
+  valorTaxasMdrCents: z.number().int().nonnegative(),
+  valorLiquidoTotalCents: z.number().int().nonnegative(),
+  status: z.enum(['CONCILIADO', 'COM_DIVERGENCIA']),
+  divergenciasEncontradas: z.number().int().nonnegative(),
+});
+
 export const PedidoPagoV1 = defineEvent('pedido.pago.v1', PedidoPagoPayloadSchema);
 export const PagamentoFalhouV1 = defineEvent('pagamento.falhou.v1', PagamentoFalhouPayloadSchema);
+export const PagamentoConfirmadoV1 = defineEvent('pagamento.confirmado.v1', PagamentoConfirmadoPayloadSchema);
+export const PixGeradoV1 = defineEvent('pagamento.pix_gerado.v1', PixGeradoPayloadSchema);
+export const ConciliacaoAdquirenteV1 = defineEvent('pagamento.conciliado.v1', ConciliacaoAdquirentePayloadSchema);
 
 export type PedidoPagoPayload = z.infer<typeof PedidoPagoPayloadSchema>;
 export type PagamentoFalhouPayload = z.infer<typeof PagamentoFalhouPayloadSchema>;
+export type PagamentoConfirmadoPayload = z.infer<typeof PagamentoConfirmadoPayloadSchema>;
+export type PixGeradoPayload = z.infer<typeof PixGeradoPayloadSchema>;
+export type ConciliacaoAdquirentePayload = z.infer<typeof ConciliacaoAdquirentePayloadSchema>;

@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos"]
 }
 
 
@@ -1786,4 +1786,164 @@ model InventoryHoldItem {
   @@map("inventory_hold_items")
   @@schema("inventario")
 }
+
+// ============================================================================
+//  PAGAMENTOS — Núcleo de Pagamentos, Processamento & Conciliação (EDDIE 11.29.3)
+// ============================================================================
+
+enum StatusIntencaoPagamento {
+  CRIADA
+  PROCESSANDO
+  APROVADA
+  RECUSADA
+  CANCELADA
+  ESTORNADA
+  EXPIRADA
+
+  @@schema("pagamentos")
+}
+
+enum MetodoPagamentoCore {
+  PIX
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  BOLETO
+
+  @@schema("pagamentos")
+}
+
+model PaymentIntent {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  tenantId              String                   @db.Uuid
+  pedidoId              String                   @db.Uuid
+  eventoId              String                   @db.Uuid
+  produtorId            String                   @db.Uuid
+  idempotencyKey        String                   @unique
+  status                StatusIntencaoPagamento  @default(CRIADA)
+  metodo                MetodoPagamentoCore      @default(PIX)
+
+  valorTotal            Decimal                  @db.Decimal(14, 2)
+  valorIngressos        Decimal                  @db.Decimal(14, 2)
+  taxaServico           Decimal                  @db.Decimal(14, 2)
+  splitProdutor         Decimal                  @db.Decimal(14, 2)
+  splitPlataforma       Decimal                  @db.Decimal(14, 2)
+
+  compradorNome         String
+  compradorDocumento    String
+  compradorEmail        String
+  compradorTelefone     String?
+
+  adquirente            String?
+  transacaoId           String?
+  nsu                   String?
+  codigoAutorizacao     String?
+  parcelas              Int                      @default(1)
+
+  taxaMdrPercentual     Decimal?                 @db.Decimal(5, 2)
+  taxaMdrFixa           Decimal?                 @db.Decimal(14, 2)
+  custoProcessamento    Decimal?                 @db.Decimal(14, 2)
+  valorLiquidoEsperado  Decimal?                 @db.Decimal(14, 2)
+
+  expiraEm              DateTime?
+  confirmadoEm          DateTime?
+  recusadoEm            DateTime?
+  motivoRecusa          String?
+
+  metadata              Json?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  pixDetail             PixPaymentDetail?
+  transacoes            PaymentTransaction[]
+
+  @@index([tenantId, status])
+  @@index([pedidoId])
+  @@index([eventoId])
+  @@index([produtorId])
+  @@map("payment_intents")
+  @@schema("pagamentos")
+}
+
+model PixPaymentDetail {
+  id                    String         @id @default(uuid()) @db.Uuid
+  paymentIntentId       String         @unique @db.Uuid
+  txid                  String         @unique
+  chavePix              String
+  qrCodeCopiaECola      String
+  qrCodeBase64          String?
+  psp                   String         @default("BACEN_DIRETO")
+  endToEndId            String?
+  expiraEm              DateTime
+  status                String         @default("ATIVA")
+  pagoEm                DateTime?
+  createdAt             DateTime       @default(now())
+
+  paymentIntent         PaymentIntent  @relation(fields: [paymentIntentId], references: [id], onDelete: Cascade)
+
+  @@index([txid])
+  @@index([status, expiraEm])
+  @@map("pix_payment_details")
+  @@schema("pagamentos")
+}
+
+model PaymentTransaction {
+  id                    String         @id @default(uuid()) @db.Uuid
+  paymentIntentId       String         @db.Uuid
+  tipo                  String         // AUTORIZACAO, CAPTURA, CANCELAMENTO, CONSULTA, PIX_PAYIN
+  adquirente            String
+  transacaoExtId        String?
+  nsu                   String?
+  status                String         // SUCESSO, FALHA, PENDENTE
+  codigoRetorno         String?
+  mensagemRetorno       String?
+  tempoRespostaMs       Int?
+  payloadEnvio          Json?
+  payloadResposta       Json?
+  createdAt             DateTime       @default(now())
+
+  paymentIntent         PaymentIntent  @relation(fields: [paymentIntentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentIntentId])
+  @@index([adquirente, status])
+  @@map("payment_transactions")
+  @@schema("pagamentos")
+}
+
+model PaymentWebhookEvent {
+  id                    String         @id @default(uuid()) @db.Uuid
+  tenantId              String?        @db.Uuid
+  adquirente            String
+  webhookEventId        String
+  tipoEvento            String
+  payload               Json
+  processado            Boolean        @default(false)
+  processadoEm          DateTime?
+  erro                  String?
+  createdAt             DateTime       @default(now())
+
+  @@unique([adquirente, webhookEventId])
+  @@index([processado, createdAt])
+  @@map("payment_webhook_events")
+  @@schema("pagamentos")
+}
+
+model ConciliacaoAdquirenteLote {
+  id                    String         @id @default(uuid()) @db.Uuid
+  tenantId              String         @db.Uuid
+  adquirente            String
+  dataReferencia        DateTime
+  arquivoExtrato        String?
+  quantidadeTransacoes  Int            @default(0)
+  valorBrutoTotal       Decimal        @db.Decimal(14, 2)
+  valorTaxasMdr         Decimal        @db.Decimal(14, 2)
+  valorLiquidoTotal     Decimal        @db.Decimal(14, 2)
+  status                String         @default("CONCILIADO")
+  divergenciasEncontradas Int          @default(0)
+  createdAt             DateTime       @default(now())
+
+  @@index([tenantId, adquirente])
+  @@map("conciliacao_adquirentes_lotes")
+  @@schema("pagamentos")
+}
+
 

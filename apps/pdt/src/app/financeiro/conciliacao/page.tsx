@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import FinanceiroPage from '../page';
+import PagamentosPage from '../pagamentos/page';
 
 export default function FinanceiroConciliacaoPage() {
-  return <FinanceiroPage />;
+  return <PagamentosPage />;
 }
+

@@ -27,6 +27,7 @@ import {
   X,
   Landmark,
   Compass,
+  CreditCard,
 } from 'lucide-react';
 import { useMobileNav } from './MobileNavContext';
 
@@ -96,6 +97,13 @@ const rawMenuItems: MenuItemConfig[] = [
     href: '/financeiro/tesouraria',
     icon: Landmark,
     badge: 'Bancos',
+    scopes: ['DISKINGRESSOS'],
+  },
+  {
+    label: 'Pagamentos & Adquirentes',
+    href: '/financeiro/pagamentos',
+    icon: CreditCard,
+    badge: 'Gateway',
     scopes: ['DISKINGRESSOS'],
   },
   {
