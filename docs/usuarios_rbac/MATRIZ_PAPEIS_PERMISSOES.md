@@ -1,4 +1,5 @@
 # Matriz de Papéis e Permissões Granulares (RBAC)
+
 ## Segregação de Privilégios DiskIngressos vs Produtor
 
 ---

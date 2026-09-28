@@ -1,9 +1,11 @@
 # Gestão de Usuários, RBAC & Segregação de Visões (DiskIngressos vs Produtor)
+
 ## Documento Mestre de Arquitetura de Permissões e Multitenancy
 
 ---
 
 ### 1. Visão Geral e Contexto
+
 O sistema opera com **Duas Visões Fundamentais**:
 
 1. **Visão DiskIngressos (Administrador Geral & Operação Interna):**
@@ -24,6 +26,7 @@ O sistema opera com **Duas Visões Fundamentais**:
 ---
 
 ### 2. Papéis de Acesso (Roles)
+
 - `ADMIN_DISKINGRESSOS`: Administrador Master com permissões totais.
 - `FINANCEIRO_DISKINGRESSOS`: Gestor financeiro corporativo da DiskIngressos.
 - `OPERADOR_DISKINGRESSOS`: Equipe de suporte operacional e atendimento da DiskIngressos.

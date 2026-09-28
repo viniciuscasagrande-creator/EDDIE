@@ -1,4 +1,5 @@
 # Relatório Oficial de Homologação e Quality Gates
+
 ## Gestão de Usuários, RBAC & Segregação de Visões
 
 ---
@@ -17,6 +18,7 @@
 ---
 
 ### 2. Resultados dos Testes de Usuários e RBAC (usuarios.spec.ts)
+
 - `deve listar usuários iniciais segregando adequadamente entre escopos DISKINGRESSOS e PRODUTOR`: ✅ PASSED
 - `deve buscar usuário por ID com sucesso`: ✅ PASSED
 - `deve lançar NotFoundException para usuário inexistente`: ✅ PASSED
