@@ -1,0 +1,12 @@
+GateNumber,Name,Domain,Status,IsBlocking,Summary,Responsible,EvidenceRequired
+1,Cutoff de Vendas & Ingressos,OPERACIONAL,APROVADO,true,Todas as sessoes e lotes encerrados; zero carrinhos ativos,coord-operacoes@diskingressos.com.br,Snapshot de inventario e log de sessao
+2,Transacoes & Adquirentes,PAGAMENTOS,APROVADO,true,Transacoes Pix e Cartao 100% capturadas e conciliadas,gateway-audit@diskingressos.com.br,Relatorio conciliado de adquirente
+3,Contratos & Vigencia de Taxas,COMERCIAL,APROVADO,true,Taxa fixa e percentual vigentes validadas contra contrato,juridico@diskingressos.com.br,Contrato assinado e regra tarifaria
+4,Ledger & Saldo 11.19,FINANCEIRO,APROVADO,true,Saldo derivado exclusivamente do Ledger imutavel,controladoria@diskingressos.com.br,Extrato do ledger de conta grafica
+5,Estornos & CDC Art. 49,ESTORNO,APROVADO,true,Zero solicitacoes pendentes de reembolso ou estorno,sac-reembolsos@diskingressos.com.br,Relatorio zerado de solicitacoes CDC
+6,Matriz de Integridade (11.22),REVENUE_ASSURANCE,APROVADO,true,Matriz de integridade ponta a ponta sem anomalias criticas,assurance-bot@diskingressos.com.br,Log de execucao da matriz de integridade
+7,Conciliacao Pedido×Gateway×Banco,CONCILIACAO,APROVADO,true,Matriz 6 vias validada e sem pendencias bancarias,tesouraria@diskingressos.com.br,Extrato bancario conciliado
+8,Partidas Dobradas & DRE (11.21),CONTABILIDADE,APROVADO,true,Lancamentos contabeis equilibrados e DRE final apurada,contador-responsavel@diskingressos.com.br,Balancete de verificacao e DRE
+9,Memoria de Calculo do Settlement,SETTLEMENT,APROVADO,true,GMV deducoes taxas retencoes e repasses apurados,liquidacao@diskingressos.com.br,Memoria de calculo centavo a centavo
+10,Retorno Bancario & Payout Unico,BANCO,APROVADO,true,Destino bancario ativo e protecao contra repasse duplicado,banco-integracao@diskingressos.com.br,Comprovante bancario e idempotencyKey
+11,Dossie & Segregacao de Funcoes (SoD),GOVERNANCA,APROVADO,true,Exige operador e diretor distintos com carimbo SHA-256,auditoria-compliance@diskingressos.com.br,Token SoD e hash criptografico SHA-256

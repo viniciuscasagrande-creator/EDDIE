@@ -1,0 +1,19 @@
+Endpoint,Method,RoleRequired,ProducerOwnershipEnforced,SoDRuleEnforced,Description
+/api/event-closings,GET,OPERADOR_FINANCEIRO,true,false,Lista fechamentos de eventos do tenant/produtor
+/api/event-closings,POST,OPERADOR_FINANCEIRO,true,false,Inicializa o ciclo de fechamento para um evento
+/api/event-closings/:id,GET,OPERADOR_FINANCEIRO,true,false,Consulta status dos 11 gates e settlement do evento
+/api/event-closings/:id/snapshot,POST,OPERADOR_FINANCEIRO,true,false,Cria snapshot de corte operacional (cutoff)
+/api/event-closings/:id/validate,POST,OPERADOR_FINANCEIRO,true,false,Executa validacao dos 11 gates de fechamento
+/api/event-closings/:id/checklist,GET,OPERADOR_FINANCEIRO,true,false,Consulta checklist detalhado com evidencias e responsaveis
+/api/event-closings/:id/operations,GET,OPERADOR_FINANCEIRO,true,false,Consulta dados de inventario ingressos e presenca
+/api/event-closings/:id/finance,GET,OPERADOR_FINANCEIRO,true,false,Consulta demonstrativo financeiro consolidado do Ledger 11.19
+/api/event-closings/:id/reconciliation,GET,OPERADOR_FINANCEIRO,true,false,Consulta matriz 6 vias de conciliacao bancaria
+/api/event-closings/:id/revenue-assurance,GET,OPERADOR_FINANCEIRO,true,false,Consulta cobertura e integridade de receita 11.22
+/api/event-closings/:id/accounting,GET,OPERADOR_FINANCEIRO,true,false,Consulta partidas dobradas e DRE oficial do evento 11.21
+/api/event-closings/:id/result,GET,OPERADOR_FINANCEIRO,true,false,Consulta resultado liquido apurado do evento
+/api/event-closings/:id/settlement/preview,POST,OPERADOR_FINANCEIRO,true,false,Gera previa da memoria de calculo do repasse
+/api/event-closings/:id/settlement/approve,POST,DIRETOR_FINANCEIRO,true,true,Aprova settlement exigindo SoD e token de alcada se >= 40k
+/api/event-closings/:id/settlement/execute,POST,TESOURARIA,true,false,Executa payout bancario com chave de idempotencia e retry
+/api/event-closings/:id/dossier,GET,PRODUTOR_AUDITOR,true,false,Obtem o dossie final emitido com hash SHA-256
+/api/event-closings/:id/close,POST,DIRETOR_FINANCEIRO,true,true,Conclui fechamento definitivo exigindo SoD e bloqueia destrutivas
+/api/event-closings/:id/reopen,POST,AUDITORIA_MASTER,true,false,Reabre evento exigindo motivo >= 10 chars e protocolo formal

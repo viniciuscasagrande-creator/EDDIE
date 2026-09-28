@@ -27,9 +27,12 @@ import {
   ExternalLink,
   Loader2,
   Hash,
+  Clock,
+  Briefcase,
 } from 'lucide-react';
 import { useProducerEvent } from '../../../../components/ProducerEventContext';
 import { formatBRL, formatNumber } from '../../../../lib/utils';
+import { StatusFeedback } from '../../../../components/ui/StatusFeedback';
 
 export type GateStatus = 'APROVADO' | 'BLOQUEANTE' | 'EM_ANALISE' | 'INFORMATIVO';
 
@@ -41,10 +44,27 @@ export interface GateItem {
   isBlocking: boolean;
   summary: string;
   blockingReason?: string;
+  responsible?: string;
+  timestamp?: string;
+}
+
+export interface PendingItem {
+  id: string;
+  gateNumber: number;
+  domain: string;
+  title: string;
+  severity: 'CRITICA' | 'ALTA' | 'MEDIA' | 'BAIXA';
+  isBlocking: boolean;
+  detectedAt: string;
+  description: string;
+  resolutionDomain: string;
 }
 
 export interface SettlementData {
   gmvCents: number;
+  platformFeeFixedCents?: number;
+  platformFeePercentageCents?: number;
+  platformFeeTotalCents?: number;
   platformFeeCents: number;
   paymentProcessingFeeCents: number;
   cdcRefundsCents: number;
@@ -52,6 +72,7 @@ export interface SettlementData {
   priorPayoutsCents: number;
   securityHoldCents: number;
   netFinalPayoutCents: number;
+  bankDestinationMasked?: string;
 }
 
 export interface DossierSnapshot {
@@ -85,34 +106,41 @@ export default function EventClosingPage() {
   const { api, produtorId, evento } = useProducerEvent();
 
   const [loading, setLoading] = useState(true);
-  const [closingStatus, setClosingStatus] = useState<'ABERTO' | 'ENCERRADO' | 'EM_FECHAMENTO' | 'FECHADO' | 'REABERTO_VERSIONADO'>('ENCERRADO');
+  const [closingStatus, setClosingStatus] = useState<string>('EM_PREPARACAO');
   const [currentVersion, setCurrentVersion] = useState('v1');
   const [isReadyToClose, setIsReadyToClose] = useState(true);
   const [gates, setGates] = useState<GateItem[]>([]);
+  const [pendencias, setPendencias] = useState<PendingItem[]>([]);
   const [settlement, setSettlement] = useState<SettlementData>({
     gmvCents: 48250000,
-    platformFeeCents: 4825000,
+    platformFeeFixedCents: 25000,
+    platformFeePercentageCents: 4825000,
+    platformFeeTotalCents: 4850000,
+    platformFeeCents: 4850000,
     paymentProcessingFeeCents: 1206250,
     cdcRefundsCents: 350000,
     chargebacksCents: 0,
     priorPayoutsCents: 19300000,
     securityHoldCents: 2412500,
-    netFinalPayoutCents: 20156250,
+    netFinalPayoutCents: 20131250,
+    bankDestinationMasked: 'Banco do Brasil (001) Ag: ***4 C/C: *****-8 / Pix: ***.456.789-**',
   });
   const [dossier, setDossier] = useState<DossierSnapshot | null>(null);
 
   // Modais de ação
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showReopenModal, setShowReopenModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
   const [operatorId, setOperatorId] = useState('operador-financeiro-01');
   const [approverId, setApproverId] = useState('diretor-financeiro-02');
+  const [directorToken, setDirectorToken] = useState('AUTH-DIR-MASTER-99');
   const [reopenReason, setReopenReason] = useState('');
   const [reopenProtocol, setReopenProtocol] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const [copiedHash, setCopiedHash] = useState(false);
 
-  // Carrega status dos 10 gates e settlement
+  // Carrega status dos 11 gates e settlement
   const carregarStatusFechamento = useCallback(async () => {
     setLoading(true);
     setActionFeedback(null);
@@ -128,15 +156,16 @@ export default function EventClosingPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setClosingStatus(data.currentStatus || 'ENCERRADO');
+        setClosingStatus(data.currentStatus || 'EM_PREPARACAO');
         setCurrentVersion(data.currentVersion || 'v1');
         setIsReadyToClose(data.isReadyToClose ?? true);
         setGates(data.gates || []);
+        if (data.pendencias) setPendencias(data.pendencias);
         if (data.settlement) setSettlement(data.settlement);
         if (data.dossierSnapshot) setDossier(data.dossierSnapshot);
       }
     } catch {
-      // Mantém fallback seguro para visualização
+      // Resiliente
     } finally {
       clearTimeout(timer);
       setLoading(false);
@@ -147,7 +176,64 @@ export default function EventClosingPage() {
     void carregarStatusFechamento();
   }, [carregarStatusFechamento]);
 
-  // Concluir Fechamento
+  // Executa snapshot de cutoff
+  const handleCutoffSnapshot = async () => {
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`${api}/api/event-closings/${eventId}/snapshot`, {
+        method: 'POST',
+        headers: { 'x-producer-id': produtorId || '' },
+      });
+      if (res.ok) {
+        setActionFeedback({ message: 'Snapshot de corte operacional emitido com sucesso!', success: true });
+        void carregarStatusFechamento();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setActionFeedback({ message: errData.message || 'Falha ao emitir cutoff.', success: false });
+      }
+    } catch {
+      setActionFeedback({ message: 'Erro de comunicação ao emitir snapshot.', success: false });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Aprovar Liquidação (Alçada SoD)
+  const handleConfirmApproval = async () => {
+    setIsProcessing(true);
+    setActionFeedback(null);
+
+    try {
+      const res = await fetch(`${api}/api/event-closings/${eventId}/settlement/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-producer-id': produtorId || '',
+        },
+        body: JSON.stringify({ operatorId, approverId, directorToken }),
+      });
+
+      const payload = await res.json();
+      if (!res.ok) {
+        throw new Error(payload.message || 'Falha ao aprovar settlement.');
+      }
+
+      setShowApproveModal(false);
+      setClosingStatus(payload.status || 'PRONTO_PARA_LIQUIDAR');
+      setActionFeedback({
+        message: 'Settlement aprovado formalmente com alçada de diretoria!',
+        success: true,
+      });
+      void carregarStatusFechamento();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao aprovar settlement.';
+      setActionFeedback({ message: msg, success: false });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Concluir Fechamento Definitivo
   const handleConfirmClose = async () => {
     setIsProcessing(true);
     setActionFeedback(null);
@@ -159,7 +245,7 @@ export default function EventClosingPage() {
           'Content-Type': 'application/json',
           'x-producer-id': produtorId || '',
         },
-        body: JSON.stringify({ operatorId, approverId }),
+        body: JSON.stringify({ operatorId, approverId, directorToken }),
       });
 
       const payload = await res.json();
@@ -210,7 +296,7 @@ export default function EventClosingPage() {
 
       setShowReopenModal(false);
       setDossier(null);
-      setClosingStatus('REABERTO_VERSIONADO');
+      setClosingStatus('REABERTO');
       setCurrentVersion(payload.newVersionCandidate || 'v2');
       setActionFeedback({
         message: payload.message || 'Evento reaberto com sucesso. Snapshot anterior preservado!',
@@ -231,6 +317,26 @@ export default function EventClosingPage() {
     setTimeout(() => setCopiedHash(false), 2000);
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'FECHADO':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+      case 'LIQUIDADO':
+      case 'PRONTO_PARA_FECHAR':
+        return 'bg-teal-500/10 text-teal-400 border-teal-500/30';
+      case 'PRONTO_PARA_LIQUIDAR':
+      case 'AGUARDANDO_APROVACAO':
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+      case 'COM_PENDENCIAS':
+        return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+      case 'REABERTO':
+      case 'REABERTO_VERSIONADO':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+      default:
+        return 'bg-sky-500/10 text-sky-400 border-sky-500/30';
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* 1. BREADCRUMB & HEADER */}
@@ -249,22 +355,16 @@ export default function EventClosingPage() {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                 Central de Fechamento do Evento
               </h1>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-                closingStatus === 'FECHADO'
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : closingStatus === 'REABERTO_VERSIONADO'
-                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                  : 'bg-sky-500/10 text-sky-400 border-sky-500/30'
-              }`}>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(closingStatus)}`}>
                 {closingStatus === 'FECHADO' ? `FECHADO (${currentVersion})` : closingStatus}
               </span>
             </div>
             <p className="text-slate-400 text-sm mt-1">
-              Cutoff de vendas, conciliação de portaria, DRE contábil, auditoria de receita e liquidação final do produtor.
+              Cutoff operacional, conciliação de portaria, DRE contábil, auditoria de receita e liquidação final do produtor.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => void carregarStatusFechamento()}
               disabled={loading}
@@ -274,16 +374,38 @@ export default function EventClosingPage() {
               <span>Reauditar Gates</span>
             </button>
 
-            {closingStatus !== 'FECHADO' ? (
-              <button
-                onClick={() => setShowCloseModal(true)}
-                disabled={!isReadyToClose || loading}
-                className="text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition shadow-sm disabled:opacity-40"
-              >
-                <Lock size={14} />
-                <span>Concluir Fechamento Definitivo</span>
-              </button>
-            ) : (
+            {closingStatus !== 'FECHADO' && (
+              <>
+                <button
+                  onClick={() => void handleCutoffSnapshot()}
+                  disabled={loading || isProcessing}
+                  className="text-xs text-slate-300 hover:text-white px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 flex items-center gap-1.5 transition"
+                >
+                  <Clock size={13} />
+                  <span>Corte (Cutoff)</span>
+                </button>
+
+                <button
+                  onClick={() => setShowApproveModal(true)}
+                  disabled={loading || isProcessing || !isReadyToClose}
+                  className="text-xs font-bold px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition shadow-sm disabled:opacity-40"
+                >
+                  <Briefcase size={13} />
+                  <span>Aprovar Liquidação</span>
+                </button>
+
+                <button
+                  onClick={() => setShowCloseModal(true)}
+                  disabled={!isReadyToClose || loading}
+                  className="text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition shadow-sm disabled:opacity-40"
+                >
+                  <Lock size={14} />
+                  <span>Concluir Fechamento</span>
+                </button>
+              </>
+            )}
+
+            {closingStatus === 'FECHADO' && (
               <button
                 onClick={() => setShowReopenModal(true)}
                 className="text-xs font-bold px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 transition shadow-sm"
@@ -387,16 +509,16 @@ export default function EventClosingPage() {
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
-                Resultado & Settlement Financeiro Final
+                Resultado & Settlement Financeiro Final (11.19)
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Apuração líquida do repasse com base nas entradas, deduções legais e taxas da plataforma
+                Apuração líquida do repasse com base no Ledger oficial, deduções contratuais e retenções de risco
               </p>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-xs text-slate-400 block font-medium">Saldo Líquido Final</span>
+            <span className="text-xs text-slate-400 block font-medium">Saldo Líquido Final Elegível</span>
             <span className="text-2xl font-black text-emerald-400">
               {formatBRL(settlement.netFinalPayoutCents)}
             </span>
@@ -427,17 +549,45 @@ export default function EventClosingPage() {
         </div>
 
         <div className="pt-2 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/60">
-          <span>Retenção de Segurança (30 dias para chargeback residual): <b>{formatBRL(settlement.securityHoldCents)}</b></span>
-          <span>Taxa de processamento gateway (2,5%): <b>{formatBRL(settlement.paymentProcessingFeeCents)}</b></span>
+          <span>Destino Bancário Mascarado: <b className="text-slate-200">{settlement.bankDestinationMasked || 'Banco do Brasil (001)'}</b></span>
+          <span>Retenção de Segurança (30 dias): <b>{formatBRL(settlement.securityHoldCents)}</b></span>
+          <span>Taxa Gateway (2,5%): <b>{formatBRL(settlement.paymentProcessingFeeCents)}</b></span>
         </div>
       </div>
 
-      {/* 4. OS 10 GATES CRÍTICOS DE FECHAMENTO */}
+      {/* 4. CENTRAL DE PENDÊNCIAS SE HOUVER BLOQUEIOS */}
+      {pendencias.length > 0 && (
+        <div className="bg-rose-950/20 border border-rose-500/30 rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
+            <AlertTriangle size={18} />
+            <span>Central de Pendências Críticas ({pendencias.length})</span>
+          </div>
+          <p className="text-xs text-slate-300">
+            Regra Inviolável: Nenhum evento pode atingir status FECHADO enquanto houver pendências críticas abertas.
+          </p>
+          <div className="space-y-2 pt-2">
+            {pendencias.map((pend) => (
+              <div key={pend.id} className="bg-slate-900/90 p-3 rounded-lg border border-rose-500/20 flex items-start justify-between gap-3 text-xs">
+                <div>
+                  <span className="font-bold text-rose-300 block">{pend.title}</span>
+                  <span className="text-slate-400 mt-0.5 block">{pend.description}</span>
+                  <span className="text-[10px] text-slate-500 mt-1 block">Domínio de Resolução: {pend.resolutionDomain}</span>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 text-[10px] font-bold shrink-0">
+                  {pend.severity}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 5. OS 11 GATES CRÍTICOS DE FECHAMENTO */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold text-white tracking-tight">
-              Checklist dos 10 Gates de Fechamento
+              Checklist dos 11 Gates de Fechamento
             </h3>
             <p className="text-xs text-slate-400">
               Regra Inviolável: Nenhum evento atinge status FECHADO se houver gate financeiro crítico aberto
@@ -488,6 +638,12 @@ export default function EventClosingPage() {
                   {gate.summary}
                 </p>
 
+                {gate.responsible && (
+                  <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
+                    <span>Responsável: {gate.responsible}</span>
+                  </div>
+                )}
+
                 {gate.blockingReason && (
                   <div className="mt-2 text-xs font-semibold text-rose-400 flex items-center gap-1.5 bg-rose-500/10 p-2 rounded border border-rose-500/20">
                     <AlertTriangle size={13} />
@@ -499,6 +655,75 @@ export default function EventClosingPage() {
           })}
         </div>
       </div>
+
+      {/* MODAL: APROVAR LIQUIDAÇÃO (SoD + ALÇADA) */}
+      {showApproveModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <Briefcase size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Aprovação Formal de Liquidação</h3>
+                <p className="text-xs text-slate-400">Validação de alçada e Segregação de Funções (SoD)</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-medium">Operador Solicitante:</label>
+                <input
+                  type="text"
+                  value={operatorId}
+                  onChange={(e) => setOperatorId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-medium">Diretor Financeiro Aprovador (SoD Obrigatório):</label>
+                <input
+                  type="text"
+                  value={approverId}
+                  onChange={(e) => setApproverId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-medium">Token de Alçada de Diretoria (AUTH-DIR-*):</label>
+                <input
+                  type="text"
+                  value={directorToken}
+                  onChange={(e) => setDirectorToken(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white"
+                />
+                <span className="text-[11px] text-amber-400 block pt-0.5">
+                  Exigido para repasses a partir de R$ 40.000,00.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <button
+                onClick={() => setShowApproveModal(false)}
+                className="text-xs text-slate-400 hover:text-white px-4 py-2 rounded-lg"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => void handleConfirmApproval()}
+                disabled={isProcessing}
+                className="text-xs font-bold px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isProcessing ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
+                <span>Aprovar Settlement</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL: CONCLUIR FECHAMENTO COM VALIDAÇÃO SoD */}
       {showCloseModal && (

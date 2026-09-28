@@ -66,3 +66,31 @@ export const EventoAdiado = defineEvent(
     janelaOpcaoEstornoDias: z.number().int().positive(),
   }),
 );
+
+export const EventoFechado = defineEvent(
+  'evento.fechado.v1',
+  z.object({
+    eventoId: z.string().uuid(),
+    produtorId: z.string().uuid(),
+    versao: z.string(), // "v1", "v2"
+    integrityHashSha256: z.string().length(64),
+    fechadoEm: z.string().datetime(),
+    fechadoPor: z.string(),
+    aprovadoPor: z.string(),
+    settlementLiquidoCents: z.number().int().nonnegative(),
+  }),
+);
+
+export const EventoReaberto = defineEvent(
+  'evento.reaberto.v1',
+  z.object({
+    eventoId: z.string().uuid(),
+    produtorId: z.string().uuid(),
+    versaoAnterior: z.string(),
+    motivo: z.string().min(10),
+    protocolo: z.string(),
+    reabertoEm: z.string().datetime(),
+    reabertoPor: z.string(),
+  }),
+);
+
