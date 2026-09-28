@@ -4,6 +4,7 @@ import './globals.css';
 import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
 import { ProducerEventProvider } from '../components/ProducerEventContext';
+import { AuthSessionProvider } from '../components/AuthSessionContext';
 import { BuildBadge } from '../components/BuildBadge';
 import { ScrollSpyProvider } from '../components/scrollspy';
 
@@ -20,16 +21,18 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="bg-[#0B0F19] text-slate-100 flex min-h-screen">
-        <ProducerEventProvider>
-          <ScrollSpyProvider>
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <Header />
-              <main className="flex-1 p-8 overflow-y-auto">{children}</main>
-            </div>
-            <BuildBadge />
-          </ScrollSpyProvider>
-        </ProducerEventProvider>
+        <AuthSessionProvider>
+          <ProducerEventProvider>
+            <ScrollSpyProvider>
+              <Sidebar />
+              <div className="flex-1 flex flex-col min-w-0">
+                <Header />
+                <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+              </div>
+              <BuildBadge />
+            </ScrollSpyProvider>
+          </ProducerEventProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

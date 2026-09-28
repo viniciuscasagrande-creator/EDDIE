@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useProducerEvent } from './ProducerEventContext';
+import { useAuthSession } from './AuthSessionContext';
 import { EDDIE_BUILD } from '../lib/buildInfo';
 import {
   LayoutDashboard,
@@ -24,110 +25,157 @@ import {
   ChevronRight,
   Sparkles,
   Lock,
+  Users,
 } from 'lucide-react';
 
-const menuItems = [
+interface MenuItemConfig {
+  label: string;
+  producerLabel?: string;
+  href: string;
+  icon: React.ElementType;
+  badge: string | null;
+  scopes: ('DISKINGRESSOS' | 'PRODUTOR')[];
+}
+
+const rawMenuItems: MenuItemConfig[] = [
   {
     label: 'Visão Geral',
+    producerLabel: 'Visão Geral',
     href: '/',
     icon: LayoutDashboard,
     badge: null,
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Central Operacional',
     href: '/operacao',
     icon: Activity,
     badge: 'Ao Vivo',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Hardening & Segurança',
     href: '/operacao/hardening',
     icon: ShieldCheck,
     badge: 'v11.15',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Ciclo E2E & Go-Live',
     href: '/operacao/e2e',
     icon: CheckCircle2,
     badge: 'Gate',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Automações & Regras',
     href: '/automacoes',
     icon: Zap,
     badge: 'Motor',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Todos os Eventos',
+    producerLabel: 'Meus Eventos',
     href: '/eventos',
     icon: Calendar,
     badge: null,
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
-    label: 'Financeiro',
+    label: 'Financeiro Geral',
     href: '/financeiro',
     icon: Wallet,
     badge: 'Ledger',
+    scopes: ['DISKINGRESSOS'],
+  },
+  {
+    label: 'Extrato & Repasses',
+    producerLabel: 'Extrato & Repasses',
+    href: '/financeiro/portal-produtor',
+    icon: Wallet,
+    badge: 'Extrato',
+    scopes: ['PRODUTOR'],
   },
   {
     label: 'Contabilidade',
     href: '/contabilidade',
     icon: Scale,
     badge: 'DRE',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Fechamento & Settlement',
     href: '/fechamento',
     icon: Lock,
     badge: '11.24',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Estornos & CDC',
     href: '/estorno',
     icon: RotateCcw,
     badge: 'CDC',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Comercial B2B',
     href: '/comercial',
     icon: Briefcase,
     badge: 'CRM',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Marketing',
     href: '/marketing',
     icon: Megaphone,
     badge: null,
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Remarketing',
     href: '/remarketing',
     icon: RotateCcw,
     badge: null,
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Relatórios',
+    producerLabel: 'Relatórios do Evento',
     href: '/relatorios',
     icon: FileBarChart,
     badge: null,
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Atendimento SAC',
+    producerLabel: 'SAC & Chamados',
     href: '/sac',
     icon: Headphones,
     badge: 'SLA',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Suporte Operacional',
     href: '/suporte',
     icon: AlertTriangle,
     badge: null,
+    scopes: ['DISKINGRESSOS'],
+  },
+  {
+    label: 'Usuários & Permissões',
+    producerLabel: 'Minha Equipe',
+    href: '/usuarios',
+    icon: Users,
+    badge: 'RBAC',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { eventoId } = useProducerEvent();
+  const { currentVision, selectedProducer, isAdmin } = useAuthSession();
   const [collapsed, setCollapsed] = useState(false);
 
   // Carrega estado de recolhimento persistente
@@ -154,6 +202,11 @@ export function Sidebar() {
   const activeEventId = eventMatch?.[1] || null;
   const currentEventId = activeEventId || eventoId || 'evento-operacao';
 
+  // Filtra itens com base na visão atual
+  const visibleMenuItems = rawMenuItems.filter((item) =>
+    item.scopes.includes(currentVision),
+  );
+
   return (
     <aside
       className={`bg-[#0d1322] border-r border-[#1e293b] flex flex-col shrink-0 min-h-screen transition-all duration-300 ${
@@ -163,21 +216,33 @@ export function Sidebar() {
       {/* Brand Header */}
       <div className="h-16 flex items-center px-4 justify-between border-b border-[#1e293b]">
         <Link href="/" className="flex items-center gap-3 overflow-hidden">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-green-500 to-emerald-400 flex items-center justify-center font-black text-black text-base shadow-lg shadow-green-500/20 shrink-0">
-            Di
+          <div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-black text-base shadow-lg shrink-0 ${
+              isAdmin
+                ? 'bg-gradient-to-tr from-green-500 to-emerald-400 shadow-green-500/20'
+                : 'bg-gradient-to-tr from-sky-400 to-indigo-500 shadow-sky-500/20 text-white'
+            }`}
+          >
+            {isAdmin ? 'Di' : 'Pr'}
           </div>
           {!collapsed && (
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h1 className="font-bold text-white text-sm leading-tight tracking-tight truncate">
-                  DiskIngressos
+                  {isAdmin ? 'DiskIngressos' : selectedProducer?.nome.split(' ')[0] || 'Produtor'}
                 </h1>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30 shrink-0">
-                  {EDDIE_BUILD.uiVersion}
+                <span
+                  className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border shrink-0 ${
+                    isAdmin
+                      ? 'bg-sky-500/20 text-sky-400 border-sky-500/30'
+                      : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                  }`}
+                >
+                  {isAdmin ? 'ADMIN' : 'PRODUTOR'}
                 </span>
               </div>
               <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider block truncate">
-                Painel do Produtor
+                {isAdmin ? 'Painel do Produtor' : 'Área Restrita'}
               </span>
             </div>
           )}
@@ -197,13 +262,21 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-2.5 py-3 space-y-1 overflow-y-auto">
         {!collapsed && (
-          <div className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Módulos do Sistema
+          <div className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+            <span>{isAdmin ? 'Módulos Globais' : 'Painel da Produtora'}</span>
+            {!isAdmin && (
+              <span className="text-[9px] text-amber-400 font-mono">Restrito</span>
+            )}
           </div>
         )}
 
-        {menuItems.map((item) => {
+        {visibleMenuItems.map((item) => {
           const Icon = item.icon;
+          const displayLabel =
+            currentVision === 'PRODUTOR' && item.producerLabel
+              ? item.producerLabel
+              : item.label;
+
           const isActive =
             item.href === '/'
               ? pathname === '/'
@@ -213,7 +286,7 @@ export function Sidebar() {
             <React.Fragment key={item.href}>
               <Link
                 href={item.href}
-                title={collapsed ? item.label : undefined}
+                title={collapsed ? displayLabel : undefined}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
                   isActive
                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
@@ -225,7 +298,7 @@ export function Sidebar() {
                     size={17}
                     className={`shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}
                   />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {!collapsed && <span className="truncate">{displayLabel}</span>}
                 </div>
                 {!collapsed && item.badge && (
                   <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
@@ -234,8 +307,8 @@ export function Sidebar() {
                 )}
               </Link>
 
-              {/* Sub-itens da Operação Global */}
-              {!collapsed && item.href === '/operacao' && isActive && (
+              {/* Sub-itens da Operação Global (apenas para Admin) */}
+              {!collapsed && item.href === '/operacao' && isActive && isAdmin && (
                 <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
                   <Link
                     href="/operacao/alertas"
@@ -256,12 +329,12 @@ export function Sidebar() {
                 </div>
               )}
 
-              {/* Modo Evento: Indicador limpo e conciso sem duplicar os 20 links da barra horizontal */}
+              {/* Modo Evento: Indicador limpo e conciso */}
               {!collapsed && item.href === '/eventos' && (isActive || activeEventId) && (
                 <div className="ml-7 mt-1 mb-2 space-y-1 border-l border-sky-900/70 pl-2.5 text-xs">
                   {activeEventId && (
                     <Link href="/eventos" className="block text-[11px] text-sky-400 hover:text-white font-medium">
-                      ← Todos os Eventos
+                      ← {isAdmin ? 'Todos os Eventos' : 'Meus Eventos'}
                     </Link>
                   )}
                   <div className="flex items-center gap-1.5 pt-0.5">
@@ -299,7 +372,7 @@ export function Sidebar() {
         </Link>
         {!collapsed && (
           <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-            <span>Event-Driven</span>
+            <span>{isAdmin ? 'Modulith Core' : 'Tenant Sandbox'}</span>
             <span className="text-[10px] font-mono font-bold text-sky-400">
               {EDDIE_BUILD.uiVersion}
             </span>

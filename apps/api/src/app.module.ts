@@ -26,6 +26,7 @@ import { EventClosingModule } from './modules/event-closing/event-closing.module
 import { CashForecastModule } from './modules/cash-forecast/cash-forecast.module';
 import { FinancialRiskModule } from './modules/financial-risk/financial-risk.module';
 import { FinancialPlanningModule } from './modules/financial-planning/financial-planning.module';
+import { UsuariosModule } from './modules/usuarios/usuarios.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -61,6 +62,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     CashForecastModule,
     FinancialRiskModule,
     FinancialPlanningModule,
+    UsuariosModule,
   ],
 })
 export class AppModule {}
