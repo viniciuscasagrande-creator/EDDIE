@@ -1,0 +1,7 @@
+Conceito,FonteDeOrigem,RegraOperacional,DisponivelParaSaque,PodeComporPrevisao,ExemploCents
+Saldo Bancario Real,Extratos Bancarios / Tesouraria,Reflete dinheiro fisico liquidado nas contas bancarias BB e Itau,false,true,185420000
+Saldo do Ledger,11.19 / Conta Grafica,Saldo patrimonial contabil apurado por partidas dobradas append-only,false,false,212500000
+Saldo Disponivel,11.19 / Bucket Disponivel,Saldo livre e desimpedido para solicitacao de repasse ou TED,true,false,142000000
+Valor Reservado,11.19 / 11.24 Retencao,Fundo de garantia retido para estornos CDC Art. 49 e disputas,false,false,12500000
+Valor em Liquidacao,Tesouraria / CNAB / Pix,Lotes de pagamento autorizados em transito bancario,false,false,30920000
+Valor Projetado,11.26 Cash Forecast,Projecao estatistica futura estritamente preditiva,false,true,84500000

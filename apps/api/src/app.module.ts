@@ -23,6 +23,7 @@ import { RevenueAssuranceModule } from './modules/revenue-assurance/revenue-assu
 import { ProducerPortalModule } from './modules/producer-portal/producer-portal.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EventClosingModule } from './modules/event-closing/event-closing.module';
+import { CashForecastModule } from './modules/cash-forecast/cash-forecast.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -55,6 +56,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     ProducerPortalModule,
     DashboardModule,
     EventClosingModule,
+    CashForecastModule,
   ],
 })
 export class AppModule {}
