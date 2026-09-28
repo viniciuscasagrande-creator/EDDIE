@@ -406,6 +406,35 @@ export class FinancialEngineService {
     existing.push(newConfig);
     this.feeConfigs.set(input.eventId, existing);
 
+    try {
+      this.prisma.configuracaoTaxaEvento.upsert({
+        where: { eventoId: input.eventId },
+        update: {
+          tipo: newConfig.ruleModel,
+          percentual: newConfig.percentRate,
+          valorFixo: newConfig.fixedAmountCents / 100,
+          custoAdquirenteEstimado: newConfig.gatewayProcessingPercentRate,
+          versao: newConfig.version,
+          status: newConfig.status,
+          criadoPor: newConfig.approvedBy || 'sistema',
+        },
+        create: {
+          tenantId,
+          eventoId: input.eventId,
+          produtorId: input.producerId,
+          tipo: newConfig.ruleModel,
+          percentual: newConfig.percentRate,
+          valorFixo: newConfig.fixedAmountCents / 100,
+          custoAdquirenteEstimado: newConfig.gatewayProcessingPercentRate,
+          versao: newConfig.version,
+          status: newConfig.status,
+          criadoPor: newConfig.approvedBy || 'sistema',
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialEngine] Persistência de taxa offline: ${err}`);
+      });
+    } catch {}
+
     this.logger.log(`Nova versão de taxa V${nextVersion} cadastrada para evento ${input.eventId} (Modelo: ${newConfig.ruleModel})`);
     return newConfig;
   }
@@ -1469,6 +1498,25 @@ export class FinancialEngineService {
       }
     }
 
+    try {
+      this.prisma.contaPagar.create({
+        data: {
+          tenantId,
+          produtorId: producerId,
+          eventoId: payable.eventId,
+          fornecedorNome: payable.supplierName,
+          fornecedorDocumento: '00.000.000/0001-00',
+          categoria: payable.category,
+          descricao: payable.description,
+          valor: payable.amountCents / 100,
+          vencimentoEm: new Date(payable.dueDate),
+          status: 'pendente',
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialEngine] Persistência contaPagar offline: ${err}`);
+      });
+    } catch {}
+
     return payable;
   }
 
@@ -1485,6 +1533,19 @@ export class FinancialEngineService {
     payable.approvedBy = actorId;
     payable.approvedAt = new Date().toISOString();
     this.payables.set(payableId, payable);
+
+    try {
+      this.prisma.contaPagar.updateMany({
+        where: { tenantId, descricao: payable.description },
+        data: {
+          status: 'aprovado',
+          aprovadoPor: actorId,
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialEngine] Atualização contaPagar offline: ${err}`);
+      });
+    } catch {}
+
     return payable;
   }
 
@@ -1587,6 +1648,26 @@ export class FinancialEngineService {
       createdAt: new Date().toISOString(),
     };
     this.receivables.set(id, rec);
+
+    try {
+      this.prisma.contaReceber.create({
+        data: {
+          tenantId,
+          produtorId: producerId,
+          eventoId: rec.eventId,
+          devedorNome: rec.counterparty,
+          devedorDocumento: '00.000.000/0001-00',
+          categoria: rec.origin,
+          descricao: rec.description,
+          valor: rec.amountCents / 100,
+          vencimentoEm: new Date(rec.dueDate),
+          status: 'pendente',
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialEngine] Persistência contaReceber offline: ${err}`);
+      });
+    } catch {}
+
     return rec;
   }
 
@@ -1674,6 +1755,23 @@ export class FinancialEngineService {
       spentCents: 0,
     };
     this.costCenters.set(id, cc);
+
+    try {
+      this.prisma.centroCustoOrcamento.create({
+        data: {
+          tenantId,
+          codigo: cc.code,
+          nome: cc.name,
+          categoria: cc.category,
+          orcamentoAnualCents: BigInt(cc.budgetLimitCents),
+          disponivelCents: BigInt(cc.budgetLimitCents),
+          responsavel: 'gestor-financeiro',
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialEngine] Persistência centroCusto offline: ${err}`);
+      });
+    } catch {}
+
     return cc;
   }
 
@@ -1702,6 +1800,24 @@ export class FinancialEngineService {
       totalPaidCents: 0,
     };
     this.suppliers.set(id, sup);
+
+    try {
+      this.prisma.fornecedor.create({
+        data: {
+          tenantId,
+          produtorId: producerId,
+          razaoSocial: sup.name,
+          nomeFantasia: sup.name,
+          cnpjCpf: sup.documentMasked || `00.000.${Math.floor(100000 + Math.random() * 900000)}/0001-00`,
+          categoria: sup.category,
+          email: sup.contactEmail || null,
+          telefone: null,
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialEngine] Persistência fornecedor offline: ${err}`);
+      });
+    } catch {}
+
     return sup;
   }
 

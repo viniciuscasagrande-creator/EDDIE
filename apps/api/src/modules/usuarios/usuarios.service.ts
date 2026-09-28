@@ -361,6 +361,25 @@ export class UsuariosService {
     };
 
     this.usuarios.set(id, novoUsuario);
+
+    try {
+      this.prisma.usuarioPlataforma.create({
+        data: {
+          tenantId: '00000000-0000-0000-0000-000000000001',
+          nome: novoUsuario.nome,
+          email: novoUsuario.email,
+          senhaHash: '$2b$10$hashed_default_token',
+          cargo: novoUsuario.papel,
+          papel: novoUsuario.papel,
+          escopo: novoUsuario.escopoVisao,
+          status: 'ATIVO',
+          permissoesCustom: novoUsuario.permissoes,
+        },
+      }).catch((err) => {
+        this.logger.debug(`[Usuarios] Persistência usuarioPlataforma offline: ${err}`);
+      });
+    } catch {}
+
     this.logger.log(`Usuário ${novoUsuario.nome} (${novoUsuario.email}) criado por ${req.criadoPor} com papel ${req.papel}`);
 
     return novoUsuario;
@@ -394,6 +413,16 @@ export class UsuariosService {
     }
 
     usuario.permissoes = req.permissoes;
+
+    try {
+      this.prisma.usuarioPlataforma.updateMany({
+        where: { email: usuario.email },
+        data: { permissoesCustom: req.permissoes },
+      }).catch((err) => {
+        this.logger.debug(`[Usuarios] Atualização permissoes offline: ${err}`);
+      });
+    } catch {}
+
     this.logger.log(`Permissões do usuário ${id} atualizadas por ${req.atualizadoPor}`);
 
     return usuario;
@@ -413,6 +442,15 @@ export class UsuariosService {
 
     const anterior = usuario.status;
     usuario.status = req.status;
+
+    try {
+      this.prisma.usuarioPlataforma.updateMany({
+        where: { email: usuario.email },
+        data: { status: req.status },
+      }).catch((err) => {
+        this.logger.debug(`[Usuarios] Alteração status offline: ${err}`);
+      });
+    } catch {}
 
     this.logger.warn(
       `Status do usuário ${usuario.nome} (${usuario.id}) alterado de ${anterior} para ${req.status} por ${req.alteradoPor}: ${req.motivo}`,

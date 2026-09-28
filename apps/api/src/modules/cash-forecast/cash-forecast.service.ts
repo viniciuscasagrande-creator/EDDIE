@@ -434,6 +434,27 @@ export class CashForecastService {
 
     this.versionedAssumptions.set(newVersion, created);
     this.currentAssumptionsVersion = newVersion;
+
+    try {
+      this.prisma.premissaMacroForecast.create({
+        data: {
+          tenantId: '00000000-0000-0000-0000-000000000001',
+          versao: newVersion,
+          selicAnualPercentual: created.selicAnualPercentual,
+          cdiAnualPercentual: created.cdiAnualPercentual,
+          taxaDesagioMensal: created.taxaDesagioAntecipacaoMensalPercentual,
+          taxaEstornoEstimada: created.taxaEstornoEstimadaPercentual,
+          stressVendasConservador: created.stressVendasConservadorPercentual,
+          stressEstornoConservador: created.stressEstornoConservadorPercentual,
+          curvaSelloutJson: created.curvaSelloutDiasAntesEvento as any,
+          vigente: true,
+          atualizadoPor: updatedBy || 'diretoria-financeira',
+        },
+      }).catch((err) => {
+        this.logger.debug(`[CashForecast] Persistência premissaMacroForecast offline: ${err}`);
+      });
+    } catch {}
+
     this.logger.log(`Premissas de Cash Forecast versionadas para ${newVersion} por ${updatedBy}`);
     return created;
   }

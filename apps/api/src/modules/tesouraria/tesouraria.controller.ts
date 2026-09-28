@@ -7,42 +7,42 @@ export class TesourariaController {
   constructor(private readonly tesourariaService: TesourariaService) {}
 
   @Get('posicao')
-  getPosicaoConsolidada() {
+  async getPosicaoConsolidada() {
     return this.tesourariaService.getPosicaoConsolidada();
   }
 
   @Get('contas')
-  listarContas() {
+  async listarContas() {
     return this.tesourariaService.listarContas();
   }
 
   @Get('remessas')
-  listarLotesCnab() {
+  async listarLotesCnab() {
     return this.tesourariaService.listarLotesCnab();
   }
 
   @Get('remessas/:id')
-  obterLotePorId(@Param('id') id: string) {
+  async obterLotePorId(@Param('id') id: string) {
     return this.tesourariaService.obterLotePorId(id);
   }
 
   @Post('remessas/gerar')
-  gerarRemessaCnab(@Body() dados: GerarRemessaDto) {
+  async gerarRemessaCnab(@Body() dados: GerarRemessaDto) {
     return this.tesourariaService.gerarRemessaCnab(dados);
   }
 
   @Post('retornos/processar')
-  processarArquivoRetornoCnab(@Body() dados: ProcessarRetornoDto) {
+  async processarArquivoRetornoCnab(@Body() dados: ProcessarRetornoDto) {
     return this.tesourariaService.processarArquivoRetornoCnab(dados);
   }
 
   @Get('pix/payouts')
-  listarPixPayouts() {
+  async listarPixPayouts() {
     return this.tesourariaService.listarPixPayouts();
   }
 
   @Post('pix/executar')
-  executarPixPayout(@Body() dados: ExecutarPixDto) {
+  async executarPixPayout(@Body() dados: ExecutarPixDto) {
     return this.tesourariaService.executarPixPayout(dados);
   }
 }

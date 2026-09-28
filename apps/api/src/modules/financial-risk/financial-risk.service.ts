@@ -356,6 +356,36 @@ export class FinancialRiskService {
     );
     profile.lastAssessmentDate = new Date().toISOString();
 
+    try {
+      this.prisma.perfilRiscoProdutor.upsert({
+        where: { produtorId: producerId },
+        update: {
+          score: profile.score,
+          rating: profile.rating,
+          status: profile.status,
+          limiteCreditoCents: BigInt(profile.creditLimitCents),
+          garantiasAportadasCents: BigInt(profile.guaranteesCents),
+          exposicaoLiquidaCents: BigInt(profile.netExposureCents),
+          reservaSegurancaPercent: profile.safetyReservePercent,
+          reservaSegurancaCents: BigInt(profile.safetyReserveCents),
+        },
+        create: {
+          tenantId: '00000000-0000-0000-0000-000000000001',
+          produtorId: producerId,
+          score: profile.score,
+          rating: profile.rating,
+          status: profile.status,
+          limiteCreditoCents: BigInt(profile.creditLimitCents),
+          garantiasAportadasCents: BigInt(profile.guaranteesCents),
+          exposicaoLiquidaCents: BigInt(profile.netExposureCents),
+          reservaSegurancaPercent: profile.safetyReservePercent,
+          reservaSegurancaCents: BigInt(profile.safetyReserveCents),
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialRisk] Persistência perfilRiscoProdutor offline: ${err}`);
+      });
+    } catch {}
+
     this.logger.log(
       `Limite de crédito do produtor ${producerId} ajustado para R$ ${(req.newLimitCents / 100).toFixed(2)} por ${req.approvedBy} (Alçada necessária: ${requiredTier})`,
     );
@@ -388,6 +418,7 @@ export class FinancialRiskService {
       }
     }
 
+    const now = new Date().toISOString();
     const breaker: CircuitBreakerItem = {
       id,
       tenantId: '00000000-0000-0000-0000-000000000001',
@@ -400,10 +431,33 @@ export class FinancialRiskService {
       status: 'ATIVO',
       justification: req.justification,
       triggeredAutomatically: false,
-      triggeredAt: new Date().toISOString(),
+      triggeredAt: now,
     };
 
     this.circuitBreakers.set(id, breaker);
+
+    try {
+      if (req.producerId) {
+        this.prisma.perfilRiscoProdutor.findUnique({
+          where: { produtorId: req.producerId },
+        }).then((perfil) => {
+          if (perfil) {
+            this.prisma.travaCircuitBreaker.create({
+              data: {
+                perfilRiscoId: perfil.id,
+                tipo: req.trigger,
+                severidade: req.severity,
+                motivo: req.justification,
+                acaoTomada: req.action,
+                acionadoEm: new Date(now),
+                ativo: true,
+              },
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+      }
+    } catch {}
+
     this.logger.warn(
       `CIRCUIT BREAKER ACIONADO [${req.severity}] para produtor ${req.producerId ?? 'SISTÊMICO'}: ${req.action} (${req.justification})`,
     );
@@ -441,6 +495,19 @@ export class FinancialRiskService {
         }
       }
     }
+
+    try {
+      this.prisma.travaCircuitBreaker.updateMany({
+        where: { motivo: breaker.justification },
+        data: {
+          ativo: false,
+          resolvidoPor: req.resolvedBy,
+          resolvidoEm: new Date(),
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialRisk] Resolução travaCircuitBreaker offline: ${err}`);
+      });
+    } catch {}
 
     this.logger.log(
       `Circuit Breaker ${breakerId} resolvido por ${req.resolvedBy}: ${req.resolutionNotes}`,

@@ -474,6 +474,20 @@ export class EventClosingService {
     record.status = 'LIQUIDADO';
     record.updatedAt = now;
 
+    try {
+      await this.prisma.fechamentoEvento.updateMany({
+        where: { eventoId: eventId },
+        data: {
+          payoutStatus: 'LIQUIDADO',
+          payoutRefBancaria: bankRef,
+          payoutChaveIdemp: idempotencyKey,
+          liquidadoEm: new Date(now),
+        },
+      });
+    } catch (err: unknown) {
+      this.logger.debug(`[EventClosing] Atualização de Settlement no banco offline: ${String(err)}`);
+    }
+
     this.logger.log(
       `Settlement do evento ${eventId} executado com sucesso! Ref Bancária: ${bankRef}, Chave: ${idempotencyKey}`,
     );
@@ -663,8 +677,91 @@ export class EventClosingService {
         where: { id: eventId, tenantId },
         data: { status: 'encerrado' },
       });
+
+      const dbFechamento = await this.prisma.fechamentoEvento.upsert({
+        where: { eventoId: eventId },
+        update: {
+          status: 'FECHADO',
+          versaoDossie: version,
+          dossieHash: integrityHashSha256,
+          receitaBrutaCents: BigInt(record.settlement.gmvCents),
+          taxaPlataformaCents: BigInt(record.settlement.platformFeeTotalCents),
+          taxasProcessamentoCents: BigInt(record.settlement.paymentProcessingFeeCents),
+          estornosCents: BigInt(record.settlement.cdcRefundsCents),
+          chargebacksCents: BigInt(record.settlement.chargebacksCents),
+          reservaContingenciaCents: BigInt(record.settlement.securityHoldCents),
+          adiantamentosCents: BigInt(record.settlement.priorPayoutsCents),
+          saldoLiquidoCents: BigInt(record.settlement.netFinalPayoutCents),
+          fechadoPor: operatorId,
+          fechadoEm: new Date(closedAt),
+        },
+        create: {
+          tenantId,
+          eventoId: eventId,
+          produtorId: record.producerId,
+          status: 'FECHADO',
+          versaoDossie: version,
+          dossieHash: integrityHashSha256,
+          receitaBrutaCents: BigInt(record.settlement.gmvCents),
+          taxaPlataformaCents: BigInt(record.settlement.platformFeeTotalCents),
+          taxasProcessamentoCents: BigInt(record.settlement.paymentProcessingFeeCents),
+          estornosCents: BigInt(record.settlement.cdcRefundsCents),
+          chargebacksCents: BigInt(record.settlement.chargebacksCents),
+          reservaContingenciaCents: BigInt(record.settlement.securityHoldCents),
+          adiantamentosCents: BigInt(record.settlement.priorPayoutsCents),
+          saldoLiquidoCents: BigInt(record.settlement.netFinalPayoutCents),
+          fechadoPor: operatorId,
+          fechadoEm: new Date(closedAt),
+        },
+      });
+
+      // Persiste o snapshot do dossiê no banco
+      await this.prisma.dossieEventoSnapshot.create({
+        data: {
+          fechamentoEventoId: dbFechamento.id,
+          versao: version,
+          hashSha256: integrityHashSha256,
+          conteudoSnapshot: finalSnapshot as any,
+          emitidoPor: approverId,
+          emitidoEm: new Date(closedAt),
+        },
+      });
+
+      // Persiste a auditoria dos gates
+      for (const gate of record.gates) {
+        const gateCodigo = `GATE_${gate.gateNumber}`;
+        const gateDetalhes = gate.details ? JSON.parse(JSON.stringify(gate.details)) : undefined;
+
+        await this.prisma.gateFechamentoAuditoria.upsert({
+          where: {
+            fechamentoEventoId_gateCodigo: {
+              fechamentoEventoId: dbFechamento.id,
+              gateCodigo,
+            },
+          },
+          update: {
+            status: gate.status,
+            aprovadoPor: approverId,
+            aprovadoEm: new Date(closedAt),
+            justificativa: gate.blockingReason || null,
+            detalhes: gateDetalhes,
+          },
+          create: {
+            fechamentoEventoId: dbFechamento.id,
+            gateCodigo,
+            gateNome: gate.name,
+            categoria: gate.domain,
+            status: gate.status,
+            obrigatorio: gate.isBlocking,
+            aprovadoPor: approverId,
+            aprovadoEm: new Date(closedAt),
+            justificativa: gate.blockingReason || null,
+            detalhes: gateDetalhes,
+          },
+        });
+      }
     } catch (err: unknown) {
-      this.logger.warn(`Prisma evento.updateMany falhou ou banco offline: ${String(err)}`);
+      this.logger.debug(`Prisma fechamentoEvento / dossie persistência offline: ${String(err)}`);
     }
 
     this.logger.log(
@@ -718,6 +815,30 @@ export class EventClosingService {
     record.reopeningHistory = history;
     record.dossier = null; // Libera novo ciclo
     record.updatedAt = new Date().toISOString();
+
+    try {
+      const dbFechamento = await this.prisma.fechamentoEvento.findUnique({
+        where: { eventoId: eventId },
+      });
+      if (dbFechamento) {
+        await this.prisma.fechamentoEvento.update({
+          where: { id: dbFechamento.id },
+          data: { status: 'REABERTO', versaoDossie: nextVersion },
+        });
+
+        await this.prisma.reaberturaEventoAudit.create({
+          data: {
+            fechamentoEventoId: dbFechamento.id,
+            solicitadoPor: requestorId,
+            aprovadoPor: 'diretoria-compliance',
+            motivo: reason,
+            reabertoEm: new Date(),
+          },
+        });
+      }
+    } catch (err: unknown) {
+      this.logger.debug(`[EventClosing] Registro de reabertura no banco offline: ${String(err)}`);
+    }
 
     return {
       ok: true,

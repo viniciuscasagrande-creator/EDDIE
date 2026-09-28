@@ -273,6 +273,18 @@ export class FinancialPlanningService {
       cc.status = 'DENTRO_ORCAMENTO';
     }
 
+    try {
+      this.prisma.centroCustoOrcamento.updateMany({
+        where: { codigo: code },
+        data: {
+          orcamentoAnualCents: BigInt(req.newBudgetCents),
+          status: cc.status,
+        },
+      }).catch((err) => {
+        this.logger.debug(`[FinancialPlanning] Atualização centroCusto offline: ${err}`);
+      });
+    } catch {}
+
     this.logger.log(
       `Orçamento do Centro de Custo ${code} revisado de R$ ${(previousBudget / 100).toFixed(2)} para R$ ${(req.newBudgetCents / 100).toFixed(2)} por ${req.approvedBy} (${req.reason})`,
     );

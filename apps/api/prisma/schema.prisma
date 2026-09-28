@@ -344,25 +344,51 @@ model Chargeback {
 }
 
 // ============================================================================
-//  FINANCEIRO — ledger de partidas dobradas e conta gráfica do produtor
+//  FINANCEIRO — Contas Financeiras, Ledger de Partidas Dobradas & Conta Gráfica
 // ============================================================================
+
+model ContaFinanceira {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  produtorId      String?  @db.Uuid // null = conta própria da DiskIngressos
+  eventoId        String?  @db.Uuid // null = conta consolidada
+  tipo            String   // DISK, PRODUTOR, EVENTO, TAXAS, ADQUIRENTE, ESTORNO, CHARGEBACK, REPASSE, RESERVA
+  codigo          String   // Código identificador único (ex: DISK_GERAL, PROD_001_CONSOLIDADO, EVT_ABC_SALDO)
+  nome            String
+  moeda           String   @default("BRL")
+  status          String   @default("ATIVA") // ATIVA, BLOQUEADA, ENCERRADA
+  criadaEm        DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  lancamentos     LancamentoLedger[]
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, produtorId, tipo])
+  @@index([tenantId, eventoId, tipo])
+  @@map("contas_financeiras")
+  @@schema("financeiro")
+}
 
 model LancamentoLedger {
   id                  String   @id @default(uuid()) @db.Uuid
   tenantId            String   @db.Uuid
   produtorId          String   @db.Uuid
   eventoId            String?  @db.Uuid
+  contaFinanceiraId   String?  @db.Uuid
   bucket              String   // disponivel | bloqueado | reservado_estorno | retido
   tipo                String   // entrada | saida
   valor               Decimal  @db.Decimal(14, 2)
-  origem              String   // pedido_pago | estorno | repasse | antecipacao | transferencia | fornecedor
+  origem              String   // pedido_pago | estorno | repasse | antecipacao | transferencia | fornecedor | taxa_disk
   referenciaId        String   // id da entidade ou evento de domínio que gerou
   contrapartidaId     String?  @db.Uuid
   historico           String
   criadoEm            DateTime @default(now())
 
+  contaFinanceira     ContaFinanceira? @relation(fields: [contaFinanceiraId], references: [id])
+
   @@index([tenantId, produtorId, bucket])
   @@index([eventoId, bucket])
+  @@index([contaFinanceiraId])
   @@unique([origem, referenciaId, bucket, tipo])
   @@map("lancamentos_ledger")
   @@schema("financeiro")
@@ -1096,4 +1122,576 @@ model AlertaAntifraude {
   @@index([tenantId, eventoId, status])
   @@map("alertas_antifraude")
   @@schema("pedidos")
+}
+
+// ============================================================================
+//  FINANCEIRO — Tesouraria, Banking Engine, PIX Direto & CNAB (EDDIE 11.25)
+// ============================================================================
+
+model ContaBancaria {
+  id                    String   @id @default(uuid()) @db.Uuid
+  tenantId              String   @db.Uuid
+  produtorId            String?  @db.Uuid
+  bancoCodigo           String
+  bancoNome             String
+  agencia               String
+  conta                 String
+  digito                String
+  tipo                  String   @default("CORRENTE")
+  titular               String
+  cnpj                  String
+  saldoRealCents        BigInt   @default(0)
+  saldoConciliadoCents   BigInt   @default(0)
+  saldoBloqueadoCents   BigInt   @default(0)
+  saldoDisponivelCents  BigInt   @default(0)
+  saldoEmLiquidacaoCents BigInt  @default(0)
+  status                String   @default("ATIVA")
+  pixKey                String?
+  pixKeyType            String?
+  ultimaSincronizacao   DateTime @default(now())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  movimentos            MovimentoBancario[]
+  remessas              LoteRemessaCnab[]
+  pixPayouts            PixPayoutExecutado[]
+
+  @@index([tenantId, status])
+  @@index([produtorId])
+  @@map("contas_bancarias")
+  @@schema("financeiro")
+}
+
+model MovimentoBancario {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  contaBancariaId String   @db.Uuid
+  dataMovimento   DateTime
+  tipo            String
+  categoria       String
+  valorCents      BigInt
+  descricao       String
+  documentoRef    String?
+  conciliado      Boolean  @default(false)
+  conciliadoEm    DateTime?
+  conciliadoPor   String?
+  createdAt       DateTime @default(now())
+
+  conta           ContaBancaria @relation(fields: [contaBancariaId], references: [id])
+
+  @@index([tenantId, contaBancariaId, dataMovimento])
+  @@map("movimentos_bancarios")
+  @@schema("financeiro")
+}
+
+model LoteRemessaCnab {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  contaBancariaId String   @db.Uuid
+  codigoLote      String   @unique
+  layout          String
+  tipo            String
+  quantidadeItens Int
+  valorTotalCents BigInt
+  status          String   @default("GERADO")
+  arquivoHash     String
+  geradoPor       String
+  geradoEm        DateTime @default(now())
+  transmitidoEm   DateTime?
+  retornoEm       DateTime?
+
+  conta           ContaBancaria @relation(fields: [contaBancariaId], references: [id])
+  itens           ItemRemessaCnab[]
+
+  @@index([tenantId, status])
+  @@map("lotes_remessa_cnab")
+  @@schema("financeiro")
+}
+
+model ItemRemessaCnab {
+  id                String   @id @default(uuid()) @db.Uuid
+  loteRemessaId     String   @db.Uuid
+  favorecidoNome    String
+  favorecidoCpfCnpj String
+  bancoDestino      String
+  agenciaDestino    String
+  contaDestino      String
+  metodo            String
+  chavePix          String?
+  valorCents        BigInt
+  finalidade        String
+  eventoIdRef       String?
+  produtorIdRef     String?
+  status            String   @default("PENDENTE")
+  codigoRetorno     String?
+  motivoRetorno     String?
+  liquidadoEm       DateTime?
+
+  lote              LoteRemessaCnab @relation(fields: [loteRemessaId], references: [id])
+
+  @@index([loteRemessaId, status])
+  @@map("itens_remessa_cnab")
+  @@schema("financeiro")
+}
+
+model RetornoCnabProcessado {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @db.Uuid
+  nomeArquivo         String
+  bancoCodigo         String
+  layout              String
+  totalLinhas         Int
+  totalSucessos       Int
+  totalFalhas         Int
+  valorLiquidadoCents BigInt
+  arquivoHash         String   @unique
+  processadoPor       String
+  processadoEm        DateTime @default(now())
+
+  @@index([tenantId, bancoCodigo])
+  @@map("retornos_cnab_processados")
+  @@schema("financeiro")
+}
+
+model PixPayoutExecutado {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  contaBancariaId String   @db.Uuid
+  favorecidoNome  String
+  chavePix        String
+  tipoChave       String
+  valorCents      BigInt
+  endToEndId      String   @unique
+  idempotencyKey  String   @unique
+  solicitadoPor   String
+  status          String   @default("SUCESSO")
+  detalhes        Json?
+  executadoEm     DateTime @default(now())
+
+  conta           ContaBancaria @relation(fields: [contaBancariaId], references: [id])
+
+  @@index([tenantId, status])
+  @@map("pix_payouts_executados")
+  @@schema("financeiro")
+}
+
+// ============================================================================
+//  FINANCEIRO — Fechamento de Eventos, Settlement & Auditoria (EDDIE 11.24)
+// ============================================================================
+
+model FechamentoEvento {
+  id                      String   @id @default(uuid()) @db.Uuid
+  tenantId                String   @db.Uuid
+  eventoId                String   @unique
+  produtorId              String
+  status                  String   @default("EM_ANALISE")
+  versaoDossie            String   @default("v1")
+  dossieHash              String?
+  receitaBrutaCents       BigInt   @default(0)
+  taxaPlataformaCents     BigInt   @default(0)
+  taxasProcessamentoCents BigInt   @default(0)
+  estornosCents           BigInt   @default(0)
+  chargebacksCents        BigInt   @default(0)
+  reservaContingenciaCents BigInt  @default(0)
+  adiantamentosCents      BigInt   @default(0)
+  saldoLiquidoCents       BigInt   @default(0)
+  payoutStatus            String   @default("PENDENTE")
+  payoutRefBancaria       String?
+  payoutChaveIdemp        String?  @unique
+  fechadoPor              String?
+  fechadoEm               DateTime?
+  liquidadoEm             DateTime?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  gates                   GateFechamentoAuditoria[]
+  dossies                 DossieEventoSnapshot[]
+  reaberturas             ReaberturaEventoAudit[]
+
+  @@index([tenantId, produtorId, status])
+  @@map("fechamentos_eventos")
+  @@schema("financeiro")
+}
+
+model GateFechamentoAuditoria {
+  id                  String   @id @default(uuid()) @db.Uuid
+  fechamentoEventoId  String   @db.Uuid
+  gateCodigo          String
+  gateNome            String
+  categoria           String
+  status              String   @default("PENDENTE")
+  obrigatorio         Boolean  @default(true)
+  aprovadoPor         String?
+  aprovadoEm          DateTime?
+  justificativa       String?
+  detalhes            Json?
+
+  fechamento          FechamentoEvento @relation(fields: [fechamentoEventoId], references: [id])
+
+  @@unique([fechamentoEventoId, gateCodigo])
+  @@map("gates_fechamento_auditoria")
+  @@schema("financeiro")
+}
+
+model DossieEventoSnapshot {
+  id                  String   @id @default(uuid()) @db.Uuid
+  fechamentoEventoId  String   @db.Uuid
+  versao              String
+  hashSha256          String   @unique
+  conteudoSnapshot    Json
+  assinadoDigitalmente Boolean @default(true)
+  emitidoPor          String
+  emitidoEm           DateTime @default(now())
+
+  fechamento          FechamentoEvento @relation(fields: [fechamentoEventoId], references: [id])
+
+  @@map("dossies_evento_snapshot")
+  @@schema("financeiro")
+}
+
+model ReaberturaEventoAudit {
+  id                  String   @id @default(uuid()) @db.Uuid
+  fechamentoEventoId  String   @db.Uuid
+  solicitadoPor       String
+  aprovadoPor         String
+  motivo              String
+  reabertoEm          DateTime @default(now())
+
+  fechamento          FechamentoEvento @relation(fields: [fechamentoEventoId], references: [id])
+
+  @@map("reaberturas_evento_audit")
+  @@schema("financeiro")
+}
+
+// ============================================================================
+//  FINANCEIRO — Risco Financeiro & Circuit Breakers (EDDIE 11.27)
+// ============================================================================
+
+model PerfilRiscoProdutor {
+  id                          String   @id @default(uuid()) @db.Uuid
+  tenantId                    String   @db.Uuid
+  produtorId                  String   @unique
+  score                       Int      @default(700)
+  rating                      String   @default("BBB")
+  status                      String   @default("REGULAR")
+  vendasBrutasAcumuladasCents BigInt   @default(0)
+  adiantamentosAtivosCents     BigInt   @default(0)
+  reservaSegurancaPercent     Decimal  @default(15.0) @db.Decimal(5, 2)
+  reservaSegurancaCents       BigInt   @default(0)
+  garantiasAportadasCents     BigInt   @default(0)
+  limiteCreditoCents          BigInt   @default(10000000)
+  exposicaoLiquidaCents       BigInt   @default(0)
+  utilizacaoLimitePercent     Decimal  @default(0.0) @db.Decimal(5, 2)
+  taxaChargebackPercent       Decimal  @default(0.0) @db.Decimal(5, 2)
+  contadoresDisputa           Int      @default(0)
+  ultimaAvaliacaoEm           DateTime @default(now())
+  atualizadoPor               String?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  circuitBreakers             TravaCircuitBreaker[]
+  aprovacoes                  SolicitacaoAprovacaoRisco[]
+
+  @@index([tenantId, status, rating])
+  @@map("perfis_risco_produtor")
+  @@schema("financeiro")
+}
+
+model TravaCircuitBreaker {
+  id                    String   @id @default(uuid()) @db.Uuid
+  perfilRiscoId         String   @db.Uuid
+  tipo                  String
+  severidade            String
+  motivo                String
+  acaoTomada            String
+  acionadoEm            DateTime @default(now())
+  resolvidoEm           DateTime?
+  resolvidoPor          String?
+  ativo                 Boolean  @default(true)
+
+  perfil                PerfilRiscoProdutor @relation(fields: [perfilRiscoId], references: [id])
+
+  @@index([perfilRiscoId, ativo])
+  @@map("travas_circuit_breaker")
+  @@schema("financeiro")
+}
+
+model SolicitacaoAprovacaoRisco {
+  id                    String   @id @default(uuid()) @db.Uuid
+  perfilRiscoId         String   @db.Uuid
+  tipoOperacao          String
+  valorSolicitadoCents  BigInt
+  alcadaMinimaRequerida String
+  status                String   @default("PENDENTE")
+  solicitadoPor         String
+  decididoPor           String?
+  decididoEm            DateTime?
+  parecer               String?
+  createdAt             DateTime @default(now())
+
+  perfil                PerfilRiscoProdutor @relation(fields: [perfilRiscoId], references: [id])
+
+  @@index([perfilRiscoId, status])
+  @@map("solicitacoes_aprovacao_risco")
+  @@schema("financeiro")
+}
+
+// ============================================================================
+//  FINANCEIRO — FP&A, Centros de Custo & Forecast (EDDIE 11.26 / 11.28)
+// ============================================================================
+
+model CentroCustoOrcamento {
+  id                    String   @id @default(uuid()) @db.Uuid
+  tenantId              String   @db.Uuid
+  codigo                String   @unique
+  nome                  String
+  categoria             String
+  responsavel           String
+  anoExercicio          Int      @default(2026)
+  orcamentoAnualCents   BigInt
+  realizadoGastoCents   BigInt   @default(0)
+  empenhadoCents        BigInt   @default(0)
+  disponivelCents       BigInt
+  status                String   @default("DENTRO_ORCAMENTO")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  rubricas              RubricaOrcamentaria[]
+
+  @@index([tenantId, anoExercicio])
+  @@map("centros_custo_orcamento")
+  @@schema("financeiro")
+}
+
+model RubricaOrcamentaria {
+  id                    String   @id @default(uuid()) @db.Uuid
+  centroCustoId         String   @db.Uuid
+  nome                  String
+  planejadoCents        BigInt
+  realizadoCents        BigInt   @default(0)
+  varianciaPercent      Decimal  @default(0.0) @db.Decimal(5, 2)
+  statusVariancia       String   @default("FAVORAVEL")
+  justificativa         String?
+
+  centroCusto           CentroCustoOrcamento @relation(fields: [centroCustoId], references: [id])
+
+  @@map("rubricas_orcamentarias")
+  @@schema("financeiro")
+}
+
+model PremissaMacroForecast {
+  id                      String   @id @default(uuid()) @db.Uuid
+  tenantId                String   @db.Uuid
+  versao                  String   @unique
+  selicAnualPercentual    Decimal  @db.Decimal(5, 2)
+  cdiAnualPercentual      Decimal  @db.Decimal(5, 2)
+  taxaDesagioMensal       Decimal  @db.Decimal(5, 2)
+  taxaEstornoEstimada     Decimal  @db.Decimal(5, 2)
+  stressVendasConservador Decimal  @db.Decimal(5, 2)
+  stressEstornoConservador Decimal @db.Decimal(5, 2)
+  curvaSelloutJson        Json
+  vigente                 Boolean  @default(true)
+  atualizadoPor           String
+  createdAt               DateTime @default(now())
+
+  @@index([tenantId, vigente])
+  @@map("premissas_macro_forecast")
+  @@schema("financeiro")
+}
+
+// ============================================================================
+//  PLATFORM — Usuários da Plataforma & RBAC (EDDIE Usuarios)
+// ============================================================================
+
+model UsuarioPlataforma {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @db.Uuid
+  nome              String
+  email             String   @unique
+  senhaHash         String
+  cargo             String
+  papel             String
+  escopo            String
+  status            String   @default("ATIVO")
+  mfaAtivo          Boolean  @default(false)
+  ultimoAcesso      DateTime?
+  permissoesCustom  String[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  vinculosProdutor  UsuarioProdutorVinculo[]
+
+  @@index([tenantId, papel, status])
+  @@map("usuarios_plataforma")
+  @@schema("platform")
+}
+
+model UsuarioProdutorVinculo {
+  id                String   @id @default(uuid()) @db.Uuid
+  usuarioId         String   @db.Uuid
+  produtorId        String   @db.Uuid
+  criadoEm          DateTime @default(now())
+
+  usuario           UsuarioPlataforma @relation(fields: [usuarioId], references: [id])
+
+  @@unique([usuarioId, produtorId])
+  @@map("usuarios_produtores_vinculos")
+  @@schema("platform")
+}
+
+// ============================================================================
+//  FINANCEIRO — Taxas, Contas a Receber, Fornecedores & Liquidações
+// ============================================================================
+
+model ContaReceber {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  produtorId          String
+  eventoId            String?
+  devedorNome         String
+  devedorDocumento    String
+  categoria           String
+  descricao           String
+  valor               Decimal   @db.Decimal(14, 2)
+  vencimentoEm        DateTime
+  status              String    @default("pendente")
+  recebidoEm          DateTime?
+  valorRecebido       Decimal?  @db.Decimal(14, 2)
+  lancamentoId        String?   @db.Uuid
+  criadoEm            DateTime  @default(now())
+
+  @@index([tenantId, produtorId, status])
+  @@map("contas_a_receber")
+  @@schema("financeiro")
+}
+
+model Fornecedor {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  produtorId          String?
+  razaoSocial         String
+  nomeFantasia        String
+  cnpjCpf             String    @unique
+  categoria           String
+  email               String?
+  telefone            String?
+  bancoCodigo         String?
+  agencia             String?
+  conta               String?
+  chavePix            String?
+  status              String    @default("ATIVO")
+  criadoEm            DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@map("fornecedores")
+  @@schema("financeiro")
+}
+
+model ConfiguracaoTaxaEvento {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @db.Uuid
+  eventoId                String    @unique
+  produtorId              String
+  tipo                    String    @default("PERCENTUAL") // PERCENTUAL, FIXA, HIBRIDA
+  percentual              Decimal   @default(15.0) @db.Decimal(5, 2)
+  valorFixo               Decimal   @default(0.0) @db.Decimal(14, 2)
+  taxaMinimaPorIngresso   Decimal   @default(0.0) @db.Decimal(14, 2)
+  taxaConvenienciaPercent Decimal   @default(10.0) @db.Decimal(5, 2)
+  taxaConvenienciaFixa    Decimal   @default(0.0) @db.Decimal(14, 2)
+  absorverTaxaProdutor    Boolean   @default(false)
+  custoAdquirenteEstimado Decimal   @default(2.5) @db.Decimal(5, 2)
+  vigenciaInicio          DateTime  @default(now())
+  vigenciaFim             DateTime?
+  status                  String    @default("VIGENTE") // VIGENTE, EXPIRADA, REVISADA, RASCUNHO
+  versao                  Int       @default(1)
+  criadoPor               String
+  aprovadoPor             String?
+  criadoEm                DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  componentes             ComponenteTaxaEvento[]
+
+  @@index([tenantId, produtorId, status])
+  @@map("configuracoes_taxa_evento")
+  @@schema("financeiro")
+}
+
+model ComponenteTaxaEvento {
+  id                    String   @id @default(uuid()) @db.Uuid
+  configuracaoTaxaId    String   @db.Uuid
+  nomeComponente        String
+  tipoComponente        String   // ADMINISTRATIVA, SERVICO, ADQUIRENTE, ANTECIPACAO, MAQUINA, PIX, MARKETING, AGENCIA, AFILIADO, OUTRA
+  percentual            Decimal? @db.Decimal(5, 2)
+  valorFixo             Decimal? @db.Decimal(14, 2)
+  destinatario          String   // DISKINGRESSOS, ADQUIRENTE, SEGURADORA, AGENCIA, AFILIADO
+  obrigatorio           Boolean  @default(true)
+
+  configuracao          ConfiguracaoTaxaEvento @relation(fields: [configuracaoTaxaId], references: [id])
+
+  @@map("componentes_taxa_evento")
+  @@schema("financeiro")
+}
+
+model LoteLiquidacao {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  produtorId          String
+  eventoId            String?
+  codigoLote          String    @unique
+  dataCorte           DateTime
+  valorBruto          Decimal   @db.Decimal(14, 2)
+  taxasDisk           Decimal   @db.Decimal(14, 2)
+  custosProcessamento Decimal   @db.Decimal(14, 2)
+  estornosRetidos     Decimal   @db.Decimal(14, 2)
+  adiantamentosCompensados Decimal @db.Decimal(14, 2)
+  valorLiquido        Decimal   @db.Decimal(14, 2)
+  status              String    @default("ABERTO")
+  chavePix            String?
+  metodoLiquidacao    String    @default("PIX")
+  liquidadoEm         DateTime?
+  comprovanteRef      String?
+  criadoPor           String
+  criadoEm            DateTime  @default(now())
+
+  itens               ItemLiquidacao[]
+
+  @@index([tenantId, produtorId, status])
+  @@map("lotes_liquidacao")
+  @@schema("financeiro")
+}
+
+model ItemLiquidacao {
+  id                  String   @id @default(uuid()) @db.Uuid
+  loteLiquidacaoId    String   @db.Uuid
+  origemTipo          String
+  origemIdRef         String   @db.Uuid
+  valorBruto          Decimal  @db.Decimal(14, 2)
+  taxaDisk            Decimal  @db.Decimal(14, 2)
+  custoAdquirente     Decimal  @db.Decimal(14, 2)
+  valorLiquido        Decimal  @db.Decimal(14, 2)
+  descricao           String
+
+  lote                LoteLiquidacao @relation(fields: [loteLiquidacaoId], references: [id])
+
+  @@map("itens_liquidacao")
+  @@schema("financeiro")
+}
+
+model ConciliacaoBancariaRegistro {
+  id                    String   @id @default(uuid()) @db.Uuid
+  tenantId              String   @db.Uuid
+  contaBancariaId       String   @db.Uuid
+  dataExtrato           DateTime
+  saldoExtrato          Decimal  @db.Decimal(14, 2)
+  saldoLedger           Decimal  @db.Decimal(14, 2)
+  divergencia           Decimal  @default(0) @db.Decimal(14, 2)
+  status                String   @default("CONCILIADO")
+  divergenciasDetectadas Int     @default(0)
+  conciliadoPor         String
+  conciliadoEm          DateTime @default(now())
+
+  @@index([tenantId, contaBancariaId, dataExtrato])
+  @@map("conciliacoes_bancarias_registros")
+  @@schema("financeiro")
 }

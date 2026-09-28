@@ -9,8 +9,8 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
     service = new TesourariaService();
   });
 
-  it('deve calcular posição consolidada de tesouraria com segregação de saldos reais vs disponíveis', () => {
-    const posicao = service.getPosicaoConsolidada();
+  it('deve calcular posição consolidada de tesouraria com segregação de saldos reais vs disponíveis', async () => {
+    const posicao = await service.getPosicaoConsolidada();
     expect(posicao).toBeDefined();
     expect(posicao.totalSaldoBancarioRealCentavos).toBeGreaterThan(0);
     expect(posicao.totalSaldoDisponivelCentavos).toBeLessThanOrEqual(posicao.totalSaldoBancarioRealCentavos);
@@ -20,16 +20,16 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
     expect(posicao.indiceCoberturaImediata).toBeGreaterThan(0);
   });
 
-  it('deve listar todas as contas bancárias corporativas', () => {
-    const contas = service.listarContas();
+  it('deve listar todas as contas bancárias corporativas', async () => {
+    const contas = await service.listarContas();
     expect(contas.length).toBe(3);
     const itau = contas.find((c) => c.bancoCodigo === '341');
     expect(itau).toBeDefined();
     expect(itau?.bancoNome).toBe('Itaú Unibanco S.A.');
   });
 
-  it('deve gerar remessa CNAB 240 com SHA-256 e numeração sequencial NSR', () => {
-    const lote = service.gerarRemessaCnab({
+  it('deve gerar remessa CNAB 240 com SHA-256 e numeração sequencial NSR', async () => {
+    const lote = await service.gerarRemessaCnab({
       bancoCodigo: '341',
       layout: 'CNAB_240',
       criadoPor: 'auditor-financeiro',
@@ -56,20 +56,20 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
     expect(lote.itens[0]?.status).toBe('PENDENTE');
   });
 
-  it('deve rejeitar geração de remessa CNAB sem itens', () => {
-    expect(() =>
+  it('deve rejeitar geração de remessa CNAB sem itens', async () => {
+    await expect(
       service.gerarRemessaCnab({
         bancoCodigo: '237',
         layout: 'CNAB_400',
         criadoPor: 'auditor',
         itens: [],
       }),
-    ).toThrow(BadRequestException);
+    ).rejects.toThrow(BadRequestException);
   });
 
-  it('deve processar arquivo de retorno CNAB e atualizar saldos bancários', () => {
+  it('deve processar arquivo de retorno CNAB e atualizar saldos bancários', async () => {
     // Gerar remessa com 2 itens (um normal e outro com agência 9999 para rejeição)
-    const remessa = service.gerarRemessaCnab({
+    const remessa = await service.gerarRemessaCnab({
       bancoCodigo: '341',
       layout: 'CNAB_240',
       criadoPor: 'operador-bancario',
@@ -97,9 +97,10 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
       ],
     });
 
-    const saldoAnterior = service.listarContas().find((c) => c.bancoCodigo === '341')!.saldoReal;
+    const contasAntes = await service.listarContas();
+    const saldoAnterior = contasAntes.find((c) => c.bancoCodigo === '341')!.saldoReal;
 
-    const retorno = service.processarArquivoRetornoCnab({
+    const retorno = await service.processarArquivoRetornoCnab({
       loteRemessaId: remessa.id,
       bancoCodigo: '341',
       linhasRetorno: ['RETORNO_LINE_1', 'RETORNO_LINE_2'],
@@ -110,26 +111,28 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
     expect(retorno.itens[0]?.status).toBe('LIQUIDADO');
     expect(retorno.itens[1]?.status).toBe('REJEITADO');
 
-    const saldoAtual = service.listarContas().find((c) => c.bancoCodigo === '341')!.saldoReal;
+    const contasDepois = await service.listarContas();
+    const saldoAtual = contasDepois.find((c) => c.bancoCodigo === '341')!.saldoReal;
     expect(saldoAtual).toBe(saldoAnterior - 10000000); // Debitou apenas o liquidado
   });
 
-  it('deve lançar NotFoundException ao tentar processar retorno de lote inexistente', () => {
-    expect(() =>
+  it('deve lançar NotFoundException ao tentar processar retorno de lote inexistente', async () => {
+    await expect(
       service.processarArquivoRetornoCnab({
         loteRemessaId: 'lote-fantasma-999',
         bancoCodigo: '341',
         linhasRetorno: [],
         processadoPor: 'auditor',
       }),
-    ).toThrow(NotFoundException);
+    ).rejects.toThrow(NotFoundException);
   });
 
-  it('deve executar PIX Payout instantâneo e debitar saldo em conta corrente', () => {
-    const contaCorrente = service.listarContas().find((c) => c.tipo === 'CORRENTE')!;
+  it('deve executar PIX Payout instantâneo e debitar saldo em conta corrente', async () => {
+    const contasAntes = await service.listarContas();
+    const contaCorrente = contasAntes.find((c) => c.tipo === 'CORRENTE')!;
     const saldoAntes = contaCorrente.saldoDisponivel;
 
-    const payout = service.executarPixPayout({
+    const payout = await service.executarPixPayout({
       produtorId: 'prod-live-nation',
       produtorNome: 'Live Nation Brasil',
       eventoId: 'ev-fest-2026',
@@ -146,10 +149,12 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
     expect(payout.status).toBe('LIQUIDADO');
     expect(payout.comprovanteAutenticacao).toContain('AUTH-BACEN-');
 
-    expect(contaCorrente.saldoDisponivel).toBe(saldoAntes - 1000000);
+    const contasDepois = await service.listarContas();
+    const contaCorrenteDepois = contasDepois.find((c) => c.tipo === 'CORRENTE')!;
+    expect(contaCorrenteDepois.saldoDisponivel).toBe(saldoAntes - 1000000);
   });
 
-  it('deve garantir idempotência estrita em PIX Payout com mesma idempotencyKey', () => {
+  it('deve garantir idempotência estrita em PIX Payout com mesma idempotencyKey', async () => {
     const dados = {
       produtorId: 'prod-opus',
       produtorNome: 'Opus Entretenimento',
@@ -162,15 +167,15 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
       executadoPor: 'cfo-diretor',
     };
 
-    const payout1 = service.executarPixPayout(dados);
-    const payout2 = service.executarPixPayout(dados);
+    const payout1 = await service.executarPixPayout(dados);
+    const payout2 = await service.executarPixPayout(dados);
 
     expect(payout1.id).toBe(payout2.id);
     expect(payout1.e2eId).toBe(payout2.e2eId);
   });
 
-  it('deve rejeitar PIX Payout com saldo insuficiente', () => {
-    expect(() =>
+  it('deve rejeitar PIX Payout com saldo insuficiente', async () => {
+    await expect(
       service.executarPixPayout({
         produtorId: 'prod-opus',
         produtorNome: 'Opus Entretenimento',
@@ -182,6 +187,6 @@ describe('TesourariaService (EDDIE 11.25 Banking & CNAB/PIX OS)', () => {
         idempotencyKey: 'idemp-saldo-insuficiente',
         executadoPor: 'cfo-diretor',
       }),
-    ).toThrow(BadRequestException);
+    ).rejects.toThrow(BadRequestException);
   });
 });

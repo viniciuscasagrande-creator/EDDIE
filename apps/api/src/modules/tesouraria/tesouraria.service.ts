@@ -1,5 +1,12 @@
-import { Injectable, Logger, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
+import { PrismaService } from '../../shared/prisma.module';
 import {
   ContaBancaria,
   LoteRemessaCnab,
@@ -11,77 +18,81 @@ import {
   ExecutarPixDto,
 } from './tesouraria.types';
 
+const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
+
+const DEFAULT_CONTAS_SEED = [
+  {
+    id: '00000000-0000-0000-0000-000000000341',
+    bancoCodigo: '341' as const,
+    bancoNome: 'Itaú Unibanco S.A.',
+    agencia: '0450',
+    conta: '88410',
+    digito: '3',
+    tipo: 'CORRENTE' as const,
+    titular: 'DiskIngressos Entretenimento S.A.',
+    cnpj: '08.123.456/0001-78',
+    saldoReal: 545000000, // R$ 5.450.000,00
+    saldoConciliado: 545000000,
+    saldoBloqueado: 45000000, // R$ 450.000,00 (Reserva de Chargeback)
+    saldoDisponivel: 500000000, // R$ 5.000.000,00
+    saldoEmLiquidacao: 65000000, // R$ 650.000,00
+    ultimaSincronizacao: new Date().toISOString(),
+    status: 'ATIVA' as const,
+  },
+  {
+    id: '00000000-0000-0000-0000-000000000237',
+    bancoCodigo: '237' as const,
+    bancoNome: 'Banco Bradesco S.A.',
+    agencia: '1205',
+    conta: '45020',
+    digito: '1',
+    tipo: 'CORRENTE' as const,
+    titular: 'DiskIngressos Entretenimento S.A.',
+    cnpj: '08.123.456/0001-78',
+    saldoReal: 280000000, // R$ 2.800.000,00
+    saldoConciliado: 280000000,
+    saldoBloqueado: 0,
+    saldoDisponivel: 280000000,
+    saldoEmLiquidacao: 25000000,
+    ultimaSincronizacao: new Date().toISOString(),
+    status: 'ATIVA' as const,
+  },
+  {
+    id: '00000000-0000-0000-0000-000000000001',
+    bancoCodigo: '001' as const,
+    bancoNome: 'Banco do Brasil S.A.',
+    agencia: '0018',
+    conta: '99200',
+    digito: '8',
+    tipo: 'APLICACAO' as const,
+    titular: 'DiskIngressos Entretenimento S.A.',
+    cnpj: '08.123.456/0001-78',
+    saldoReal: 1000000000, // R$ 10.000.000,00 (CDB Liquidez Diária)
+    saldoConciliado: 1000000000,
+    saldoBloqueado: 0,
+    saldoDisponivel: 1000000000,
+    saldoEmLiquidacao: 0,
+    ultimaSincronizacao: new Date().toISOString(),
+    status: 'ATIVA' as const,
+  },
+];
+
 @Injectable()
 export class TesourariaService {
   private readonly logger = new Logger(TesourariaService.name);
 
-  private contas: ContaBancaria[] = [
-    {
-      id: 'cta-itau-principal',
-      bancoCodigo: '341',
-      bancoNome: 'Itaú Unibanco S.A.',
-      agencia: '0450',
-      conta: '88410',
-      digito: '3',
-      tipo: 'CORRENTE',
-      titular: 'DiskIngressos Entretenimento S.A.',
-      cnpj: '08.123.456/0001-78',
-      saldoReal: 545000000, // R$ 5.450.000,00
-      saldoConciliado: 545000000,
-      saldoBloqueado: 45000000, // R$ 450.000,00 (Reserva de Chargeback)
-      saldoDisponivel: 500000000, // R$ 5.000.000,00
-      saldoEmLiquidacao: 65000000, // R$ 650.000,00
-      ultimaSincronizacao: new Date().toISOString(),
-      status: 'ATIVA',
-    },
-    {
-      id: 'cta-bradesco-operacao',
-      bancoCodigo: '237',
-      bancoNome: 'Banco Bradesco S.A.',
-      agencia: '1205',
-      conta: '45020',
-      digito: '1',
-      tipo: 'CORRENTE',
-      titular: 'DiskIngressos Entretenimento S.A.',
-      cnpj: '08.123.456/0001-78',
-      saldoReal: 280000000, // R$ 2.800.000,00
-      saldoConciliado: 280000000,
-      saldoBloqueado: 0,
-      saldoDisponivel: 280000000,
-      saldoEmLiquidacao: 25000000,
-      ultimaSincronizacao: new Date().toISOString(),
-      status: 'ATIVA',
-    },
-    {
-      id: 'cta-bb-aplicacao',
-      bancoCodigo: '001',
-      bancoNome: 'Banco do Brasil S.A.',
-      agencia: '0018',
-      conta: '99200',
-      digito: '8',
-      tipo: 'APLICACAO',
-      titular: 'DiskIngressos Entretenimento S.A.',
-      cnpj: '08.123.456/0001-78',
-      saldoReal: 1000000000, // R$ 10.000.000,00 (CDB Liquidez Diária)
-      saldoConciliado: 1000000000,
-      saldoBloqueado: 0,
-      saldoDisponivel: 1000000000,
-      saldoEmLiquidacao: 0,
-      ultimaSincronizacao: new Date().toISOString(),
-      status: 'ATIVA',
-    },
-  ];
-
+  // In-memory fallback and state cache
+  private contas: ContaBancaria[] = JSON.parse(JSON.stringify(DEFAULT_CONTAS_SEED));
   private lotesRemessa: LoteRemessaCnab[] = [];
   private pixPayouts: PixPayout[] = [];
   private sequencialLote = 1001;
 
-  constructor() {
+  constructor(@Optional() private readonly prisma?: PrismaService) {
     this.seedMockData();
   }
 
   private seedMockData() {
-    const loteId = 'rem-itau-1001';
+    const loteId = 'rem-341-1001';
     const itens: ItemRemessaCnab[] = [
       {
         id: 'item-rem-1',
@@ -156,12 +167,48 @@ export class TesourariaService {
     });
   }
 
-  getPosicaoConsolidada(): PosicaoConsolidadaTesouraria {
-    const totalSaldoBancarioRealCentavos = this.contas.reduce((acc, c) => acc + c.saldoReal, 0);
-    const totalSaldoDisponivelCentavos = this.contas.reduce((acc, c) => acc + c.saldoDisponivel, 0);
-    const totalSaldoBloqueadoCentavos = this.contas.reduce((acc, c) => acc + c.saldoBloqueado, 0);
-    const totalEmLiquidacaoCentavos = this.contas.reduce((acc, c) => acc + c.saldoEmLiquidacao, 0);
-    const totalAplicacoesLiquidezDiariaCentavos = this.contas
+  private async syncPrismaContasIfEmpty(): Promise<void> {
+    if (!this.prisma) return;
+    try {
+      const count = await this.prisma.contaBancaria.count();
+      if (count === 0) {
+        for (const c of DEFAULT_CONTAS_SEED) {
+          await this.prisma.contaBancaria.create({
+            data: {
+              id: c.id,
+              tenantId: DEFAULT_TENANT_ID,
+              bancoCodigo: c.bancoCodigo,
+              bancoNome: c.bancoNome,
+              agencia: c.agencia,
+              conta: c.conta,
+              digito: c.digito,
+              tipo: c.tipo,
+              titular: c.titular,
+              cnpj: c.cnpj,
+              saldoRealCents: BigInt(c.saldoReal),
+              saldoConciliadoCents: BigInt(c.saldoConciliado),
+              saldoBloqueadoCents: BigInt(c.saldoBloqueado),
+              saldoDisponivelCents: BigInt(c.saldoDisponivel),
+              saldoEmLiquidacaoCents: BigInt(c.saldoEmLiquidacao),
+              status: c.status,
+            },
+          });
+        }
+      }
+    } catch (err) {
+      this.logger.debug(`[Tesouraria] Sincronização inicial do banco não executada: ${err}`);
+    }
+  }
+
+  async getPosicaoConsolidada(): Promise<PosicaoConsolidadaTesouraria> {
+    await this.syncPrismaContasIfEmpty();
+    const contas = await this.listarContas();
+
+    const totalSaldoBancarioRealCentavos = contas.reduce((acc, c) => acc + c.saldoReal, 0);
+    const totalSaldoDisponivelCentavos = contas.reduce((acc, c) => acc + c.saldoDisponivel, 0);
+    const totalSaldoBloqueadoCentavos = contas.reduce((acc, c) => acc + c.saldoBloqueado, 0);
+    const totalEmLiquidacaoCentavos = contas.reduce((acc, c) => acc + c.saldoEmLiquidacao, 0);
+    const totalAplicacoesLiquidezDiariaCentavos = contas
       .filter((c) => c.tipo === 'APLICACAO')
       .reduce((acc, c) => acc + c.saldoReal, 0);
 
@@ -183,15 +230,44 @@ export class TesourariaService {
       totalRepassesPendentesCentavos,
       indiceCoberturaImediata,
       dataHora: new Date().toISOString(),
-      contas: this.contas,
+      contas,
     };
   }
 
-  listarContas(): ContaBancaria[] {
+  async listarContas(): Promise<ContaBancaria[]> {
+    if (this.prisma) {
+      try {
+        const dbContas = await this.prisma.contaBancaria.findMany({
+          orderBy: { bancoCodigo: 'asc' },
+        });
+        if (dbContas.length > 0) {
+          this.contas = dbContas.map((c) => ({
+            id: c.id,
+            bancoCodigo: c.bancoCodigo as any,
+            bancoNome: c.bancoNome,
+            agencia: c.agencia,
+            conta: c.conta,
+            digito: c.digito,
+            tipo: c.tipo as any,
+            titular: c.titular,
+            cnpj: c.cnpj,
+            saldoReal: Number(c.saldoRealCents),
+            saldoConciliado: Number(c.saldoConciliadoCents),
+            saldoBloqueado: Number(c.saldoBloqueadoCents),
+            saldoDisponivel: Number(c.saldoDisponivelCents),
+            saldoEmLiquidacao: Number(c.saldoEmLiquidacaoCents),
+            ultimaSincronizacao: c.ultimaSincronizacao.toISOString(),
+            status: c.status as any,
+          }));
+        }
+      } catch (err) {
+        this.logger.debug(`[Tesouraria] Leitura do banco offline, usando cache local: ${err}`);
+      }
+    }
     return this.contas;
   }
 
-  gerarRemessaCnab(dados: GerarRemessaDto): LoteRemessaCnab {
+  async gerarRemessaCnab(dados: GerarRemessaDto): Promise<LoteRemessaCnab> {
     if (!dados.itens || dados.itens.length === 0) {
       throw new BadRequestException('A remessa CNAB requer ao menos um item de pagamento.');
     }
@@ -238,11 +314,54 @@ export class TesourariaService {
     };
 
     this.lotesRemessa.unshift(lote);
+
+    if (this.prisma) {
+      try {
+        const conta = await this.prisma.contaBancaria.findFirst({
+          where: { bancoCodigo: dados.bancoCodigo },
+        });
+        if (conta) {
+          await this.prisma.loteRemessaCnab.create({
+            data: {
+              tenantId: conta.tenantId,
+              contaBancariaId: conta.id,
+              codigoLote: lote.id,
+              layout: lote.layout,
+              tipo: 'PAGAMENTO_FORNECEDORES',
+              quantidadeItens: lote.totalItens,
+              valorTotalCents: BigInt(lote.valorTotalCentavos),
+              status: lote.status,
+              arquivoHash: lote.sha256Hash,
+              geradoPor: lote.criadoPor,
+              itens: {
+                create: itens.map((it) => ({
+                  favorecidoNome: it.favorecidoNome,
+                  favorecidoCpfCnpj: it.favorecidoCpfCnpj,
+                  bancoDestino: it.bancoDestino,
+                  agenciaDestino: it.agenciaDestino,
+                  contaDestino: it.contaDestino,
+                  metodo: it.chavePix ? 'PIX' : 'TED',
+                  chavePix: it.chavePix,
+                  valorCents: BigInt(it.valorCentavos),
+                  finalidade: 'REPASSE_EVENTO',
+                  eventoIdRef: it.referenciaEventoId,
+                  produtorIdRef: it.produtorId,
+                  status: it.status,
+                })),
+              },
+            },
+          });
+        }
+      } catch (err) {
+        this.logger.debug(`[Tesouraria] Persistência do lote CNAB offline: ${err}`);
+      }
+    }
+
     this.logger.log(`[Tesouraria] Remessa CNAB ${lote.id} gerada com ${lote.totalItens} itens (R$ ${(valorTotalCentavos / 100).toFixed(2)})`);
     return lote;
   }
 
-  processarArquivoRetornoCnab(dados: ProcessarRetornoDto): LoteRemessaCnab {
+  async processarArquivoRetornoCnab(dados: ProcessarRetornoDto): Promise<LoteRemessaCnab> {
     const lote = this.lotesRemessa.find((l) => l.id === dados.loteRemessaId);
     if (!lote) {
       throw new NotFoundException(`Lote de remessa ${dados.loteRemessaId} não localizado.`);
@@ -251,7 +370,7 @@ export class TesourariaService {
     let liquidados = 0;
     let rejeitados = 0;
 
-    lote.itens.forEach((item, index) => {
+    lote.itens.forEach((item) => {
       // Simulação estrita de leitura de retorno: rejeita se agência for 9999
       if (item.agenciaDestino === '9999') {
         item.status = 'REJEITADO';
@@ -283,6 +402,46 @@ export class TesourariaService {
       conta.ultimaSincronizacao = new Date().toISOString();
     }
 
+    if (this.prisma) {
+      try {
+        const dbConta = await this.prisma.contaBancaria.findFirst({
+          where: { bancoCodigo: lote.bancoCodigo },
+        });
+        if (dbConta) {
+          const novoReal = dbConta.saldoRealCents - BigInt(valorLiquidado);
+          const novoDisp = dbConta.saldoDisponivelCents - BigInt(valorLiquidado);
+          const novoConc = dbConta.saldoConciliadoCents - BigInt(valorLiquidado);
+
+          await this.prisma.contaBancaria.update({
+            where: { id: dbConta.id },
+            data: {
+              saldoRealCents: novoReal,
+              saldoDisponivelCents: novoDisp,
+              saldoConciliadoCents: novoConc,
+              ultimaSincronizacao: new Date(),
+            },
+          });
+
+          await this.prisma.retornoCnabProcessado.create({
+            data: {
+              tenantId: dbConta.tenantId,
+              nomeArquivo: `RET_${lote.id}_${Date.now()}.ret`,
+              bancoCodigo: lote.bancoCodigo,
+              layout: lote.layout,
+              totalLinhas: dados.linhasRetorno?.length || lote.totalItens,
+              totalSucessos: liquidados,
+              totalFalhas: rejeitados,
+              valorLiquidadoCents: BigInt(valorLiquidado),
+              arquivoHash: createHash('sha256').update(JSON.stringify(dados)).digest('hex'),
+              processadoPor: dados.processadoPor,
+            },
+          });
+        }
+      } catch (err) {
+        this.logger.debug(`[Tesouraria] Atualização do retorno no banco offline: ${err}`);
+      }
+    }
+
     this.logger.log(
       `[Tesouraria] Retorno CNAB processado para lote ${lote.id}: ${liquidados} liquidados, ${rejeitados} rejeitados. Total: R$ ${(valorLiquidado / 100).toFixed(2)}`,
     );
@@ -290,7 +449,7 @@ export class TesourariaService {
     return lote;
   }
 
-  executarPixPayout(dados: ExecutarPixDto): PixPayout {
+  async executarPixPayout(dados: ExecutarPixDto): Promise<PixPayout> {
     // Idempotência estrita
     const existing = this.pixPayouts.find((p) => p.idempotencyKey === dados.idempotencyKey);
     if (existing) {
@@ -329,21 +488,67 @@ export class TesourariaService {
     contaOrigem.ultimaSincronizacao = new Date().toISOString();
 
     this.pixPayouts.unshift(payout);
+
+    if (this.prisma) {
+      try {
+        const dbContaOrigem = await this.prisma.contaBancaria.findFirst({
+          where: { tipo: 'CORRENTE' },
+        });
+        if (dbContaOrigem) {
+          const novoReal = dbContaOrigem.saldoRealCents - BigInt(dados.valorCentavos);
+          const novoDisp = dbContaOrigem.saldoDisponivelCents - BigInt(dados.valorCentavos);
+          const novoConc = dbContaOrigem.saldoConciliadoCents - BigInt(dados.valorCentavos);
+
+          await this.prisma.contaBancaria.update({
+            where: { id: dbContaOrigem.id },
+            data: {
+              saldoRealCents: novoReal,
+              saldoDisponivelCents: novoDisp,
+              saldoConciliadoCents: novoConc,
+              ultimaSincronizacao: new Date(),
+            },
+          });
+
+          await this.prisma.pixPayoutExecutado.create({
+            data: {
+              tenantId: dbContaOrigem.tenantId,
+              contaBancariaId: dbContaOrigem.id,
+              favorecidoNome: dados.produtorNome,
+              chavePix: dados.chavePix,
+              tipoChave: dados.tipoChave,
+              valorCents: BigInt(dados.valorCentavos),
+              endToEndId: payout.e2eId,
+              idempotencyKey: dados.idempotencyKey,
+              solicitadoPor: dados.executadoPor,
+              status: 'SUCESSO',
+              detalhes: {
+                produtorId: dados.produtorId,
+                eventoId: dados.eventoId,
+                eventoNome: dados.eventoNome,
+              },
+            },
+          });
+        }
+      } catch (err) {
+        this.logger.debug(`[Tesouraria] Persistência PIX Payout offline: ${err}`);
+      }
+    }
+
     this.logger.log(`[Tesouraria] PIX Payout ${payout.id} liquidado com sucesso para ${payout.produtorNome} (R$ ${(payout.valorCentavos / 100).toFixed(2)})`);
     return payout;
   }
 
-  listarLotesCnab(): LoteRemessaCnab[] {
+  async listarLotesCnab(): Promise<LoteRemessaCnab[]> {
     return this.lotesRemessa;
   }
 
-  obterLotePorId(id: string): LoteRemessaCnab {
+  async obterLotePorId(id: string): Promise<LoteRemessaCnab> {
     const lote = this.lotesRemessa.find((l) => l.id === id);
     if (!lote) throw new NotFoundException(`Lote CNAB ${id} não localizado.`);
     return lote;
   }
 
-  listarPixPayouts(): PixPayout[] {
+  async listarPixPayouts(): Promise<PixPayout[]> {
     return this.pixPayouts;
   }
 }
