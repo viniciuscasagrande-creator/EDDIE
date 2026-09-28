@@ -27,6 +27,7 @@ import { CashForecastModule } from './modules/cash-forecast/cash-forecast.module
 import { FinancialRiskModule } from './modules/financial-risk/financial-risk.module';
 import { FinancialPlanningModule } from './modules/financial-planning/financial-planning.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
+import { TesourariaModule } from './modules/tesouraria/tesouraria.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -63,6 +64,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     FinancialRiskModule,
     FinancialPlanningModule,
     UsuariosModule,
+    TesourariaModule,
   ],
 })
 export class AppModule {}

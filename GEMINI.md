@@ -99,6 +99,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `financial-risk` | `financeiro` / `platform` | EDDIE 11.27: Financial Risk, Controls & Exposure OS (Scoring, Limites, Circuit Breakers, HHI e Stress Test) |
 | `financial-planning` | `financeiro` / `platform` | EDDIE 11.28: FP&A, Budgeting, Centros de Custo, Margens e Projeção Plurianual |
 | `usuarios` | `platform` / `financeiro` | Gestão de Usuários, Controle de Acesso Baseado em Papéis (RBAC) e Segregação de Visões (Produtor vs DiskIngressos) |
+| `tesouraria` | `financeiro` / `platform` | EDDIE 11.25: Banking Engine, PIX Direto, Remessas CNAB 240/400 e Liquidação de Tesouraria |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 

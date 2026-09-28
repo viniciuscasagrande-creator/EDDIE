@@ -27,6 +27,7 @@ import {
   Lock,
   Users,
   X,
+  Landmark,
 } from 'lucide-react';
 import { useMobileNav } from './MobileNavContext';
 
@@ -89,6 +90,13 @@ const rawMenuItems: MenuItemConfig[] = [
     href: '/financeiro',
     icon: Wallet,
     badge: 'Ledger',
+    scopes: ['DISKINGRESSOS'],
+  },
+  {
+    label: 'Tesouraria & Bancos',
+    href: '/financeiro/tesouraria',
+    icon: Landmark,
+    badge: '11.25',
     scopes: ['DISKINGRESSOS'],
   },
   {
