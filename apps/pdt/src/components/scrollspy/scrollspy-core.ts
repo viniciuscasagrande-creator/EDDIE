@@ -6,9 +6,12 @@
  */
 
 export interface ScrollSpyOptions {
-  target: string | HTMLElement;
+  target?: string | HTMLElement;
+  alvo?: string | HTMLElement;
   offset?: number;
+  desvio?: number;
   method?: 'auto' | 'offset' | 'position';
+  metodo?: 'auto' | 'offset' | 'position';
   smoothScroll?: boolean;
 }
 
@@ -25,14 +28,19 @@ const instancesMap = new WeakMap<HTMLElement, ScrollSpy>();
 export class ScrollSpy {
   private element: HTMLElement | Window;
   private scrollElement: HTMLElement | Window;
-  private options: Required<ScrollSpyOptions>;
+  private options: {
+    target: string | HTMLElement;
+    offset: number;
+    method: 'auto' | 'offset' | 'position';
+    smoothScroll: boolean;
+  };
   private targets: ScrollSpyTargetItem[] = [];
   private activeTargetId: string | null = null;
   private onScrollHandler: () => void;
   private onClickHandler: (e: MouseEvent) => void;
   private isWindow = false;
 
-  constructor(element: HTMLElement | string, options: ScrollSpyOptions) {
+  constructor(element: HTMLElement | string, options: ScrollSpyOptions = {}) {
     const el = typeof element === 'string' ? document.querySelector<HTMLElement>(element) : element;
     if (!el) {
       throw new Error(`[ScrollSpy] Elemento ${element} não encontrado no DOM.`);
@@ -42,14 +50,27 @@ export class ScrollSpy {
     this.isWindow = el === document.body || el.tagName === 'BODY' || el.tagName === 'HTML';
     this.scrollElement = this.isWindow ? window : el;
 
+    const target =
+      options.target ||
+      options.alvo ||
+      el.getAttribute('data-bs-target') ||
+      el.getAttribute('data-target') ||
+      '';
+
+    const offsetAttr = el.getAttribute('data-bs-offset') || el.getAttribute('data-offset');
+    const offset = Number(options.offset ?? options.desvio ?? (offsetAttr !== null ? offsetAttr : 10));
+
+    const methodAttr = el.getAttribute('data-bs-method') || el.getAttribute('data-method');
+    const method = (options.method || options.metodo || methodAttr || 'auto') as 'auto' | 'offset' | 'position';
+
     this.options = {
-      target: options.target,
-      offset: options.offset ?? 10,
-      method: options.method ?? 'auto',
+      target,
+      offset,
+      method,
       smoothScroll: options.smoothScroll ?? true,
     };
 
-    this.onScrollHandler = this.throttle(() => this.process(), 40);
+    this.onScrollHandler = this.throttle(() => this.process(), 30);
     this.onClickHandler = (e: MouseEvent) => this.handleAnchorClick(e);
 
     instancesMap.set(el, this);
@@ -58,7 +79,9 @@ export class ScrollSpy {
     this.bindEvents();
 
     // Primeira verificação imediata
-    setTimeout(() => this.process(), 50);
+    if (typeof window !== 'undefined') {
+      setTimeout(() => this.process(), 50);
+    }
   }
 
   // =========================================================================
@@ -69,32 +92,10 @@ export class ScrollSpy {
     return instancesMap.get(element);
   }
 
-  static getOrCreateInstance(element: HTMLElement, options?: Partial<ScrollSpyOptions>): ScrollSpy {
+  static getOrCreateInstance(element: HTMLElement, options?: ScrollSpyOptions): ScrollSpy {
     const existing = instancesMap.get(element);
     if (existing) return existing;
-
-    const target =
-      options?.target ||
-      element.getAttribute('data-bs-target') ||
-      element.getAttribute('data-target') ||
-      '';
-
-    const offset = Number(
-      options?.offset ??
-        element.getAttribute('data-bs-offset') ??
-        element.getAttribute('data-offset') ??
-        10,
-    );
-
-    const method = (options?.method ||
-      element.getAttribute('data-bs-method') ||
-      'auto') as 'auto' | 'offset' | 'position';
-
-    return new ScrollSpy(element, {
-      target,
-      offset,
-      method,
-    });
+    return new ScrollSpy(element, options);
   }
 
   // =========================================================================
@@ -104,7 +105,7 @@ export class ScrollSpy {
   refresh(): void {
     const targetContainer =
       typeof this.options.target === 'string'
-        ? document.querySelector<HTMLElement>(this.options.target)
+        ? (this.options.target ? document.querySelector<HTMLElement>(this.options.target) : null)
         : this.options.target;
 
     if (!targetContainer) {
@@ -150,23 +151,25 @@ export class ScrollSpy {
 
   dispose(): void {
     if (this.scrollElement === window) {
-      window.removeEventListener('scroll', this.onScrollHandler);
-      window.removeEventListener('resize', this.onScrollHandler);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('scroll', this.onScrollHandler);
+        window.removeEventListener('resize', this.onScrollHandler);
+      }
     } else {
       (this.scrollElement as HTMLElement).removeEventListener('scroll', this.onScrollHandler);
     }
 
     const targetContainer =
       typeof this.options.target === 'string'
-        ? document.querySelector<HTMLElement>(this.options.target)
+        ? (this.options.target ? document.querySelector<HTMLElement>(this.options.target) : null)
         : this.options.target;
 
     if (targetContainer) {
       targetContainer.removeEventListener('click', this.onClickHandler);
     }
 
-    if (this.element instanceof HTMLElement) {
-      instancesMap.delete(this.element);
+    if (this.element && typeof this.element === 'object') {
+      instancesMap.delete(this.element as HTMLElement);
     }
   }
 
@@ -180,7 +183,7 @@ export class ScrollSpy {
 
   private updateCoordinates(): void {
     if (this.isWindow) {
-      const scrollY = window.scrollY || window.pageYOffset;
+      const scrollY = typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset || 0) : 0;
       for (const t of this.targets) {
         const rect = t.element.getBoundingClientRect();
         t.top = rect.top + scrollY;
@@ -212,9 +215,9 @@ export class ScrollSpy {
     let offsetHeight = 0;
 
     if (this.isWindow) {
-      scrollTop = window.scrollY || window.pageYOffset;
-      scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      offsetHeight = window.innerHeight;
+      scrollTop = typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset || 0) : 0;
+      scrollHeight = typeof document !== 'undefined' ? (document.documentElement.scrollHeight || document.body.scrollHeight) : 0;
+      offsetHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
     } else {
       const container = this.element as HTMLElement;
       scrollTop = container.scrollTop;
@@ -265,7 +268,7 @@ export class ScrollSpy {
     // 1. Remove classe active de todos os links do container
     const targetContainer =
       typeof this.options.target === 'string'
-        ? document.querySelector<HTMLElement>(this.options.target)
+        ? (this.options.target ? document.querySelector<HTMLElement>(this.options.target) : null)
         : this.options.target;
 
     if (!targetContainer) return;
@@ -301,30 +304,51 @@ export class ScrollSpy {
           if (toggle) toggle.classList.add('active');
         }
 
-        // Se for uma navegação aninhada (nested nav)
-        const parentNestedNav = link.closest('.nav')?.parentElement?.closest('.nav');
-        if (parentNestedNav) {
-          const parentNavLinks = Array.from(parentNestedNav.querySelectorAll<HTMLElement>(':scope > .nav-item > .nav-link, :scope > .nav-link'));
-          for (const pLink of parentNavLinks) {
-            pLink.classList.add('active');
+        // Se for uma navegação aninhada (nested nav):
+        // Ativa os ancestrais de navegação conforme especificação Bootstrap
+        const parentNav = link.closest('.nav');
+        if (parentNav && parentNav.parentElement) {
+          // Caso 1: o link anterior no elemento pai
+          let prevEl: Element | null = parentNav.previousElementSibling;
+          while (prevEl) {
+            if (prevEl.classList.contains('nav-link')) {
+              prevEl.classList.add('active');
+              break;
+            }
+            const innerLink = prevEl.querySelector('.nav-link');
+            if (innerLink) {
+              innerLink.classList.add('active');
+              break;
+            }
+            prevEl = prevEl.previousElementSibling;
+          }
+
+          // Caso 2: se estiver dentro de um nav-item pai
+          const parentNavItem = parentNav.closest('.nav-item');
+          if (parentNavItem) {
+            const parentLink = parentNavItem.querySelector(':scope > .nav-link');
+            if (parentLink) parentLink.classList.add('active');
           }
         }
       }
     }
 
     // 3. Dispara o evento oficial 'activate.bs.scrollspy' no elemento monitorado
-    const event = new CustomEvent('activate.bs.scrollspy', {
-      bubbles: true,
-      cancelable: false,
-      detail: {
-        relatedTarget: `#${targetId}`,
-      },
-    });
+    if (typeof CustomEvent !== 'undefined') {
+      const event = new CustomEvent('activate.bs.scrollspy', {
+        bubbles: true,
+        cancelable: false,
+        detail: {
+          relatedTarget: `#${targetId}`,
+        },
+      });
 
-    if (this.element instanceof HTMLElement) {
-      this.element.dispatchEvent(event);
-    } else {
-      window.dispatchEvent(event);
+      if (this.element && typeof (this.element as { dispatchEvent?: unknown }).dispatchEvent === 'function') {
+        (this.element as { dispatchEvent: (e: unknown) => void }).dispatchEvent(event);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(event);
+      }
     }
   }
 
@@ -344,8 +368,10 @@ export class ScrollSpy {
     e.preventDefault();
 
     if (this.isWindow) {
-      const top = sectionEl.getBoundingClientRect().top + window.scrollY - this.options.offset + 2;
-      window.scrollTo({ top, behavior: 'smooth' });
+      const top = sectionEl.getBoundingClientRect().top + (typeof window !== 'undefined' ? window.scrollY : 0) - this.options.offset + 2;
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
     } else {
       const container = this.element as HTMLElement;
       const rect = sectionEl.getBoundingClientRect();
@@ -355,22 +381,24 @@ export class ScrollSpy {
     }
 
     // Atualiza imediatamente o hash na URL sem scroll jump
-    if (window.history && window.history.pushState) {
+    if (typeof window !== 'undefined' && window.history && window.history.pushState) {
       window.history.pushState(null, '', href);
     }
   }
 
   private bindEvents(): void {
     if (this.scrollElement === window) {
-      window.addEventListener('scroll', this.onScrollHandler, { passive: true });
-      window.addEventListener('resize', this.onScrollHandler, { passive: true });
+      if (typeof window !== 'undefined') {
+        window.addEventListener('scroll', this.onScrollHandler, { passive: true });
+        window.addEventListener('resize', this.onScrollHandler, { passive: true });
+      }
     } else {
       (this.scrollElement as HTMLElement).addEventListener('scroll', this.onScrollHandler, { passive: true });
     }
 
     const targetContainer =
       typeof this.options.target === 'string'
-        ? document.querySelector<HTMLElement>(this.options.target)
+        ? (this.options.target ? document.querySelector<HTMLElement>(this.options.target) : null)
         : this.options.target;
 
     if (targetContainer) {

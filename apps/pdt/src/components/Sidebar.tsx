@@ -26,6 +26,7 @@ import {
   Users,
   X,
   Landmark,
+  Compass,
 } from 'lucide-react';
 import { useMobileNav } from './MobileNavContext';
 
@@ -176,6 +177,14 @@ const rawMenuItems: MenuItemConfig[] = [
     href: '/usuarios',
     icon: Users,
     badge: 'RBAC',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
+    label: 'ScrollSpy & UI',
+    producerLabel: 'ScrollSpy & UI',
+    href: '/componentes/scrollspy',
+    icon: Compass,
+    badge: 'UI',
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
 ];
