@@ -21,8 +21,8 @@ import {
   Activity,
   Zap,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
+  Pin,
+  PinOff,
   Sparkles,
   Lock,
   Users,
@@ -178,29 +178,18 @@ export function Sidebar() {
   const pathname = usePathname();
   const { eventoId } = useProducerEvent();
   const { currentVision, selectedProducer, isAdmin } = useAuthSession();
-  const [collapsed, setCollapsed] = useState(false);
-
-  // Carrega estado de recolhimento persistente
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('pdt_sidebar_collapsed');
-      if (saved !== null) {
-        setCollapsed(saved === 'true');
-      }
-    } catch {}
-  }, []);
-
-  const toggleCollapse = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('pdt_sidebar_collapsed', String(next));
-      } catch {}
-      return next;
-    });
-  };
-
   const { isMobileMenuOpen, closeMobileMenu } = useMobileNav();
+
+  // Auto-retração inteligente: por padrão o menu permanece recolhido (w-16)
+  // e retrai automaticamente quando o mouse sai ou ao clicar em qualquer item
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+
+  // Retrai automaticamente ao trocar de rota
+  useEffect(() => {
+    setIsHovered(false);
+    closeMobileMenu();
+  }, [pathname]);
 
   const eventMatch = pathname.match(/^\/eventos\/([^/]+)/);
   const activeEventId = eventMatch?.[1] || null;
@@ -211,7 +200,14 @@ export function Sidebar() {
     item.scopes.includes(currentVision),
   );
 
-  const isExpanded = !collapsed || isMobileMenuOpen;
+  const isExpanded = isPinned || isHovered || isMobileMenuOpen;
+
+  const handleLinkClick = () => {
+    if (!isPinned) {
+      setIsHovered(false);
+    }
+    closeMobileMenu();
+  };
 
   return (
     <>
@@ -224,18 +220,30 @@ export function Sidebar() {
         />
       )}
 
+      {/* Placeholder no desktop para reservar o espaço de 64px e evitar que o conteúdo pule */}
+      <div
+        className={`shrink-0 hidden lg:block transition-all duration-300 ${
+          isPinned ? 'w-64' : 'w-16'
+        }`}
+        aria-hidden="true"
+      />
+
       <aside
-        className={`bg-[#0d1322] border-r border-[#1e293b] flex flex-col shrink-0 min-h-screen transition-all duration-300 z-50 fixed inset-y-0 left-0 lg:static lg:translate-x-0 ${
+        onMouseEnter={() => !isPinned && setIsHovered(true)}
+        onMouseLeave={() => !isPinned && setIsHovered(false)}
+        className={`bg-[#0d1322] border-r border-[#1e293b] flex flex-col shrink-0 min-h-screen transition-all duration-300 z-50 fixed inset-y-0 left-0 ${
           isMobileMenuOpen
             ? 'translate-x-0 shadow-2xl w-64 max-w-[85vw]'
-            : '-translate-x-full lg:translate-x-0 ' + (collapsed ? 'w-16' : 'w-64')
+            : isExpanded
+            ? 'translate-x-0 lg:translate-x-0 w-64 shadow-2xl shadow-black/80'
+            : '-translate-x-full lg:translate-x-0 w-16'
         }`}
       >
         {/* Brand Header */}
         <div className="h-16 flex items-center px-4 justify-between border-b border-[#1e293b]">
           <Link
             href="/"
-            onClick={closeMobileMenu}
+            onClick={handleLinkClick}
             className="flex items-center gap-3 overflow-hidden"
           >
             <div
@@ -280,15 +288,28 @@ export function Sidebar() {
             <X size={18} />
           </button>
 
-          {/* Botão de Recolher Sidebar (apenas desktop) */}
-          <button
-            type="button"
-            onClick={toggleCollapse}
-            className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition hidden lg:block"
-            title={collapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+          {/* Indicador e Controle de Fixação / Auto-Retração no Desktop */}
+          {isExpanded && (
+            <button
+              type="button"
+              onClick={() => setIsPinned((prev) => !prev)}
+              className={`p-1.5 rounded-md transition hidden lg:flex items-center gap-1 text-[10px] ${
+                isPinned
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+              title={
+                isPinned
+                  ? 'Menu fixado aberto (clique para ativar auto-retração)'
+                  : 'Auto-retração ativa (retrai automaticamente ao sair)'
+              }
+            >
+              {isPinned ? <PinOff size={14} /> : <Pin size={14} />}
+              <span className="text-[9px] font-mono font-bold">
+                {isPinned ? 'Fixado' : 'Auto'}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
@@ -318,7 +339,7 @@ export function Sidebar() {
               <React.Fragment key={item.href}>
                 <Link
                   href={item.href}
-                  onClick={closeMobileMenu}
+                  onClick={handleLinkClick}
                   title={!isExpanded ? displayLabel : undefined}
                   className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
                     isActive
@@ -345,7 +366,7 @@ export function Sidebar() {
                   <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
                     <Link
                       href="/operacao/alertas"
-                      onClick={closeMobileMenu}
+                      onClick={handleLinkClick}
                       className={`block px-2 py-1 text-[11px] rounded transition ${
                         pathname === '/operacao/alertas' ? 'text-rose-400 font-bold bg-rose-950/30' : 'text-slate-400 hover:text-white'
                       }`}
@@ -354,7 +375,7 @@ export function Sidebar() {
                     </Link>
                     <Link
                       href="/operacao/incidentes"
-                      onClick={closeMobileMenu}
+                      onClick={handleLinkClick}
                       className={`block px-2 py-1 text-[11px] rounded transition ${
                         pathname === '/operacao/incidentes' ? 'text-amber-400 font-bold bg-amber-950/30' : 'text-slate-400 hover:text-white'
                       }`}
@@ -370,7 +391,7 @@ export function Sidebar() {
                     {activeEventId && (
                       <Link
                         href="/eventos"
-                        onClick={closeMobileMenu}
+                        onClick={handleLinkClick}
                         className="block text-[11px] text-sky-400 hover:text-white font-medium"
                       >
                         ← {isAdmin ? 'Todos os Eventos' : 'Meus Eventos'}
@@ -394,7 +415,7 @@ export function Sidebar() {
         <div className="p-3 border-t border-[#1e293b] text-xs text-slate-400 space-y-2">
           <Link
             href="/diagnostico"
-            onClick={closeMobileMenu}
+            onClick={handleLinkClick}
             title={!isExpanded ? 'Diagnóstico & Status' : undefined}
             className={`flex items-center justify-between text-emerald-400 hover:text-emerald-300 font-medium transition ${
               !isExpanded ? 'justify-center' : ''
