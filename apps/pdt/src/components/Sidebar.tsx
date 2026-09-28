@@ -144,6 +144,13 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
+    label: 'Dados & Governança',
+    href: '/governanca',
+    icon: ShieldCheck,
+    badge: '11.31',
+    scopes: ['DISKINGRESSOS'],
+  },
+  {
     label: 'Estornos & CDC',
     href: '/estorno',
     icon: RotateCcw,

@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca"]
 }
 
 
@@ -2361,6 +2361,163 @@ model PrevisaoInteligencia {
   @@index([tenantId, eventoId, metrica])
   @@map("previsoes_inteligencia")
   @@schema("inteligencia")
+}
+
+// ============================================================================
+//  GOVERNANCA — EDDIE 11.31: Central de Dados, Qualidade, Governança e Auditoria
+// ============================================================================
+
+model RegraQualidade {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @db.Uuid
+  codigo                  String    // PEDIDO_PAGO_SEM_INGRESSO, PEDIDO_PAGO_SEM_LEDGER, etc.
+  nome                    String
+  descricao               String
+  camadaOrigem            String    // PEDIDOS, FINANCEIRO, PORTARIA, CONTABILIDADE, TESOURARIA
+  camadaDestino           String
+  severidadePadrao        String    // INFORMATIVA, BAIXA, MEDIA, ALTA, CRITICA
+  responsavelPadrao       String    // FINANCEIRO, CONTABILIDADE, OPERACOES, etc.
+  ativo                   Boolean   @default(true)
+  intervaloVerificacaoMin Int       @default(60)
+  ultimaExecucaoAt        DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([tenantId, ativo])
+  @@map("regras_qualidade")
+  @@schema("governanca")
+}
+
+model DivergenciaDados {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  codigoDivergencia  String    // ex: DIV-2026-001
+  tipo               String
+  camadaOrigem       String
+  camadaDestino      String
+  eventoId           String?   @db.Uuid
+  produtorId         String?   @db.Uuid
+  pedidoId           String?
+  valorEnvolvido     Decimal?  @db.Decimal(14, 2)
+  severidade         String    // INFORMATIVA, BAIXA, MEDIA, ALTA, CRITICA
+  responsavelDominio String    // FINANCEIRO, CONTABILIDADE, OPERACOES, PORTARIA, MARKETING, ATENDIMENTO, TECNOLOGIA
+  situacao           String    @default("NOVA") // NOVA, EM_ANALISE, AGUARDANDO_INFORMACAO, EM_CORRECAO, CORRIGIDA, ACEITA, ENCERRADA
+  descricaoProblema  String
+  detalhesTecnicos   Json?
+  dataDeteccao       DateTime  @default(now())
+  prazoResolucao     DateTime?
+  resolvidoEm        DateTime?
+  resolvidoPor       String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([tenantId, situacao, severidade])
+  @@index([tenantId, responsavelDominio])
+  @@index([tenantId, eventoId])
+  @@map("divergencias_dados")
+  @@schema("governanca")
+}
+
+model TratamentoDivergencia {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @db.Uuid
+  divergenciaId        String    @db.Uuid
+  situacaoAnterior     String
+  novaSituacao         String
+  acaoAplicada         String
+  justificativa        String
+  responsavelUsuarioId String
+  evidenciaHash        String?
+  createdAt            DateTime  @default(now())
+
+  @@index([tenantId, divergenciaId])
+  @@map("tratamentos_divergencia")
+  @@schema("governanca")
+}
+
+model CatalogoIndicador {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @db.Uuid
+  termoCodigo           String    // GMV, GMV_LIQUIDO, RECEITA_DISK, etc.
+  nomeOficial           String
+  definicaoCorporativa  String
+  formulaCalculo        String?
+  donoDadoResponsavel   String    // FINANCEIRO, OPERACOES, CONTABILIDADE, PRIVACIDADE, etc.
+  classificacaoDado     String    // PUBLICO, INTERNO, CONFIDENCIAL, FINANCEIRO, DADO_PESSOAL, DADO_SENSIVEL, RESTRITO
+  frequenciaAtualizacao String    // REALTIME, QUASE_REAL, HORARIO, DIARIO, MENSAL
+  fontesSistemas        String[]
+  versaoTermo           Int       @default(1)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([tenantId, termoCodigo])
+  @@map("catalogo_indicadores")
+  @@schema("governanca")
+}
+
+model RegistroAuditoriaCentral {
+  id                            String    @id @default(uuid()) @db.Uuid
+  tenantId                      String    @db.Uuid
+  correlationId                 String
+  modulo                        String
+  acao                          String
+  usuarioId                     String
+  usuarioNome                   String
+  ipOrigem                      String?
+  eventoId                      String?   @db.Uuid
+  produtorId                    String?   @db.Uuid
+  entidadeTipo                  String
+  entidadeId                    String
+  valorAntes                    Json?
+  valorDepois                   Json?
+  motivoJustificativa           String
+  aprovadorUsuarioId            String?
+  dadosSensiveisAcessados       Boolean   @default(false)
+  quantidadeRegistrosExportados Int?
+  createdAt                     DateTime  @default(now())
+
+  @@index([tenantId, correlationId])
+  @@index([tenantId, modulo, acao])
+  @@index([tenantId, usuarioId])
+  @@index([tenantId, eventoId])
+  @@map("registros_auditoria_central")
+  @@schema("governanca")
+}
+
+model MonitoramentoIntegracao {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  integracaoNome     String    // META_CAPI, GOOGLE_ADS, TIKTOK, WHATSAPP, ADYEN, CIELO, BANCO_ITAU
+  categoria          String    // MARKETING, PAGAMENTOS, BANCOS, COMUNICACAO
+  status             String    // OPERACIONAL, DEGRADADA, FORA_DO_AR
+  latenciaMs         Int       @default(0)
+  taxaErroPct        Decimal   @default(0) @db.Decimal(5, 2)
+  filaPendenteQtd    Int       @default(0)
+  ultimoSucessoAt    DateTime?
+  ultimoErroAt       DateTime?
+  ultimoErroMensagem String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([tenantId, integracaoNome])
+  @@map("monitoramento_integracoes")
+  @@schema("governanca")
+}
+
+model PoliticaRetencaoDados {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @db.Uuid
+  tipoDado             String    // LOGS_ACESSO, DADOS_CHECKIN, CONSENTIMENTO_LGPD, AUDITORIA_FINANCEIRA
+  finalidadeTratamento String
+  prazoRetencaoMeses   Int
+  baseLegalLgpd        String
+  acaoAposPrazo        String    // MANTER, ARQUIVAR, ANONIMIZAR, EXCLUIR
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([tenantId, tipoDado])
+  @@map("politicas_retencao_dados")
+  @@schema("governanca")
 }
 
 

@@ -15,6 +15,7 @@ import * as Comercial from './events/comercial.js';
 import * as Contabilidade from './events/contabilidade.js';
 import * as PosEvento from './events/pos-evento.js';
 import * as Inteligencia from './events/inteligencia.js';
+import * as Governanca from './events/governanca.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -73,6 +74,11 @@ export const EventCatalog = {
   [Inteligencia.AlertaGeradoV1.name]: Inteligencia.AlertaGeradoV1,
   [Inteligencia.OportunidadeDetectadaV1.name]: Inteligencia.OportunidadeDetectadaV1,
   [Inteligencia.PrevisaoCalculadaV1.name]: Inteligencia.PrevisaoCalculadaV1,
+  [Governanca.DivergenciaDetectadaV1.name]: Governanca.DivergenciaDetectadaV1,
+  [Governanca.DivergenciaTratadaV1.name]: Governanca.DivergenciaTratadaV1,
+  [Governanca.AuditoriaOperacaoRegistradaV1.name]: Governanca.AuditoriaOperacaoRegistradaV1,
+  [Governanca.CatalogoTermoAtualizadoV1.name]: Governanca.CatalogoTermoAtualizadoV1,
+  [Governanca.IntegracaoStatusAlteradoV1.name]: Governanca.IntegracaoStatusAlteradoV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

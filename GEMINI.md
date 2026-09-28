@@ -104,6 +104,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `pagamentos` | `pagamentos` | EDDIE 11.29.3: Núcleo de Pagamentos, PaymentIntent, PIX Direto, Webhooks de Adquirentes e Conciliação Financeira |
 | `pos-evento` | `posevento` | EDDIE 11.29.5: Pós-Evento, Presença Real da Portaria, Histórico de Relacionamento, Consentimento LGPD, Segmentação e Pesquisas |
 | `inteligencia` | `inteligencia` | EDDIE 11.30: Rentabilidade Real, Inteligência de Receita e Inteligência do Produtor |
+| `governanca` | `governanca` | EDDIE 11.31: Central de Dados, Qualidade dos Dados, Conciliação Sistêmica, Central de Divergências, Linhagem & Rastreabilidade, Catálogo Corporativo e Auditoria Central Imutável |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 
