@@ -96,6 +96,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `dashboard` | `platform` | Super Dashboard & Centro de Comando 360º Agregador Executivo (BFF) |
 | `event-closing` | `eventos` / `financeiro` | EDDIE 11.24: Fechamento de eventos, auditoria de 10 gates, settlement e dossiê imutável |
 | `cash-forecast` | `financeiro` / `platform` | EDDIE 11.26: Cash Forecast, Liquidez, Capital de Giro e Backtesting |
+| `financial-risk` | `financeiro` / `platform` | EDDIE 11.27: Financial Risk, Controls & Exposure OS (Scoring, Limites, Circuit Breakers, HHI e Stress Test) |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 

@@ -24,6 +24,7 @@ import { ProducerPortalModule } from './modules/producer-portal/producer-portal.
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EventClosingModule } from './modules/event-closing/event-closing.module';
 import { CashForecastModule } from './modules/cash-forecast/cash-forecast.module';
+import { FinancialRiskModule } from './modules/financial-risk/financial-risk.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -57,6 +58,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     DashboardModule,
     EventClosingModule,
     CashForecastModule,
+    FinancialRiskModule,
   ],
 })
 export class AppModule {}
