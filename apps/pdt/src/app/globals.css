@@ -72,3 +72,10 @@ body {
   font-weight: 600 !important;
 }
 
+/* Mobile Safe Area Insets for Notch / Home Indicator on iOS & Android */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
