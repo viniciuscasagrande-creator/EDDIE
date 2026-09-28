@@ -9,6 +9,7 @@ export * from './comercial.js';
 export * from './contabilidade.js';
 export * from './cash-forecast.js';
 export * from './financial-risk.js';
+export * from './financial-planning.js';
 
 export * as EventosEvents from './eventos.js';
 export * as PedidosEvents from './pedidos.js';
@@ -21,5 +22,6 @@ export * as ComercialEvents from './comercial.js';
 export * as ContabilidadeEvents from './contabilidade.js';
 export * as CashForecastEvents from './cash-forecast.js';
 export * as FinancialRiskEvents from './financial-risk.js';
+export * as FinancialPlanningEvents from './financial-planning.js';
 
 
