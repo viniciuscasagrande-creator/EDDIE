@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia"]
 }
 
 
@@ -2260,6 +2260,109 @@ model EnvioCampanha {
   @@map("envios_campanha")
   @@schema("posevento")
 }
+
+// ============================================================================
+//  INTELIGÊNCIA — EDDIE 11.30
+//  Rentabilidade Real, Inteligência de Receita e Inteligência do Produtor
+// ============================================================================
+
+model MetaDesempenho {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  produtorId         String?   @db.Uuid
+  eventoId           String?   @db.Uuid
+  tipoMeta           String    // VENDAS, PUBLICO, RECEITA_DISK, MARGEM_DISK, CONVERSAO, ROAS
+  valorMeta          Decimal   @db.Decimal(14, 2)
+  periodoCompetencia String
+  descricao          String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([tenantId, eventoId])
+  @@index([tenantId, produtorId])
+  @@map("metas_desempenho")
+  @@schema("inteligencia")
+}
+
+model AlertaInteligencia {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  produtorId         String?   @db.Uuid
+  eventoId           String?   @db.Uuid
+  categoria          String    // FINANCEIRO, VENDAS, INVENTARIO, OPERACAO, MARKETING, RELACIONAMENTO
+  severidade         String    // CRITICA, ALTA, MEDIA, INFORMATIVA
+  titulo             String
+  descricao          String
+  explicabilidade    Json
+  status             String    @default("ATIVO") // ATIVO, RECONHECIDO, RESOLVIDO, DESCARTADO
+  reconhecidoPor     String?
+  reconhecidoEm      DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@index([tenantId, status, severidade])
+  @@index([tenantId, eventoId])
+  @@index([tenantId, produtorId])
+  @@map("alertas_inteligencia")
+  @@schema("inteligencia")
+}
+
+model OportunidadeInteligencia {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  produtorId         String?   @db.Uuid
+  eventoId           String?   @db.Uuid
+  categoria          String    // ESGOTAMENTO_LOTE, PUBLICO_RECORRENTE, PAGAMENTOS_RECUPERAVEIS, CANAL_ALTA_MARGEM
+  titulo             String
+  descricao          String
+  impactoEstimado    Decimal   @db.Decimal(14, 2)
+  acaoSugerida       String
+  status             String    @default("NOVA") // NOVA, EM_ANALISE, APLICADA, IGNORADA
+  metadata           Json?
+  createdAt          DateTime  @default(now())
+
+  @@index([tenantId, status])
+  @@index([tenantId, eventoId])
+  @@map("oportunidades_inteligencia")
+  @@schema("inteligencia")
+}
+
+model SimulacaoPrecoLote {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  eventoId               String    @db.Uuid
+  loteId                 String?   @db.Uuid
+  precoAtual             Decimal   @db.Decimal(10, 2)
+  precoProposto          Decimal   @db.Decimal(10, 2)
+  disponibilidadeRestante Int
+  cenarioConservador     Decimal   @db.Decimal(14, 2)
+  cenarioBase            Decimal   @db.Decimal(14, 2)
+  cenarioOtimista        Decimal   @db.Decimal(14, 2)
+  criadoPor              String?
+  createdAt              DateTime  @default(now())
+
+  @@index([tenantId, eventoId])
+  @@map("simulacoes_preco_lote")
+  @@schema("inteligencia")
+}
+
+model PrevisaoInteligencia {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  eventoId               String    @db.Uuid
+  metrica                String    // GMV_FINAL, PUBLICO_FINAL, RECEITA_DISK, MARGEM_DISK
+  valorPrevisto          Decimal   @db.Decimal(14, 2)
+  intervaloMin           Decimal   @db.Decimal(14, 2)
+  intervaloMax           Decimal   @db.Decimal(14, 2)
+  probabilidadeEsgotamento Decimal? @db.Decimal(5, 2)
+  diasAteEsgotamento     Int?
+  metodologia            String
+  createdAt              DateTime  @default(now())
+
+  @@index([tenantId, eventoId, metrica])
+  @@map("previsoes_inteligencia")
+  @@schema("inteligencia")
+}
+
 
 
 

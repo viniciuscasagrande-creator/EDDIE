@@ -136,6 +136,14 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
+    label: 'Inteligência & Rentabilidade',
+    producerLabel: 'Inteligência de Vendas',
+    href: '/inteligencia',
+    icon: Sparkles,
+    badge: '11.30',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
     label: 'Estornos & CDC',
     href: '/estorno',
     icon: RotateCcw,

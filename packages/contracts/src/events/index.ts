@@ -14,6 +14,7 @@ export * from './usuarios.js';
 export * from './tesouraria.js';
 export * from './pagamentos.js';
 export * from './pos-evento.js';
+export * from './inteligencia.js';
 
 export * as EventosEvents from './eventos.js';
 export * as PedidosEvents from './pedidos.js';
@@ -31,6 +32,8 @@ export * as UsuariosEvents from './usuarios.js';
 export * as TesourariaEvents from './tesouraria.js';
 export * as PagamentosEvents from './pagamentos.js';
 export * as PosEventoEvents from './pos-evento.js';
+export * as InteligenciaEvents from './inteligencia.js';
+
 
 
 

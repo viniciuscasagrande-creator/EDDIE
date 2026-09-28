@@ -14,6 +14,7 @@ import * as Marketing from './events/marketing.js';
 import * as Comercial from './events/comercial.js';
 import * as Contabilidade from './events/contabilidade.js';
 import * as PosEvento from './events/pos-evento.js';
+import * as Inteligencia from './events/inteligencia.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -68,6 +69,10 @@ export const EventCatalog = {
   [PosEvento.ConsentimentoRegistradoV1.name]: PosEvento.ConsentimentoRegistradoV1,
   [PosEvento.BloqueioRegistradoV1.name]: PosEvento.BloqueioRegistradoV1,
   [PosEvento.SegmentoSalvoV1.name]: PosEvento.SegmentoSalvoV1,
+  [Inteligencia.MetaDefinidaV1.name]: Inteligencia.MetaDefinidaV1,
+  [Inteligencia.AlertaGeradoV1.name]: Inteligencia.AlertaGeradoV1,
+  [Inteligencia.OportunidadeDetectadaV1.name]: Inteligencia.OportunidadeDetectadaV1,
+  [Inteligencia.PrevisaoCalculadaV1.name]: Inteligencia.PrevisaoCalculadaV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

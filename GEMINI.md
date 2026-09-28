@@ -103,6 +103,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `inventario` | `inventario` | EDDIE 11.29.2: Motor de Inventário, InventoryPools, Holds com TTL de 10 min, alocação de assentos e anti-oversell |
 | `pagamentos` | `pagamentos` | EDDIE 11.29.3: Núcleo de Pagamentos, PaymentIntent, PIX Direto, Webhooks de Adquirentes e Conciliação Financeira |
 | `pos-evento` | `posevento` | EDDIE 11.29.5: Pós-Evento, Presença Real da Portaria, Histórico de Relacionamento, Consentimento LGPD, Segmentação e Pesquisas |
+| `inteligencia` | `inteligencia` | EDDIE 11.30: Rentabilidade Real, Inteligência de Receita e Inteligência do Produtor |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 
