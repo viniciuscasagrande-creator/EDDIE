@@ -200,7 +200,7 @@ export default function CashForecastLiquidityPage() {
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <Link href="/financeiro" className="hover:text-white transition">Financeiro</Link>
           <ChevronRight size={12} />
-          <span className="text-emerald-400 font-medium">Cash Forecast, Liquidez & Working Capital (11.26)</span>
+          <span className="text-emerald-400 font-medium">Previsão de Caixa, Liquidez & Capital de Giro</span>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -210,7 +210,7 @@ export default function CashForecastLiquidityPage() {
                 Centro de Liquidez & Previsão Financeira
               </h1>
               <span className="px-2.5 py-1 rounded-full text-xs font-bold border bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
-                EDDIE 11.26
+                Previsão de Caixa
               </span>
             </div>
             <p className="text-slate-400 text-sm mt-1">

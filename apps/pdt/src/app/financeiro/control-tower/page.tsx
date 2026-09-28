@@ -317,7 +317,7 @@ export default function FinancialControlTowerPage() {
           <div className="flex items-center space-x-2 text-xs text-zinc-400">
             <Link href="/financeiro" className="hover:text-zinc-200">Financeiro</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="font-semibold text-emerald-400">Financial Operations Control Tower</span>
+            <span className="font-semibold text-emerald-400">Torre de Controle Financeiro & Operações</span>
           </div>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-3">
             <ShieldAlert className="h-7 w-7 text-emerald-500" />
@@ -343,7 +343,7 @@ export default function FinancialControlTowerPage() {
             className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-700"
           >
             <Zap className="h-3.5 w-3.5 text-amber-400" />
-            Re-sync Seguro Gateway
+            Ressincronização Segura do Gateway
           </button>
           <button
             onClick={loadData}
@@ -365,7 +365,7 @@ export default function FinancialControlTowerPage() {
           </div>
         </div>
         <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
-          BACKOFFICE DISK
+          OPERAÇÃO DISKINGRESSOS
         </span>
       </div>
 
@@ -838,7 +838,7 @@ export default function FinancialControlTowerPage() {
         <div className="space-y-6">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 space-y-4">
             <h3 className="text-base font-semibold text-zinc-100 flex items-center justify-between">
-              <span>Projeção de Liquidez (Cash Forecast)</span>
+              <span>Projeção de Liquidez & Previsão de Caixa</span>
               <span className="rounded bg-blue-950 px-2 py-0.5 text-[10px] font-bold text-blue-400">
                 SIMULAÇÃO ANALÍTICA (SEGREGADA DO LEDGER)
               </span>

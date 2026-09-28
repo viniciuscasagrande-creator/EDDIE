@@ -95,7 +95,7 @@ export default function ProducerCommandCenterOverviewPage() {
           <div className="flex items-center gap-2 mb-1">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <Radio className="w-3.5 h-3.5 animate-pulse" />
-              COMMAND CENTER OPERACIONAL
+              CENTRO DE COMANDO OPERACIONAL
             </span>
             <span className="text-xs text-slate-400">EDDIE 11.18</span>
           </div>
@@ -301,7 +301,7 @@ export default function ProducerCommandCenterOverviewPage() {
                     href={`/eventos/${evt.id}/command-center`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-sm"
                   >
-                    Abrir Command Center
+                    Abrir Centro de Comando
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>

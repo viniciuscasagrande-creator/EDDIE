@@ -221,12 +221,12 @@ export default function EventClosingPage() {
       setShowApproveModal(false);
       setClosingStatus(payload.status || 'PRONTO_PARA_LIQUIDAR');
       setActionFeedback({
-        message: 'Settlement aprovado formalmente com alçada de diretoria!',
+        message: 'Liquidação aprovada formalmente com alçada de diretoria!',
         success: true,
       });
       void carregarStatusFechamento();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erro ao aprovar settlement.';
+      const msg = err instanceof Error ? err.message : 'Erro ao aprovar liquidação.';
       setActionFeedback({ message: msg, success: false });
     } finally {
       setIsProcessing(false);
@@ -346,7 +346,7 @@ export default function EventClosingPage() {
           <ChevronRight size={12} />
           <Link href={`/eventos/${eventId}`} className="hover:text-white transition">{evento?.nome || 'Evento'}</Link>
           <ChevronRight size={12} />
-          <span className="text-emerald-400 font-medium">Fechamento & Settlement (11.24)</span>
+          <span className="text-emerald-400 font-medium">Fechamento do Evento & Liquidação Final</span>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -509,7 +509,7 @@ export default function EventClosingPage() {
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
-                Resultado & Settlement Financeiro Final (11.19)
+                Resultado & Liquidação Financeira Final
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
                 Apuração líquida do repasse com base no Ledger oficial, deduções contratuais e retenções de risco
@@ -718,7 +718,7 @@ export default function EventClosingPage() {
                 className="text-xs font-bold px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isProcessing ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
-                <span>Aprovar Settlement</span>
+                <span>Aprovar Liquidação</span>
               </button>
             </div>
           </div>

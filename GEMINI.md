@@ -100,12 +100,12 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `financial-planning` | `financeiro` / `platform` | EDDIE 11.28: FP&A, Budgeting, Centros de Custo, Margens e Projeção Plurianual |
 | `usuarios` | `platform` / `financeiro` | Gestão de Usuários, Controle de Acesso Baseado em Papéis (RBAC) e Segregação de Visões (Produtor vs DiskIngressos) |
 | `tesouraria` | `financeiro` / `platform` | EDDIE 11.25: Banking Engine, PIX Direto, Remessas CNAB 240/400 e Liquidação de Tesouraria |
+| `inventario` | `inventario` | EDDIE 11.29.2: Motor de Inventário, InventoryPools, Holds com TTL de 10 min, alocação de assentos e anti-oversell |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 
 | Módulo | Schema | Status |
 |---|---|---|
-| `inventario` | `inventario` | Reserva temporária com TTL e locks distribuídos (em planejamento) |
 | `pagamentos` | `pagamentos` | Gateway direto e conciliação de adquirentes nativa (em planejamento) |
 | `remarketing` | `marketing` | No frontend possui telas dedicadas; no backend é atendido pelo módulo `marketing` (jornadas/públicos) |
 | `developer` | `platform` | Infraestrutura central de Outbox e telemetria hoje reside em `apps/api/src/shared/` |

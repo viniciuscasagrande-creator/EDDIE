@@ -180,7 +180,7 @@ export function Header() {
               {currentUser.nome.split(' ')[0]}
             </div>
             <div className="text-[10px] text-slate-400 truncate max-w-[130px]">
-              {isAdmin ? 'DiskIngressos Admin' : selectedProducer?.nome.split(' ')[0] || 'Produtor'}
+              {isAdmin ? 'Administrador DiskIngressos' : selectedProducer?.nome.split(' ')[0] || 'Produtor'}
             </div>
           </div>
         </div>

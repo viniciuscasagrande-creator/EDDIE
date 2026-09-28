@@ -42,7 +42,7 @@ export type VideoScreen = {
 export const marketingScreens: VideoScreen[] = [
   {
     slug: 'dashboard',
-    titulo: 'Dashboard Marketing',
+    titulo: 'Painel Geral de Marketing',
     subtitulo: 'Visão executiva de ROI, ROAS, vendas atribuídas e desempenho de mídia.',
     icon: Gauge,
     grupo: 'marketing',
@@ -205,7 +205,7 @@ export const marketingScreens: VideoScreen[] = [
   // Aliases legados para retrocompatibilidade
   {
     slug: 'painel',
-    titulo: 'Dashboard Marketing',
+    titulo: 'Painel Geral de Marketing',
     subtitulo: 'Acompanhe campanhas, canais e conversões em tempo real.',
     icon: Gauge,
     grupo: 'marketing',
@@ -253,12 +253,12 @@ export const marketingScreens: VideoScreen[] = [
 export const remarketingScreens: VideoScreen[] = [
   {
     slug: 'dashboard',
-    titulo: 'Dashboard Remarketing',
+    titulo: 'Painel Geral de Remarketing',
     subtitulo: 'Visão executiva de retenção, carrinhos recuperados e receita resgatada no Ledger.',
     icon: RotateCcw,
     grupo: 'remarketing',
     badge: 'MOTOR ATIVO',
-    tabs: ['Dashboard', 'Funil de Resgate', 'Eficiência de Canais', 'Métricas em Tempo Real'],
+    tabs: ['Visão Geral', 'Funil de Resgate', 'Eficiência de Canais', 'Métricas em Tempo Real'],
     acoes: ['Recuperar Carrinhos', 'Nova Jornada', 'Exportar Métricas'],
   },
   {
@@ -454,7 +454,7 @@ export const remarketingScreens: VideoScreen[] = [
     subtitulo: 'Recupere carrinhos abandonados, Pix não pagos e reative clientes sem custo extra de tráfego.',
     icon: RotateCcw,
     grupo: 'remarketing',
-    tabs: ['Dashboard', 'Carrinhos Abandonados', 'Recuperação de Pix & Pagamentos', 'Relatórios de Resgate'],
+    tabs: ['Visão Geral', 'Carrinhos Abandonados', 'Recuperação de Pix & Pagamentos', 'Relatórios de Resgate'],
     acoes: ['Ver Carrinhos Abertos'],
   },
   {

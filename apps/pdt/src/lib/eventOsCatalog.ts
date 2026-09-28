@@ -60,8 +60,8 @@ export const EVENT_OS_NAV: EventOsNavItem[] = [
   { key: 'configuracao/lotes', slug: 'configuracao/lotes', label: 'Gestão de Lotes', shortLabel: 'Lotes', icon: Layers, priority: false, category: 'configuracao' },
   { key: 'configuracao/sessoes', slug: 'configuracao/sessoes', label: 'Sessões do Evento', shortLabel: 'Sessões', icon: Calendar, priority: false, category: 'configuracao' },
   { key: 'configuracao/setores', slug: 'configuracao/setores', label: 'Setores & Capacidade', shortLabel: 'Setores', icon: Map, priority: false, category: 'configuracao' },
-  { key: 'hardening', slug: 'hardening', label: 'Hardening & Segurança', shortLabel: 'Hardening', icon: ShieldCheck, priority: false, category: 'seguranca' },
-  { key: 'e2e', slug: 'e2e', label: 'Ciclo Real E2E', shortLabel: 'E2E', icon: CheckCircle2, priority: false, category: 'seguranca' },
+  { key: 'hardening', slug: 'hardening', label: 'Proteção & Segurança', shortLabel: 'Segurança', icon: ShieldCheck, priority: false, category: 'seguranca' },
+  { key: 'e2e', slug: 'e2e', label: 'Ciclo Real de Homologação', shortLabel: 'Homologação', icon: CheckCircle2, priority: false, category: 'seguranca' },
 ];
 
 /** Compatibilidade retroativa */

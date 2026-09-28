@@ -1,10 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { createHash, randomUUID } from 'crypto';
 import { PrismaService } from '../../shared/prisma.module';
+import { InventarioPublicService } from '../inventario/inventario.public-service';
 
 @Injectable()
 export class PedidosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly inventario?: InventarioPublicService,
+  ) {}
   private db() { return this.prisma as any; }
   private numero(prefix:string){ return `${prefix}-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${randomUUID().slice(0,8).toUpperCase()}`; }
 
@@ -45,6 +49,9 @@ export class PedidosService {
       const pagamento=await tx.pagamentoVenda.findFirst({where:{pedidoId,tenantId}});
       await tx.pagamentoVenda.update({where:{id:pagamento.id},data:{status:'PAGO',adquirente:input.adquirente,transacaoId:input.transacaoId,nsu:input.nsu,pagoEm:new Date()}});
       for(const item of itens) for(let i=0;i<item.quantidade;i++){ const token=randomUUID(); await tx.ingressoVenda.create({data:{numero:this.numero('ING'),pedidoId,eventoId:pedido.eventoId,loteId:item.loteId,qrTokenHash:createHash('sha256').update(token).digest('hex')}}); }
+      if (this.inventario && pedido.reservaId) {
+        this.inventario.confirmarHold(pedido.reservaId, { pedidoId }).catch(() => {});
+      }
       return tx.pedidoVenda.update({where:{id:pedidoId},data:{status:'PAGO',paidAt:new Date()}});
     });
   }

@@ -31,4 +31,23 @@ export default function AccountingEnterprisePanel({api,competencia,kind}:{api:st
 }
 function Box({icon,t,v}:{icon:any;t:string;v:string}){return <div className="rounded-xl border border-slate-800 bg-[#0f172a] p-4 flex gap-3"><span className="text-cyan-400">{React.cloneElement(icon,{size:20})}</span><div><p className="text-xs text-slate-400">{t}</p><p className="font-semibold text-white mt-1">{v}</p></div></div>}
 function List({title,items,empty}:{title:string;items:any[];empty:string}){return <div className="rounded-xl border border-slate-800 overflow-hidden"><div className="px-4 py-3 bg-slate-900 text-sm font-semibold text-white">{title}</div>{items.length?items.map((x,i)=><div key={i} className="px-4 py-3 border-t border-slate-800 text-sm text-slate-300">{x.descricao||JSON.stringify(x)}</div>):<div className="p-6 text-sm text-emerald-300 flex gap-2"><CheckCircle2 size={16}/>{empty}</div>}</div>}
-function Table({rows,cols}:{rows:any[];cols:string[]}){return <div className="rounded-xl border border-slate-800 overflow-auto"><table className="w-full text-xs"><thead className="bg-slate-900"><tr>{cols.map(c=><th key={c} className="p-3 text-left text-slate-400">{c}</th>)}</tr></thead><tbody>{rows.length?rows.map((r,i)=><tr key={r.id||i} className="border-t border-slate-800">{cols.map(c=><td key={c} className="p-3 text-slate-200">{c.endsWith('Cents')?money(Number(r[c]||0)):String(r[c]??'—')}</td>)}</tr>):<tr><td colSpan={cols.length} className="p-8 text-center text-slate-500">Sem registros para os filtros selecionados.</td></tr>}</tbody></table></div>}
+const colLabels: Record<string, string> = {
+  contaCodigo: 'Código da Conta',
+  contaNome: 'Nome da Conta',
+  saldoContabilCents: 'Saldo Contábil',
+  saldoExtratoCents: 'Saldo do Extrato',
+  diferencaCents: 'Diferença',
+  status: 'Situação',
+  numeroLancamento: 'Nº Lançamento',
+  data: 'Data',
+  historico: 'Histórico',
+  origemTipo: 'Tipo de Origem',
+  totalCents: 'Valor Total',
+  tipo: 'Tipo',
+  debitosCents: 'Débitos',
+  creditosCents: 'Créditos',
+  saldoAtualCents: 'Saldo Atual',
+  criadoPor: 'Criado Por',
+};
+
+function Table({rows,cols}:{rows:any[];cols:string[]}){return <div className="rounded-xl border border-slate-800 overflow-auto"><table className="w-full text-xs"><thead className="bg-slate-900"><tr>{cols.map(c=><th key={c} className="p-3 text-left text-slate-400 font-semibold">{colLabels[c]||c}</th>)}</tr></thead><tbody>{rows.length?rows.map((r,i)=><tr key={r.id||i} className="border-t border-slate-800">{cols.map(c=><td key={c} className="p-3 text-slate-200">{c.endsWith('Cents')?money(Number(r[c]||0)):String(r[c]??'—')}</td>)}</tr>):<tr><td colSpan={cols.length} className="p-8 text-center text-slate-500">Sem registros para os filtros selecionados.</td></tr>}</tbody></table></div>}

@@ -72,7 +72,7 @@ const domainConfig: Record<
     link: '/estorno',
   },
   EVENTO: {
-    label: 'Event OS',
+    label: 'Eventos & Lotes',
     icon: Ticket,
     link: '/eventos',
   },
@@ -82,7 +82,7 @@ const domainConfig: Record<
     link: '/financeiro',
   },
   REVENUE_ASSURANCE: {
-    label: 'Revenue Assurance',
+    label: 'Garantia de Receita',
     icon: ShieldAlert,
     link: '/operacao/hardening',
   },
@@ -97,7 +97,7 @@ const actionLabels: Record<ActionType, string> = {
   APROVAR_ESTORNO: 'Aprovar CDC',
   APROVAR_LOTE: 'Publicar Lote',
   LIBERAR_REPASSE: 'Autorizar Repasse',
-  VERIFICAR_PORTARIA: 'Triage de Catraca',
+  VERIFICAR_PORTARIA: 'Triagem de Catracas',
 };
 
 export function ActionableAlerts({

@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario"]
 }
 
 
@@ -1695,3 +1695,95 @@ model ConciliacaoBancariaRegistro {
   @@map("conciliacoes_bancarias_registros")
   @@schema("financeiro")
 }
+
+// ============================================================================
+//  INVENTÁRIO — Núcleo de Inventário, Pools, Holds com TTL e Alocação (EDDIE 11.29.2)
+// ============================================================================
+
+model InventoryPool {
+  id                    String              @id @default(uuid()) @db.Uuid
+  eventoId              String              @db.Uuid
+  sessaoId              String              @db.Uuid
+  setorId               String              @db.Uuid
+  loteId                String              @db.Uuid
+  capacidadeTotal       Int
+  capacidadeDisponivel  Int
+  capacidadeReservada   Int                 @default(0)
+  capacidadeVendida     Int                 @default(0)
+  capacidadeBloqueada   Int                 @default(0)
+  versaoLock            Int                 @default(0)
+  criadoEm              DateTime            @default(now())
+  atualizadoEm          DateTime            @updatedAt
+
+  items                 InventoryItem[]
+  holdItens             InventoryHoldItem[]
+
+  @@unique([loteId, setorId])
+  @@index([eventoId, sessaoId])
+  @@map("inventory_pools")
+  @@schema("inventario")
+}
+
+model InventoryItem {
+  id                    String         @id @default(uuid()) @db.Uuid
+  poolId                String         @db.Uuid
+  eventoId              String         @db.Uuid
+  sessaoId              String         @db.Uuid
+  setorId               String         @db.Uuid
+  loteId                String         @db.Uuid
+  assento               String?
+  status                String         @default("DISPONIVEL") // DISPONIVEL, RESERVADO, VENDIDO, BLOQUEADO, CORTESIA
+  holdId                String?        @db.Uuid
+  versaoLock            Int            @default(0)
+  criadoEm              DateTime       @default(now())
+  atualizadoEm          DateTime       @updatedAt
+
+  pool                  InventoryPool  @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  hold                  InventoryHold? @relation(fields: [holdId], references: [id])
+
+  @@index([poolId, status])
+  @@index([poolId, assento])
+  @@index([holdId])
+  @@map("inventory_items")
+  @@schema("inventario")
+}
+
+model InventoryHold {
+  id                    String              @id @default(uuid()) @db.Uuid
+  clienteId             String?             @db.Uuid
+  sessaoCarrinhoId      String?
+  status                String              @default("ATIVA") // ATIVA, EXPIRADA, CONVERTIDA_EM_PEDIDO, LIBERADA_MANUALMENTE
+  criadoEm              DateTime            @default(now())
+  expiraEm              DateTime
+  pedidoId              String?             @db.Uuid
+
+  itens                 InventoryHoldItem[]
+  itemsAtrelados        InventoryItem[]
+
+  @@index([status, expiraEm])
+  @@index([clienteId])
+  @@index([pedidoId])
+  @@map("inventory_holds")
+  @@schema("inventario")
+}
+
+model InventoryHoldItem {
+  id                    String         @id @default(uuid()) @db.Uuid
+  holdId                String         @db.Uuid
+  poolId                String         @db.Uuid
+  loteId                String         @db.Uuid
+  setorId               String         @db.Uuid
+  assento               String?
+  quantidade            Int            @default(1)
+  precoFace             Decimal        @db.Decimal(12, 2)
+  taxaConveniencia      Decimal        @db.Decimal(12, 2)
+
+  hold                  InventoryHold  @relation(fields: [holdId], references: [id], onDelete: Cascade)
+  pool                  InventoryPool  @relation(fields: [poolId], references: [id], onDelete: Cascade)
+
+  @@index([holdId])
+  @@index([poolId])
+  @@map("inventory_hold_items")
+  @@schema("inventario")
+}
+

@@ -801,7 +801,7 @@ export default function RevenueAssurancePage() {
                     { label: '3. Gateway', val: chainDetail.paymentId, extra: chainDetail.gatewayNsu },
                     { label: '4. Taxa Disk Snapshot', val: `Taxa: ${formatCents(Number(chainDetail.feeAmountCents || 0))}`, extra: `${chainDetail.feeModelApplied} (v${chainDetail.feeVersionApplied})` },
                     { label: '5. Ledger Financeiro', val: chainDetail.ledgerEntryId, extra: `Duplicidades: ${chainDetail.ledgerDuplicateCount || 1}` },
-                    { label: '6. Settlement Repasse', val: chainDetail.settlementId, extra: formatCents(Number(chainDetail.payoutAmountCents || 0)) },
+                    { label: '6. Liquidação de Repasse', val: chainDetail.settlementId, extra: formatCents(Number(chainDetail.payoutAmountCents || 0)) },
                     { label: '7. Retorno Bancário', val: chainDetail.bankReturnCode, extra: formatCents(Number(chainDetail.bankReturnAmountCents || 0)) },
                     { label: '8. Escrituração Contábil', val: chainDetail.accountingJournalId, extra: 'CPC 47 / IFRS 15' },
                   ].map((step, idx) => (

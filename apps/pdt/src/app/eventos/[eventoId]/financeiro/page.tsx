@@ -638,7 +638,7 @@ export default function EventFinanceiroPage() {
               {eventId === 'evento-operacao' ? 'Festival Live 2026' : eventId}
             </Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="font-semibold text-emerald-400">Financeiro & Settlement OS</span>
+            <span className="font-semibold text-emerald-400">Financeiro & Liquidação do Evento</span>
           </div>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-3">
             <Landmark className="h-7 w-7 text-emerald-500" />
@@ -655,7 +655,7 @@ export default function EventFinanceiroPage() {
             className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-700"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            Ver no Command Center
+            Ver no Centro de Comando
           </Link>
           <button
             onClick={() => setShowPayoutModal(true)}
@@ -795,7 +795,7 @@ export default function EventFinanceiroPage() {
           { id: 'cockpit', label: 'Cockpit & Visão Geral', icon: Landmark },
           { id: 'taxas', label: 'Motor de Taxas Disk', icon: Percent },
           { id: 'saldos', label: 'Saldo Real & Ledger', icon: Scale },
-          { id: 'settlement', label: 'Settlement & Repasses', icon: Banknote },
+          { id: 'settlement', label: 'Liquidação & Repasses', icon: Banknote },
           { id: 'contas', label: 'Contas a Pagar / Receber', icon: Receipt },
           { id: 'disputas', label: 'Estornos & Chargebacks', icon: AlertTriangle },
           { id: 'tesouraria', label: 'Tesouraria & CNAB', icon: Building },
@@ -1106,7 +1106,7 @@ export default function EventFinanceiroPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/60 p-6">
             <div>
-              <h3 className="text-base font-semibold text-zinc-100">Settlement Engine & Lotes de Repasse</h3>
+              <h3 className="text-base font-semibold text-zinc-100">Motor de Liquidação & Lotes de Repasse</h3>
               <p className="text-xs text-zinc-400">
                 Ciclo de liquidação bancária com idempotência garantida e baixa automatizada no Ledger.
               </p>

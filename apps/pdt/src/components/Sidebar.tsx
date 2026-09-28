@@ -56,17 +56,17 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS'],
   },
   {
-    label: 'Hardening & Segurança',
+    label: 'Proteção & Segurança',
     href: '/operacao/hardening',
     icon: ShieldCheck,
-    badge: 'v11.15',
+    badge: 'Segurança',
     scopes: ['DISKINGRESSOS'],
   },
   {
-    label: 'Ciclo E2E & Go-Live',
+    label: 'Ciclo E2E & Homologação',
     href: '/operacao/e2e',
     icon: CheckCircle2,
-    badge: 'Gate',
+    badge: 'Validação',
     scopes: ['DISKINGRESSOS'],
   },
   {
@@ -88,14 +88,14 @@ const rawMenuItems: MenuItemConfig[] = [
     label: 'Financeiro Geral',
     href: '/financeiro',
     icon: Wallet,
-    badge: 'Ledger',
+    badge: 'Livro-Razão',
     scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Tesouraria & Bancos',
     href: '/financeiro/tesouraria',
     icon: Landmark,
-    badge: '11.25',
+    badge: 'Bancos',
     scopes: ['DISKINGRESSOS'],
   },
   {
@@ -114,10 +114,10 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS'],
   },
   {
-    label: 'Fechamento & Settlement',
+    label: 'Fechamento do Evento',
     href: '/fechamento',
     icon: Lock,
-    badge: '11.24',
+    badge: 'Auditoria',
     scopes: ['DISKINGRESSOS'],
   },
   {
@@ -254,7 +254,7 @@ export function Sidebar() {
                       : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
                   }`}
                 >
-                  {isAdmin ? 'ADMIN' : 'PRODUTOR'}
+                  {isAdmin ? 'ADMINISTRADOR' : 'PRODUTOR'}
                 </span>
               </div>
               <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider block truncate">
@@ -382,11 +382,11 @@ export function Sidebar() {
               <span>Diagnóstico</span>
             </div>
             <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              Live
+              Ao Vivo
             </span>
           </Link>
           <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-            <span>{isAdmin ? 'Modulith Core' : 'Tenant Sandbox'}</span>
+            <span>{isAdmin ? 'Núcleo Central' : 'Ambiente do Produtor'}</span>
             <span className="text-[10px] font-mono font-bold text-sky-400">
               {EDDIE_BUILD.uiVersion}
             </span>

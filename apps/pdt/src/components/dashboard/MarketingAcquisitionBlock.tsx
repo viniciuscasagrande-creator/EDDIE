@@ -103,7 +103,7 @@ export function MarketingAcquisitionBlock({
       {/* Main KPI Row */}
       <div className="grid grid-cols-2 gap-4 my-5">
         <div className="space-y-1">
-          <span className="text-xs font-medium text-slate-400">Blended ROAS</span>
+          <span className="text-xs font-medium text-slate-400">ROAS Consolidado</span>
           {loading ? (
             <div className="h-7 w-20 bg-slate-800 animate-pulse rounded" />
           ) : (
@@ -136,7 +136,7 @@ export function MarketingAcquisitionBlock({
       {/* CAPI Server-Side Delivery Rate Bar */}
       <div className="space-y-2 pt-4 border-t border-slate-800/60">
         <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="text-slate-400">Entrega Server-Side CAPI</span>
+          <span className="text-slate-400">Entrega Via Servidor (CAPI)</span>
           <span className="text-emerald-400 font-bold">
             {formatPercent(marketingHealth.capiSuccessRatePercent, 1)}
           </span>
@@ -148,13 +148,13 @@ export function MarketingAcquisitionBlock({
           />
         </div>
         <div className="text-[10px] text-slate-400 pt-0.5">
-          Deduplicação de eventos via Zod Contracts & Outbox
+          Deduplicação de eventos via Contratos Zod & Outbox
         </div>
       </div>
 
       {/* Footer link */}
       <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
-        <span className="text-slate-400 font-medium">Atribuição por First-Touch e Last-Click</span>
+        <span className="text-slate-400 font-medium">Atribuição por Primeiro e Último Clique</span>
         <Link
           href="/marketing"
           className="text-purple-400 hover:text-purple-300 font-semibold inline-flex items-center gap-1 transition"

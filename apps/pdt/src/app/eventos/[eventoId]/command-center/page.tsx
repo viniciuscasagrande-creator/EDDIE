@@ -248,7 +248,7 @@ export default function EventCommandCenterPage({
         <div className="text-center space-y-3">
           <RefreshCcw className="w-8 h-8 animate-spin text-indigo-400 mx-auto" />
           <p className="text-sm font-medium text-slate-400">
-            Conectando ao Command Center do Evento...
+            Conectando ao Centro de Comando do Evento...
           </p>
         </div>
       </div>
@@ -282,7 +282,7 @@ export default function EventCommandCenterPage({
               <span className="text-slate-600">•</span>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                 <Radio className="w-3 h-3 animate-pulse" />
-                COMMAND CENTER INDIVIDUAL
+                CENTRO DE COMANDO DO EVENTO
               </span>
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold border ${healthBadgeColor}`}>
                 {header.overallHealth === 'OPERACIONAL' ? (

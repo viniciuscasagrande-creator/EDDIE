@@ -450,9 +450,9 @@ export default function FinancialPlanningFPAPage() {
             </span>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                FP&A, Budgeting & Multi-Year Planning
+                Planejamento Financeiro, Orçamento & Projeção Plurianual (FP&A)
                 <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                  EDDIE 11.28
+                  Planejamento Financeiro
                 </span>
               </h1>
               <p className="text-sm text-slate-400">
@@ -476,14 +476,14 @@ export default function FinancialPlanningFPAPage() {
             className="flex items-center gap-2 px-3 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 transition"
           >
             <ShieldCheck className="w-4 h-4 text-indigo-400" />
-            Riscos (11.27)
+            Risco Financeiro
           </Link>
           <Link
             href="/financeiro/liquidez"
             className="flex items-center gap-2 px-3 py-2 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium shadow-sm transition"
           >
             <Layers className="w-4 h-4" />
-            Cash Forecast (11.26)
+            Previsão de Caixa
           </Link>
         </div>
       </div>

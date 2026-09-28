@@ -95,7 +95,7 @@ export default function HardeningDashboardPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">
-                EDDIE 11.13 — Hardening, Segurança, Performance & Escala
+                EDDIE — Proteção, Segurança, Performance & Escala
               </h1>
               <p className="text-xs text-slate-400">
                 Homologação técnica de infraestrutura, RBAC estrito, isolamento de dados e resiliência transacional
@@ -107,7 +107,7 @@ export default function HardeningDashboardPage() {
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            STAGING HOMOLOGADO
+            HOMOLOGADO
           </span>
           <Link
             href="/operacao"

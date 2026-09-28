@@ -320,7 +320,7 @@ export default function SuperDashboardPage() {
         />
 
         <MetricCard
-          title="Público / Check-ins Hoje"
+          title="Público Validado Hoje"
           value={data.checkinsToday}
           type="number"
           variant="amber"
@@ -413,7 +413,7 @@ export default function SuperDashboardPage() {
                 </span>
               </div>
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">
-                Command Center operacional, alertas e incidentes em tempo real.
+                Centro de Comando operacional, alertas e incidentes em tempo real.
               </p>
             </div>
           </Link>
@@ -444,7 +444,7 @@ export default function SuperDashboardPage() {
             </div>
           </Link>
 
-          {/* Hardening & Escala */}
+          {/* Proteção & Segurança */}
           <Link
             href="/operacao/hardening"
             className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-sky-500/50 rounded-xl p-5 transition-all space-y-3 relative"
@@ -458,10 +458,10 @@ export default function SuperDashboardPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-white text-sm group-hover:text-sky-400 transition">
-                  Hardening & Escala
+                  Proteção & Segurança
                 </h3>
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/30">
-                  v11.15
+                  Segurança
                 </span>
               </div>
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">
@@ -470,7 +470,7 @@ export default function SuperDashboardPage() {
             </div>
           </Link>
 
-          {/* Ciclo E2E & Go-Live */}
+          {/* Ciclo E2E & Homologação */}
           <Link
             href="/operacao/e2e"
             className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-emerald-500/50 rounded-xl p-5 transition-all space-y-3 relative"
@@ -484,10 +484,10 @@ export default function SuperDashboardPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-white text-sm group-hover:text-emerald-400 transition">
-                  Ciclo E2E & Go-Live
+                  Ciclo E2E & Homologação
                 </h3>
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  Gate
+                  Validação
                 </span>
               </div>
               <p className="text-slate-400 text-xs mt-1 leading-relaxed">

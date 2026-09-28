@@ -71,11 +71,11 @@ export default function E2ECockpitPage() {
               <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
                 EDDIE 11.14 — Homologação E2E do Ciclo Real do Evento
                 <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
-                  RELEASE GATE PASS
+                  HOMOLOGAÇÃO APROVADA
                 </span>
               </h1>
               <p className="text-xs text-slate-400">
-                Cadeia fechada: Produtor → Evento → Sessão → Venda → Pedido → PIX → Ingresso → Portaria → Ledger → Conciliação → Repasse → Estorno → Go-Live
+                Cadeia fechada: Produtor → Evento → Sessão → Venda → Pedido → PIX → Ingresso → Portaria → Ledger → Conciliação → Repasse → Estorno → Homologação Final
               </p>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function E2ECockpitPage() {
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <FileCheck size={18} className="text-emerald-400" />
-                  Critérios de Aprovação — Go-Live Release Gate
+                  Critérios de Aprovação — Liberação para Produção
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
                   11.14.7: Todas as evidências devem estar 100% verificadas antes da autorização final

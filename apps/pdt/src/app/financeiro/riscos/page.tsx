@@ -461,9 +461,9 @@ export default function FinancialRiskExposurePage() {
             </span>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                Financial Risk, Controls & Exposure OS
+                Gestão de Risco Financeiro, Controles & Exposição
                 <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                  EDDIE 11.27
+                  Risco Financeiro
                 </span>
               </h1>
               <p className="text-sm text-slate-400">
@@ -487,7 +487,7 @@ export default function FinancialRiskExposurePage() {
             className="flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium shadow-sm transition"
           >
             <Layers className="w-4 h-4" />
-            Cash Forecast (11.26)
+            Previsão de Caixa
           </Link>
         </div>
       </div>
