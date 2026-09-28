@@ -102,6 +102,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `tesouraria` | `financeiro` / `platform` | EDDIE 11.25: Banking Engine, PIX Direto, Remessas CNAB 240/400 e Liquidação de Tesouraria |
 | `inventario` | `inventario` | EDDIE 11.29.2: Motor de Inventário, InventoryPools, Holds com TTL de 10 min, alocação de assentos e anti-oversell |
 | `pagamentos` | `pagamentos` | EDDIE 11.29.3: Núcleo de Pagamentos, PaymentIntent, PIX Direto, Webhooks de Adquirentes e Conciliação Financeira |
+| `pos-evento` | `posevento` | EDDIE 11.29.5: Pós-Evento, Presença Real da Portaria, Histórico de Relacionamento, Consentimento LGPD, Segmentação e Pesquisas |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 

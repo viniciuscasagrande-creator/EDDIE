@@ -21,6 +21,7 @@ import {
   Link2,
   BarChart3,
   Radio,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -46,9 +47,11 @@ export const EVENT_OS_NAV: EventOsNavItem[] = [
   { key: 'dashboard', slug: 'dashboard', label: 'Dashboard', shortLabel: 'Dashboard', icon: LayoutDashboard, priority: true, category: 'gestao' },
   { key: 'ingressos', slug: 'ingressos', label: 'Ingressos & Pedidos', shortLabel: 'Ingressos', icon: Ticket, priority: true, category: 'gestao' },
   { key: 'portaria', slug: 'portaria', label: 'Portaria & Check-in', shortLabel: 'Portaria', icon: ScanLine, priority: true, category: 'operacao' },
+  { key: 'pos-evento', slug: 'pos-evento', label: 'Pós-Evento & Histórico', shortLabel: 'Pós-Evento', icon: Users, priority: true, category: 'gestao' },
   { key: 'antifraude', slug: 'antifraude', label: 'Antifraude & Risco', shortLabel: 'Antifraude', icon: ShieldAlert, priority: true, category: 'seguranca' },
   { key: 'mapa', slug: 'mapa', label: 'Mapa & Setores', shortLabel: 'Mapa', icon: Map, priority: true, category: 'gestao' },
   { key: 'financeiro', slug: 'financeiro', label: 'Financeiro', shortLabel: 'Financeiro', icon: Wallet, priority: true, category: 'gestao' },
+
 
   // Secundários (agrupados no menu "Mais" para evitar overflow horizontal)
   { key: 'sala-situacao', slug: 'sala-situacao', label: 'Sala de Situação', shortLabel: 'Situação', icon: ShieldAlert, priority: false, category: 'operacao' },

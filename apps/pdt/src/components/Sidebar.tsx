@@ -129,6 +129,13 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS'],
   },
   {
+    label: 'Pós-Evento & Histórico',
+    href: '/pos-evento',
+    icon: Users,
+    badge: '11.29.5',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
     label: 'Estornos & CDC',
     href: '/estorno',
     icon: RotateCcw,

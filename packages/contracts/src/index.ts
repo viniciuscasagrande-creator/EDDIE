@@ -13,6 +13,7 @@ import * as Financeiro from './events/financeiro.js';
 import * as Marketing from './events/marketing.js';
 import * as Comercial from './events/comercial.js';
 import * as Contabilidade from './events/contabilidade.js';
+import * as PosEvento from './events/pos-evento.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -61,6 +62,12 @@ export const EventCatalog = {
   [Contabilidade.PeriodoContabilFechado.name]: Contabilidade.PeriodoContabilFechado,
   [Contabilidade.PeriodoContabilReaberto.name]: Contabilidade.PeriodoContabilReaberto,
   [Contabilidade.ConciliacaoContabilFinalizada.name]: Contabilidade.ConciliacaoContabilFinalizada,
+  [PosEvento.PesquisaCriadaV1.name]: PosEvento.PesquisaCriadaV1,
+  [PosEvento.CampanhaDisparadaV1.name]: PosEvento.CampanhaDisparadaV1,
+  [PosEvento.PesquisaRespondidaV1.name]: PosEvento.PesquisaRespondidaV1,
+  [PosEvento.ConsentimentoRegistradoV1.name]: PosEvento.ConsentimentoRegistradoV1,
+  [PosEvento.BloqueioRegistradoV1.name]: PosEvento.BloqueioRegistradoV1,
+  [PosEvento.SegmentoSalvoV1.name]: PosEvento.SegmentoSalvoV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

@@ -30,6 +30,7 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { TesourariaModule } from './modules/tesouraria/tesouraria.module';
 import { InventarioModule } from './modules/inventario/inventario.module';
 import { PagamentosModule } from './modules/pagamentos/pagamentos.module';
+import { PosEventoModule } from './modules/pos-evento/pos-evento.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -69,6 +70,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     TesourariaModule,
     InventarioModule,
     PagamentosModule,
+    PosEventoModule,
   ],
 })
 export class AppModule {}

@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento"]
 }
 
 
@@ -1945,5 +1945,321 @@ model ConciliacaoAdquirenteLote {
   @@map("conciliacao_adquirentes_lotes")
   @@schema("pagamentos")
 }
+
+// ============================================================================
+//  PÓS-EVENTO E HISTÓRICO DO PÚBLICO — EDDIE 11.29.5
+//  Presença real da portaria, desduplicação determinística, consentimento LGPD,
+//  segmentações avançadas, pesquisas pós-evento e campanhas mensuradas
+// ============================================================================
+
+model PerfilPublico {
+  id                    String                    @id @default(uuid()) @db.Uuid
+  tenantId              String                    @db.Uuid
+  nomePrincipal         String
+  documentoNormalizado  String?
+  emailPrincipal        String?
+  telefonePrincipal     String?
+  totalPresencas        Int                       @default(0)
+  totalEventosComprados Int                       @default(0)
+  scoreEngajamento      Decimal                   @default(1.00) @db.Decimal(5, 2)
+  metadata              Json?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  identidades           IdentidadePublico[]
+  contatos              ContatoPublico[]
+  participacoes         ParticipacaoEvento[]
+  historicos            HistoricoRelacionamento[]
+  consentimentos        ConsentimentoComunicacao[]
+
+  @@index([tenantId])
+  @@index([documentoNormalizado])
+  @@index([emailPrincipal])
+  @@index([telefonePrincipal])
+  @@map("perfis_publico")
+  @@schema("posevento")
+}
+
+model IdentidadePublico {
+  id                    String         @id @default(uuid()) @db.Uuid
+  perfilId              String         @db.Uuid
+  tipoDocumento         String         // CPF, RG, PASSAPORTE, EMAIL_NORMALIZADO, TELEFONE_NORMALIZADO
+  valorNormalizado      String
+  confianca             Decimal        @default(1.00) @db.Decimal(3, 2)
+  origem                String         // CHECKIN_PORTARIA, CHECKOUT_COMPRADOR, NOMINACAO_TITULAR, IMPORTACAO
+  createdAt             DateTime       @default(now())
+
+  perfil                PerfilPublico  @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@index([perfilId])
+  @@index([valorNormalizado])
+  @@map("identidades_publico")
+  @@schema("posevento")
+}
+
+model ContatoPublico {
+  id                    String         @id @default(uuid()) @db.Uuid
+  perfilId              String         @db.Uuid
+  canal                 String         // WHATSAPP, EMAIL, SMS, PUSH
+  endereco              String
+  verificado            Boolean        @default(false)
+  optOut                Boolean        @default(false)
+  optOutAt              DateTime?
+  optOutOrigem          String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  perfil                PerfilPublico  @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@index([perfilId, canal])
+  @@index([endereco])
+  @@map("contatos_publico")
+  @@schema("posevento")
+}
+
+model ParticipacaoEvento {
+  id                    String         @id @default(uuid()) @db.Uuid
+  tenantId              String         @db.Uuid
+  eventoId              String         @db.Uuid
+  perfilId              String?        @db.Uuid
+  ingressoId            String         @unique @db.Uuid
+  pedidoId              String?        @db.Uuid
+  numeroIngresso        String
+  compradorNome         String?
+  compradorEmail        String?
+  titularNome           String?
+  titularEmail          String?
+  titularTelefone       String?
+  titularDocumento      String?
+  identificacaoIndividual Boolean      @default(false)
+  compareceu            Boolean        @default(false)
+  checkinAt             DateTime?
+  checkinPortaria       String?
+  checkinOperadorId     String?
+  sessaoNome            String?
+  setorNome             String?
+  loteNome              String?
+  canalVenda            String         @default("ONLINE_DIRETO")
+  parceiroId            String?
+  parceiroNome          String?
+  createdAt             DateTime       @default(now())
+
+  perfil                PerfilPublico? @relation(fields: [perfilId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, eventoId, compareceu])
+  @@index([perfilId])
+  @@index([parceiroId])
+  @@map("participacoes_evento")
+  @@schema("posevento")
+}
+
+model HistoricoRelacionamento {
+  id                    String         @id @default(uuid()) @db.Uuid
+  perfilId              String         @db.Uuid
+  eventoId              String         @db.Uuid
+  tenantId              String         @db.Uuid
+  tipo                  String         // COMPRA, CONVITE, PRESENCA, AUSENCIA, CAMPANHA_RECEBIDA, CAMPANHA_CLIQUE, PESQUISA_RESPONDIDA
+  descricao             String
+  detalhes              Json?
+  dataReferencia        DateTime       @default(now())
+  createdAt             DateTime       @default(now())
+
+  perfil                PerfilPublico  @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@index([perfilId, eventoId])
+  @@index([tenantId, tipo])
+  @@map("historico_relacionamentos")
+  @@schema("posevento")
+}
+
+model ConsentimentoComunicacao {
+  id                    String         @id @default(uuid()) @db.Uuid
+  tenantId              String         @db.Uuid
+  perfilId              String         @db.Uuid
+  finalidade            String         // PESQUISA_POS_EVENTO, RELACIONAMENTO, MARKETING, ATUALIZACOES_EVENTO
+  canal                 String         // WHATSAPP, EMAIL, SMS, NOTIFICACAO
+  origem                String         // CHECKOUT_TERMO, TOTEM_PORTARIA, FORMULARIO_PESQUISA, PORTAL_COMPRADOR
+  versaoTermo           String
+  concedidoEm           DateTime       @default(now())
+  revogado              Boolean        @default(false)
+  revogadoEm            DateTime?
+  evidencia             Json?
+
+  perfil                PerfilPublico  @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@index([perfilId, canal, finalidade])
+  @@index([tenantId])
+  @@map("consentimentos_comunicacao")
+  @@schema("posevento")
+}
+
+model BloqueioComunicacao {
+  id                    String         @id @default(uuid()) @db.Uuid
+  tenantId              String         @db.Uuid
+  identificador         String         // Telefone, email ou documento normalizado
+  tipoIdentificador     String         // TELEFONE, EMAIL, DOCUMENTO
+  canal                 String         // TODOS, WHATSAPP, EMAIL, SMS
+  motivo                String         // SOLICITACAO_USUARIO, RECLAMACAO_PROCON, OPT_OUT_MENSAGEM, BOUNCE
+  ativo                 Boolean        @default(true)
+  bloqueadoEm           DateTime       @default(now())
+  desbloqueadoEm        DateTime?
+
+  @@index([tenantId, identificador, canal])
+  @@map("bloqueios_comunicacao")
+  @@schema("posevento")
+}
+
+model SegmentoPublico {
+  id                    String         @id @default(uuid()) @db.Uuid
+  tenantId              String         @db.Uuid
+  eventoId              String?        @db.Uuid
+  nome                  String
+  descricao             String?
+  totalMembros          Int            @default(0)
+  regras                Json
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([tenantId, eventoId])
+  @@map("segmentos_publico")
+  @@schema("posevento")
+}
+
+model PesquisaPosEvento {
+  id                    String             @id @default(uuid()) @db.Uuid
+  tenantId              String             @db.Uuid
+  eventoId              String             @db.Uuid
+  titulo                String
+  descricao             String?
+  status                String             @default("RASCUNHO") // RASCUNHO, PUBLICADA, ENCERRADA
+  modeloOrigem          String?            // SATISFACAO_GERAL, EXPERIENCIA_EVENTO, ESTRUTURA_ORGANIZACAO, PARQUE_ATRACAO, SHOW_FESTIVAL, TURISMO_EXCURSAO
+  totalRespostas        Int                @default(0)
+  satisfacaoMedia       Decimal?           @db.Decimal(3, 2)
+  npsMedio              Decimal?           @db.Decimal(4, 1)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  perguntas             PerguntaPesquisa[]
+  respostas             RespostaPesquisa[]
+
+  @@index([tenantId, eventoId])
+  @@map("pesquisas_pos_evento")
+  @@schema("posevento")
+}
+
+model PerguntaPesquisa {
+  id                    String             @id @default(uuid()) @db.Uuid
+  pesquisaId            String             @db.Uuid
+  ordem                 Int
+  enunciado             String
+  tipo                  String             // RATING_1_5, SIM_TALVEZ_NAO, TEXTO_LIVRE, NPS_0_10, MULTIPLA_ESCOLHA
+  categoria             String             // GERAL, ORGANIZACAO, ACESSO, BANHEIROS, ALIMENTOS_BEBIDAS, ESTRUTURA, RETORNO, SUGESTAO_LIVRE
+  obrigatoria           Boolean            @default(true)
+  opcoes                Json?
+
+  pesquisa              PesquisaPosEvento  @relation(fields: [pesquisaId], references: [id], onDelete: Cascade)
+
+  @@index([pesquisaId])
+  @@map("perguntas_pesquisa")
+  @@schema("posevento")
+}
+
+model RespostaPesquisa {
+  id                    String             @id @default(uuid()) @db.Uuid
+  pesquisaId            String             @db.Uuid
+  perfilId              String?            @db.Uuid
+  ingressoId            String?            @db.Uuid
+  status                String             @default("CONCLUIDA") // INICIADA, CONCLUIDA
+  notaSatisfacaoGeral   Int?
+  notaOrganizacao       Int?
+  notaAcesso            Int?
+  notaEstrutura         Int?
+  notaAlimentos         Int?
+  voltaria              String?            // SIM, TALVEZ, NAO
+  comentarioAberto      String?
+  respostasPerguntas    Json               @default("{}")
+  topicosDetectados     Json?
+  respondidoEm          DateTime           @default(now())
+
+  pesquisa              PesquisaPosEvento  @relation(fields: [pesquisaId], references: [id], onDelete: Cascade)
+
+  @@index([pesquisaId])
+  @@map("respostas_pesquisa")
+  @@schema("posevento")
+}
+
+model TabelaPrecoComunicacao {
+  id                    String         @id @default(uuid()) @db.Uuid
+  canal                 String         // WHATSAPP, EMAIL, SMS
+  custoUnitario         Decimal        @db.Decimal(10, 4)
+  descricao             String
+  vigenciaInicio        DateTime       @default(now())
+  vigenciaFim           DateTime?
+  ativo                 Boolean        @default(true)
+
+  @@index([canal, ativo])
+  @@map("tabela_precos_comunicacao")
+  @@schema("posevento")
+}
+
+model CampanhaPosEvento {
+  id                    String             @id @default(uuid()) @db.Uuid
+  tenantId              String             @db.Uuid
+  eventoId              String             @db.Uuid
+  pesquisaId            String?            @db.Uuid
+  segmentoId            String?            @db.Uuid
+  nome                  String
+  canal                 String             @default("WHATSAPP") // WHATSAPP, EMAIL, SMS
+  mensagemTemplate      String
+  publicoElegivelTotal  Int                @default(0)
+  publicoSelecionado    Int                @default(0)
+  custoUnitario         Decimal            @db.Decimal(10, 4)
+  custoEstimadoTotal    Decimal            @db.Decimal(14, 2)
+  requerAprovacao       Boolean            @default(false)
+  status                String             @default("RASCUNHO") // RASCUNHO, AGUARDANDO_APROVACAO, APROVADO, EM_DISPARO, CONCLUIDO, CANCELADO
+  aprovadoPor           String?
+  aprovadoEm            DateTime?
+  disparadoEm           DateTime?
+  concluidoEm           DateTime?
+
+  totalEnviados         Int                @default(0)
+  totalEntregues        Int                @default(0)
+  totalFalhas           Int                @default(0)
+  totalVisualizados     Int                @default(0)
+  totalCliques          Int                @default(0)
+  totalPesquisasIniciadas Int              @default(0)
+  totalPesquisasConcluidas Int             @default(0)
+  custoRealizadoTotal   Decimal            @default(0.00) @db.Decimal(14, 2)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  envios                EnvioCampanha[]
+
+  @@index([tenantId, eventoId])
+  @@map("campanhas_pos_evento")
+  @@schema("posevento")
+}
+
+model EnvioCampanha {
+  id                    String             @id @default(uuid()) @db.Uuid
+  campanhaId            String             @db.Uuid
+  perfilId              String?            @db.Uuid
+  destinatario          String
+  status                String             @default("PENDENTE") // PENDENTE, ENVIADO, ENTREGUE, FALHA, VISUALIZADO, CLICADO
+  mensagemEnviada       String?
+  linkUnico             String?
+  enviadoEm             DateTime?
+  entregueEm            DateTime?
+  visualizadoEm         DateTime?
+  clicadoEm             DateTime?
+  motivoFalha           String?
+
+  campanha              CampanhaPosEvento  @relation(fields: [campanhaId], references: [id], onDelete: Cascade)
+
+  @@index([campanhaId, status])
+  @@map("envios_campanha")
+  @@schema("posevento")
+}
+
 
 
