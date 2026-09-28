@@ -1,0 +1,21 @@
+modulo,metodo,rota,tipo,autenticacao,permite_mock_prod,codigo_erro_offline,descricao
+platform,GET,/health,leitura,publica,nao,503,Liveness probe geral do servico e estatisticas de uptime
+platform,GET,/ready,leitura,publica,nao,503,Readiness probe com consulta ao Postgres (SELECT 1)
+platform,GET,/live,leitura,publica,nao,200,Liveness probe rapida sem I/O
+dashboard,GET,/api/admin/dashboard/summary,leitura,operador,nao,503,Metricas consolidadas 360 graus do Centro de Comando
+dashboard,POST,/api/admin/dashboard/action,escrita,operador,nao,503,Execucao de acoes rapidas de estorno e repasse
+event-closing,GET,/api/eventos/:id/fechamento/gates,leitura,produtor/operador,nao,503,Auditoria forense dos 10 gates de fechamento
+event-closing,POST,/api/eventos/:id/fechamento/concluir,escrita,diretor,nao,503,Fechamento definitivo e carimbo criptografico SHA-256
+event-closing,POST,/api/eventos/:id/fechamento/reabrir,escrita,diretor,nao,503,Reabertura formal versionada v1 para v2 com SoD
+financeiro,GET,/api/financeiro/saldos,leitura,produtor,nao,503,Extrato e saldos agregados derivados do Ledger
+financeiro,POST,/api/financeiro/repasses,escrita,financeiro,nao,503,Criacao de solicitacao de repasse com split
+financeiro,POST,/api/financeiro/transferencias,escrita,financeiro,nao,503,Transferencia inter-eventos com partidas dobradas
+financeiro,POST,/api/conciliacao/importacoes,escrita,financeiro,nao,503,Importacao de extratos de adquirentes
+contabilidade,GET,/api/accounting/trial-balance,leitura,contador,nao,503,Balancete de verificacao por partidas dobradas
+contabilidade,POST,/api/accounting/closing,escrita,controladoria,nao,503,Fechamento contabil mensal
+marketing,GET,/api/eventos/:id/marketing/audiences,leitura,produtor,nao,503,Listagem de publicos e audiencias reais
+marketing,POST,/api/eventos/:id/marketing/audiences,escrita,produtor,nao,503,Criacao de publico com regras AND/OR
+marketing,POST,/api/eventos/:id/marketing/journeys,escrita,produtor,nao,503,Criacao de jornada automatizada de remarketing
+marketing,POST,/api/tracking/events,escrita,publica,nao,503,Ingestao CAPI e tracking multi-pixel
+estorno,POST,/api/estorno/solicitar,escrita,sac/produtor,nao,503,Abertura de solicitacao de reembolso CDC
+estorno,POST,/api/estorno/aprovar,escrita,financeiro,nao,503,Aprovacao e agendamento de liquidacao de estorno

@@ -1,0 +1,17 @@
+# Gate Final 11.23.1
+- [ ] fallback fictício bloqueado em produção
+- [ ] zero mutação simulada
+- [ ] erros reais + correlationId
+- [ ] health/ready
+- [ ] PDT→API→DB→read-back comprovado
+- [ ] env validada
+- [ ] CI
+- [ ] testes financeiros críticos
+- [ ] RBAC/ownership
+- [ ] Remarketing auditado
+- [ ] migrations auditadas
+- [ ] observabilidade
+- [ ] UI de falha real
+- [ ] documentação sincronizada
+- [ ] evidências reais
+- [ ] nenhum P0/P1 crítico aberto

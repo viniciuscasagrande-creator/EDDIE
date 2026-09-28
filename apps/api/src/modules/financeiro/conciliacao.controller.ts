@@ -14,6 +14,21 @@ import { PrismaService } from '../../shared/prisma.module';
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 
+interface ExtratoItemInput {
+  transacaoId?: string;
+  tipo?: string;
+  valorEsperadoCents?: number;
+  valorRecebidoCents?: number;
+}
+
+interface ImportarLoteInput {
+  produtorId?: string;
+  adquirente?: string;
+  arquivoNome?: string;
+  itens?: ExtratoItemInput[];
+  transacoes?: ExtratoItemInput[];
+}
+
 @ApiTags('conciliacao')
 @Controller('conciliacao')
 export class ConciliacaoController {
@@ -22,22 +37,18 @@ export class ConciliacaoController {
     private readonly prisma: PrismaService,
   ) {}
 
-  private db() {
-    return this.prisma as any;
-  }
-
   @Post('importacoes')
   @ApiOperation({ summary: 'Importa lote de extrato ou arquivo adquirente para conciliação' })
   async importarLote(
     @Headers('x-tenant-id') tenantIdHeader: string,
-    @Body() body: any,
+    @Body() body: ImportarLoteInput,
   ) {
     const tenantId = tenantIdHeader || DEFAULT_TENANT_ID;
     return this.financeiroService.importarExtratoConciliacao(tenantId, {
       produtorId: body.produtorId || '00000000-0000-0000-0000-000000000002',
       adquirente: body.adquirente || 'PAGSEGURO',
       arquivoNome: body.arquivoNome || 'extrato-adquirente.csv',
-      itens: (body.itens || body.transacoes || []).map((t: any) => ({
+      itens: (body.itens || body.transacoes || []).map((t: ExtratoItemInput) => ({
         transacaoId: t.transacaoId || 'TX-DEFAULT',
         tipo: t.tipo || 'PIX',
         valorEsperadoCents: t.valorEsperadoCents || 1000,
@@ -84,7 +95,7 @@ export class ConciliacaoController {
     @Headers('x-tenant-id') tenantIdHeader: string,
   ) {
     const tenantId = tenantIdHeader || DEFAULT_TENANT_ID;
-    const div = await this.db().divergenciaConciliacao.findFirst({
+    const div = await this.prisma.divergenciaConciliacao.findFirst({
       where: { id, tenantId },
     });
     if (!div) throw new BadRequestException('Divergência não encontrada');

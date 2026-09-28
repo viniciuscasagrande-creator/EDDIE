@@ -222,7 +222,7 @@ export class AccountingController {
   @ApiOperation({ summary: 'Resolve pendência contábil com justificativa e reclassificação' })
   async resolvePendency(
     @Param('id') id: string,
-    @Body() body: { actorId: string; parecer: string; lancamentoAjusteInput?: any },
+    @Body() body: { actorId: string; parecer: string; lancamentoAjusteInput?: ClassifyFactInputDto },
     @Headers('x-tenant-id') tenantIdHeader?: string,
   ) {
     const tenantId = resolveTenant(tenantIdHeader);

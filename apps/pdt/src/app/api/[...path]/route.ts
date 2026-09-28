@@ -2,6 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+export type StandardErrorCode =
+  | 'BACKEND_UNAVAILABLE'
+  | 'BACKEND_TIMEOUT'
+  | 'DATABASE_UNAVAILABLE'
+  | 'UPSTREAM_ERROR'
+  | 'VALIDATION_ERROR'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'CONFLICT'
+  | 'NOT_FOUND';
+
+export interface StandardErrorPayload {
+  ok: false;
+  code: StandardErrorCode;
+  error: string;
+  message: string;
+  correlationId: string;
+  path: string;
+  timestamp: string;
+}
+
 function backendBase() {
   const raw = process.env.API_INTERNAL_URL || process.env.BACKEND_URL || process.env.API_URL || "";
   if (!raw || !/^https?:\/\//i.test(raw)) return "";
@@ -10,54 +31,82 @@ function backendBase() {
 }
 
 function isDemoOrMockAllowed(): boolean {
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production") {
+    return false; // Terminantemente proibido em ambiente de produção
+  }
   return (
     process.env.DEMO_MODE === "true" ||
     process.env.NEXT_PUBLIC_ALLOW_OFFLINE_MOCK === "true"
   );
 }
 
-function handleAutonomousStore(req: NextRequest, pathParts: string[]): NextResponse {
+function getOrGenerateCorrelationId(req: NextRequest): string {
+  const existing = req.headers.get("x-correlation-id") || req.headers.get("x-request-id");
+  if (existing && existing.trim().length > 0) {
+    return existing.trim();
+  }
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `corr-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+function buildErrorResponse(
+  code: StandardErrorCode,
+  errorName: string,
+  message: string,
+  path: string,
+  status: number,
+  correlationId: string,
+  dataSource: string = 'upstream-failure'
+): NextResponse {
+  const payload: StandardErrorPayload = {
+    ok: false,
+    code,
+    error: errorName,
+    message,
+    correlationId,
+    path,
+    timestamp: new Date().toISOString(),
+  };
+  return NextResponse.json(payload, {
+    status,
+    headers: {
+      'x-data-source': dataSource,
+      'x-correlation-id': correlationId,
+    },
+  });
+}
+
+function handleAutonomousStore(req: NextRequest, pathParts: string[], correlationId: string): NextResponse {
   const fullPath = pathParts.join('/');
   const method = req.method;
 
   // REJEIÇÃO CRÍTICA DE MUTAÇÕES SEM BACKEND:
   // Nunca fingir sucesso ({ ok: true, processado: true }) em operações de escrita (POST, PUT, PATCH, DELETE).
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    console.error(`[PDT Proxy] Escrita rejeitada para ${method} /${fullPath}: Backend indisponível para persistência.`);
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'Service Unavailable',
-        message: 'Operação de escrita rejeitada: backend indisponível para persistência. Nenhuma alteração foi gravada.',
-        path: fullPath,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        status: 503,
-        headers: {
-          'x-data-source': 'offline-write-rejected',
-        },
-      }
+    console.error(`[PDT Proxy] Escrita rejeitada para ${method} /${fullPath}: Backend indisponível para persistência. [corr: ${correlationId}]`);
+    return buildErrorResponse(
+      'BACKEND_UNAVAILABLE',
+      'Service Unavailable',
+      'Operação de escrita rejeitada: backend indisponível para persistência. Nenhuma alteração foi gravada.',
+      fullPath,
+      503,
+      correlationId,
+      'offline-write-rejected'
     );
   }
 
   // REJEIÇÃO DE LEITURAS FICTÍCIAS FORA DO MODO DEMONSTRAÇÃO EXPLÍCITO:
   if (!isDemoOrMockAllowed()) {
-    console.warn(`[PDT Proxy] Leitura bloqueada para ${method} /${fullPath}: Backend inacessível e modo DEMO/MOCK desativado.`);
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'Service Unavailable',
-        message: 'Backend inacessível ou API_INTERNAL_URL não configurada. Defina DEMO_MODE=true para ativar o mock em demonstração.',
-        path: fullPath,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        status: 503,
-        headers: {
-          'x-data-source': 'unavailable',
-        },
-      }
+    console.warn(`[PDT Proxy] Leitura bloqueada para ${method} /${fullPath}: Backend inacessível e modo DEMO/MOCK desativado. [corr: ${correlationId}]`);
+    return buildErrorResponse(
+      'BACKEND_UNAVAILABLE',
+      'Service Unavailable',
+      'Backend inacessível ou API_INTERNAL_URL não configurada. Defina DEMO_MODE=true fora de produção para ativar o mock em demonstração.',
+      fullPath,
+      503,
+      correlationId,
+      'unavailable'
     );
   }
 
@@ -1131,88 +1180,7 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]): NextRespo
     });
   }
 
-  // 3.12.1 EDDIE 11.16.13 — Motor Operacional de Ações de Marketing & Ads
-  if (fullPath === 'marketing/actions') {
-    const correlationId = `act_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    return NextResponse.json({
-      success: true,
-      correlationId,
-      timestamp: new Date().toISOString(),
-      message: 'Operação executada com sucesso pelo Motor de Ações de Marketing.',
-      statusReal: {
-        reconciledStatus: 'ENTREGANDO',
-        providerStatus: 'ACTIVE',
-        localStatus: 'ATIVA',
-        lastSync: new Date().toISOString(),
-      },
-      audit: {
-        producerVerified: true,
-        eventVerified: true,
-        loggedToLedger: true,
-        correlationId,
-      },
-    });
-  }
 
-  // Integrations action routes
-  if (fullPath.startsWith('marketing/integrations/')) {
-    const provider = pathParts[2]?.toUpperCase() || 'META';
-    const action = pathParts[3] || 'status';
-    const correlationId = `act_${provider.toLowerCase()}_${Date.now()}`;
-    return NextResponse.json({
-      success: true,
-      action: action.toUpperCase(),
-      provider,
-      correlationId,
-      timestamp: new Date().toISOString(),
-      message: `Ação ${action.toUpperCase()} no provedor ${provider} executada com sucesso.`,
-      statusReal: {
-        reconciledStatus: action === 'disconnect' ? 'DESCONECTADO' : 'CONECTADO',
-        providerStatus: action === 'disconnect' ? 'INACTIVE' : 'ACTIVE',
-        localStatus: action === 'disconnect' ? 'DESCONECTADO' : 'CONECTADO',
-        lastSync: new Date().toISOString(),
-      },
-    });
-  }
-
-  // Campaigns action routes
-  if (fullPath.includes('marketing/campaigns') || fullPath.includes('marketing/campanhas')) {
-    const subAction = pathParts[pathParts.length - 1];
-    let reconciled = 'ENTREGANDO';
-    if (subAction === 'pause') reconciled = 'PAUSADA';
-    if (subAction === 'stop') reconciled = 'FINALIZADA';
-    if (subAction === 'resume' || subAction === 'publish') reconciled = 'ENTREGANDO';
-
-    return NextResponse.json({
-      success: true,
-      action: subAction.toUpperCase(),
-      correlationId: `act_cmp_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      message: `Campanha atualizada com sucesso (${subAction}). Reconciliação confirmada no provedor.`,
-      statusReal: {
-        reconciledStatus: reconciled,
-        providerStatus: reconciled === 'PAUSADA' ? 'PAUSED' : reconciled === 'FINALIZADA' ? 'ARCHIVED' : 'ACTIVE',
-        localStatus: reconciled,
-        lastSync: new Date().toISOString(),
-      },
-    });
-  }
-
-  // Tracking / CAPI Test
-  if (fullPath.includes('marketing/tracking') || fullPath.includes('marketing/meta/capi-test')) {
-    return NextResponse.json({
-      success: true,
-      action: 'TEST_EVENT',
-      correlationId: `capi_test_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      message: 'Evento Server-Side (Purchase / InitiateCheckout) recebido com sucesso no Events Manager (HTTP 200).',
-      data: {
-        eventsReceived: 1,
-        matchQualityScore: 9.6,
-        fbtrace_id: 'Az92K_81m4kL_MetaCapiTrace',
-      },
-    });
-  }
 
   // Diagnostics & Logs
   if (fullPath.includes('marketing/diagnostics')) {
@@ -3600,22 +3568,20 @@ function handleAutonomousStore(req: NextRequest, pathParts: string[]): NextRespo
 
   // Mutação / escrita genérica
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'Service Unavailable',
-        message: 'Operação de escrita rejeitada: backend indisponível para persistência.',
-        path: fullPath,
-      },
-      {
-        status: 503,
-        headers: { 'x-data-source': 'offline-write-rejected' },
-      }
+    return buildErrorResponse(
+      'BACKEND_UNAVAILABLE',
+      'Service Unavailable',
+      'Operação de escrita rejeitada: backend indisponível para persistência.',
+      fullPath,
+      503,
+      correlationId,
+      'offline-write-rejected'
     );
   }
 
   const defaultEmptyRes = NextResponse.json({ ok: true, data: [] });
   defaultEmptyRes.headers.set('x-data-source', 'mock');
+  defaultEmptyRes.headers.set('x-correlation-id', correlationId);
   return defaultEmptyRes;
 }
 
@@ -3623,6 +3589,8 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>): Pro
   const { path } = await params;
   const base = backendBase();
   const isMutation = !['GET', 'HEAD'].includes(req.method);
+  const correlationId = getOrGenerateCorrelationId(req);
+  const startTime = Date.now();
 
   if (base && base.startsWith("http")) {
     const target = `${base}/${path.join("/")}${req.nextUrl.search}`;
@@ -3636,6 +3604,8 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>): Pro
       if (!headers.has("x-producer-id")) headers.set("x-producer-id", produtorId);
       if (!headers.has("x-produtor-id")) headers.set("x-produtor-id", produtorId);
     }
+    headers.set("x-correlation-id", correlationId);
+
     const abortCtrl = new AbortController();
     const abortTimer = setTimeout(() => abortCtrl.abort(), 4000);
     try {
@@ -3647,6 +3617,10 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>): Pro
       const responseHeaders = new Headers(upstream.headers);
       responseHeaders.delete("content-encoding");
       responseHeaders.delete("content-length");
+      responseHeaders.set("x-correlation-id", correlationId);
+
+      const durationMs = Date.now() - startTime;
+      console.info(`[PDT Proxy] ${req.method} /${path.join('/')} -> ${upstream.status} (${durationMs}ms) [corr: ${correlationId}]`);
 
       // FAIL-FAST: Qualquer status do backend (inclusive 4xx e 5xx) é repassado integralmente!
       // NUNCA engolir erro 5xx para fingir sucesso ou mascarar pane de infraestrutura.
@@ -3655,84 +3629,74 @@ async function proxy(req: NextRequest, params: Promise<{ path: string[] }>): Pro
       clearTimeout(abortTimer);
       const isAbort = err instanceof Error && err.name === 'AbortError';
 
-      console.error(`[PDT Proxy] Falha de comunicação com upstream (${target}): ${isAbort ? 'Timeout (4s) excedido' : String(err)}`);
+      console.error(`[PDT Proxy] Falha de comunicação com upstream (${target}): ${isAbort ? 'Timeout (4s) excedido' : String(err)} [corr: ${correlationId}]`);
 
       // Mutações: NUNCA cair em fallback mock/falso
       if (isMutation) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: isAbort ? 'Gateway Timeout' : 'Bad Gateway',
-            message: isAbort
-              ? 'Tempo limite de comunicação com o backend excedido (4s). Nenhuma gravação foi efetuada.'
-              : 'Não foi possível alcançar o servidor backend para persistência.',
-            path: path.join('/'),
-          },
-          {
-            status: isAbort ? 504 : 502,
-            headers: { 'x-data-source': 'upstream-failure' },
-          }
+        return buildErrorResponse(
+          isAbort ? 'BACKEND_TIMEOUT' : 'UPSTREAM_ERROR',
+          isAbort ? 'Gateway Timeout' : 'Bad Gateway',
+          isAbort
+            ? 'Tempo limite de comunicação com o backend excedido (4s). Nenhuma gravação foi efetuada.'
+            : 'Não foi possível alcançar o servidor backend para persistência.',
+          path.join('/'),
+          isAbort ? 504 : 502,
+          correlationId,
+          'upstream-failure'
         );
       }
 
-      // Leituras: fallback em modo DEMO/MOCK autorizado
+      // Leituras: fallback em modo DEMO/MOCK autorizado fora de produção
       if (isDemoOrMockAllowed()) {
-        const mockResponse = handleAutonomousStore(req, path);
+        const mockResponse = handleAutonomousStore(req, path, correlationId);
         mockResponse.headers.set('x-data-source', 'mock');
         mockResponse.headers.set('x-upstream-error', isAbort ? 'timeout' : 'unreachable');
+        mockResponse.headers.set('x-correlation-id', correlationId);
         return mockResponse;
       }
 
-      return NextResponse.json(
-        {
-          ok: false,
-          error: isAbort ? 'Gateway Timeout' : 'Bad Gateway',
-          message: isAbort
-            ? 'Tempo limite de comunicação com o backend excedido (4s).'
-            : 'Servidor backend inacessível e DEMO_MODE desativado.',
-          path: path.join('/'),
-        },
-        {
-          status: isAbort ? 504 : 502,
-          headers: { 'x-data-source': 'upstream-failure' },
-        }
+      return buildErrorResponse(
+        isAbort ? 'BACKEND_TIMEOUT' : 'BACKEND_UNAVAILABLE',
+        isAbort ? 'Gateway Timeout' : 'Bad Gateway',
+        isAbort
+          ? 'Tempo limite de comunicação com o backend excedido (4s).'
+          : 'Servidor backend inacessível e DEMO_MODE desativado.',
+        path.join('/'),
+        isAbort ? 504 : 502,
+        correlationId,
+        'upstream-failure'
       );
     }
   }
 
   // Base NÃO configurada (API_INTERNAL_URL ausente)
   if (isMutation) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'Service Unavailable',
-        message: 'Variável de ambiente do backend (API_INTERNAL_URL / BACKEND_URL) não configurada. Operação de escrita rejeitada.',
-        path: path.join('/'),
-      },
-      {
-        status: 503,
-        headers: { 'x-data-source': 'unconfigured-backend' },
-      }
+    return buildErrorResponse(
+      'BACKEND_UNAVAILABLE',
+      'Service Unavailable',
+      'Variável de ambiente do backend (API_INTERNAL_URL / BACKEND_URL) não configurada. Operação de escrita rejeitada.',
+      path.join('/'),
+      503,
+      correlationId,
+      'unconfigured-backend'
     );
   }
 
   if (isDemoOrMockAllowed()) {
-    const mockResponse = handleAutonomousStore(req, path);
+    const mockResponse = handleAutonomousStore(req, path, correlationId);
     mockResponse.headers.set('x-data-source', 'mock');
+    mockResponse.headers.set('x-correlation-id', correlationId);
     return mockResponse;
   }
 
-  return NextResponse.json(
-    {
-      ok: false,
-      error: 'Service Unavailable',
-      message: 'Backend não configurado (API_INTERNAL_URL ausente) e modo de demonstração (DEMO_MODE=true) desativado.',
-      path: path.join('/'),
-    },
-    {
-      status: 503,
-      headers: { 'x-data-source': 'unconfigured-backend' },
-    }
+  return buildErrorResponse(
+    'BACKEND_UNAVAILABLE',
+    'Service Unavailable',
+    'Backend não configurado (API_INTERNAL_URL ausente) e modo de demonstração (DEMO_MODE=true) desativado.',
+    path.join('/'),
+    503,
+    correlationId,
+    'unconfigured-backend'
   );
 }
 

@@ -24,6 +24,8 @@ import { ProducerPortalModule } from './modules/producer-portal/producer-portal.
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EventClosingModule } from './modules/event-closing/event-closing.module';
 
+import { validateApiEnv } from './shared/config/env.validation';
+
 /**
  * MODULITH. Cada módulo abaixo é um bounded context isolado.
  * Ao adicionar um módulo novo, registre-o aqui e crie o GEMINI.md dele.
@@ -31,7 +33,7 @@ import { EventClosingModule } from './modules/event-closing/event-closing.module
 @Module({
   controllers: [HealthController],
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateApiEnv }),
     ScheduleModule.forRoot(),
     PrismaModule,
     BusModule,

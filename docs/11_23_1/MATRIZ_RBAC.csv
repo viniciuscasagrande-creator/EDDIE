@@ -1,0 +1,14 @@
+papel,modulo,recurso,operacao,escopo,validacao_backend
+PRODUTOR,eventos,eventos,READ,Proprios eventos,TenantGuard + ProducerId match no Prisma
+PRODUTOR,eventos,eventos,WRITE,Proprios eventos,Verificacao de propriedade do evento
+PRODUTOR,financeiro,saldos_extratos,READ,Propria conta grafica,Filtro estrito por produtorId
+PRODUTOR,financeiro,transferencias,WRITE,Eventos proprios,Saldo disponivel no evento de origem do produtor
+PRODUTOR,financeiro,repasses,WRITE,Proprios repasses,Bloqueado se produtorId divergir
+PRODUTOR,event-closing,gates,READ,Eventos proprios,Verificacao de evento pertencente ao produtor
+PRODUTOR,event-closing,fechamento,WRITE,Eventos proprios,Exige papel DIRETOR_FINANCEIRO ou OPERADOR autorizado
+PRODUTOR,marketing,audiences_journeys,READ_WRITE,Eventos proprios,Escopo isolado por eventoId e produtorId
+OPERADOR,dashboard,metricas_360,READ,Tenant global,Visualizacao consolidada com filtros
+OPERADOR,dashboard,acoes_rapidas,WRITE,Tenant global,Aprovacao de estornos e liberacao de repasses
+FINANCEIRO,financeiro,conciliacao,WRITE,Tenant global,Matching e resolucao de divergencias
+CONTADOR,contabilidade,livros_balancetes,READ,Tenant global,Partidas dobradas e DRE analitica
+DIRETOR,event-closing,fechamento_reabertura,WRITE,Tenant global,Aprovacao final SoD com token AUTH-DIR-*

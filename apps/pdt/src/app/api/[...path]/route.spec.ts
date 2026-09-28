@@ -124,4 +124,32 @@ describe('PDT Proxy Route (/api/[...path]) - Fail-Fast & Anti-Mock Integrity', (
     expect(body.error).toBe('Gateway Timeout');
     expect(res.headers.get('x-data-source')).toBe('upstream-failure');
   });
+
+  it('PRODUÇÃO: deve PROIBIR terminantemente dados mockados quando NODE_ENV=production, mesmo se DEMO_MODE=true', async () => {
+    (process.env as Record<string, string>)['NODE_ENV'] = 'production';
+    process.env.DEMO_MODE = 'true';
+
+    const req = new NextRequest('http://localhost:3000/api/eventos');
+    const res = await GET(req, { params: Promise.resolve({ path: ['eventos'] }) });
+
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.code).toBe('BACKEND_UNAVAILABLE');
+    expect(res.headers.get('x-data-source')).toBe('unconfigured-backend');
+  });
+
+  it('deve injetar e propagar correlationId nos cabeçalhos e no corpo das respostas de erro', async () => {
+    const customCorr = 'req-trace-uuid-12345';
+    const req = new NextRequest('http://localhost:3000/api/eventos', {
+      headers: { 'x-correlation-id': customCorr },
+    });
+
+    const res = await GET(req, { params: Promise.resolve({ path: ['eventos'] }) });
+    expect(res.headers.get('x-correlation-id')).toBe(customCorr);
+
+    const body = await res.json();
+    expect(body.correlationId).toBe(customCorr);
+    expect(body.code).toBe('BACKEND_UNAVAILABLE');
+  });
 });

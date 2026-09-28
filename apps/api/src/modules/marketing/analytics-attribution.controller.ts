@@ -16,7 +16,7 @@ import {
 
 interface ExpressResponseLike {
   setHeader(name: string, value: string): void;
-  send(body: any): any;
+  send(body: string | Buffer | Record<string, unknown>): unknown;
 }
 
 import { AnalyticsAttributionService } from './analytics-attribution.service';

@@ -11,6 +11,9 @@ import { PrismaService } from '../../shared/prisma.module';
 import { OutboxService } from '../../shared/outbox/outbox.service';
 import { FinanceiroPublicService } from '../financeiro/financeiro.public-service';
 import type {
+  AccountType,
+  AccountNature,
+  EntryLineType,
   ChartOfAccountsItemDto,
   ClassificationRuleDto,
   ClassifyFactInputDto,
@@ -151,8 +154,8 @@ export class AccountingService {
       id: c.id,
       codigo: c.codigo,
       nome: c.nome,
-      tipo: c.tipo as any,
-      natureza: c.natureza as any,
+      tipo: c.tipo as AccountType,
+      natureza: c.natureza as AccountNature,
       nivel: c.nivel,
       analitica: c.analitica,
       contaPaiId: c.contaPaiId,
@@ -286,7 +289,7 @@ export class AccountingService {
       entidade: 'REGRA_CLASSIFICACAO',
       entidadeId: novaRegra.id,
       actorId: input.criadoPor,
-      dadosNovos: novaRegra as any,
+      dadosNovos: novaRegra as unknown as Record<string, unknown>,
     });
 
     return novaRegra;
@@ -726,7 +729,7 @@ export class AccountingService {
           numeroLancamento: l.numeroLancamento,
           contaCodigo: p.conta.codigo,
           contaNome: p.conta.nome,
-          tipo: p.tipo as any,
+          tipo: p.tipo as EntryLineType,
           valorCents: decimalToCents(p.valor),
           historico: p.historicoComplementar ? `${l.historico} - ${p.historicoComplementar}` : l.historico,
           correlationId: l.id,
@@ -754,7 +757,7 @@ export class AccountingService {
       orderBy: { lancamento: { numeroLancamento: 'asc' } },
     });
 
-    const movimentosPorConta = new Map<string, Array<any>>();
+    const movimentosPorConta = new Map<string, Array<typeof partidas[number]>>();
     for (const p of partidas) {
       const lista = movimentosPorConta.get(p.contaId) || [];
       lista.push(p);
@@ -780,7 +783,7 @@ export class AccountingService {
           data: p.lancamento.data.toISOString(),
           numeroLancamento: p.lancamento.numeroLancamento,
           historico: p.historicoComplementar ? `${p.lancamento.historico} - ${p.historicoComplementar}` : p.lancamento.historico,
-          tipo: p.tipo as any,
+          tipo: p.tipo as EntryLineType,
           valorCents: val,
           saldoAposCents: saldo,
         };
@@ -789,8 +792,8 @@ export class AccountingService {
       return {
         contaCodigo: c.codigo,
         contaNome: c.nome,
-        tipo: c.tipo as any,
-        natureza: c.natureza as any,
+        tipo: c.tipo as AccountType,
+        natureza: c.natureza as AccountNature,
         saldoAnteriorCents: 0,
         debitosCents: debitos,
         creditosCents: creditos,
@@ -831,8 +834,8 @@ export class AccountingService {
       return {
         contaCodigo: c.codigo,
         contaNome: c.nome,
-        tipo: c.tipo as any,
-        natureza: c.natureza as any,
+        tipo: c.tipo as AccountType,
+        natureza: c.natureza as AccountNature,
         nivel: c.nivel,
         analitica: c.analitica,
         saldoAnteriorCents: 0,
@@ -986,7 +989,7 @@ export class AccountingService {
       entidade: 'FECHAMENTO',
       entidadeId: fechamento.id,
       actorId,
-      dadosNovos: resultado as any,
+      dadosNovos: resultado as unknown as Record<string, unknown>,
     });
 
     return resultado;
@@ -1039,7 +1042,7 @@ export class AccountingService {
       entidadeId: reaberto.id,
       actorId,
       motivo,
-      dadosNovos: resultado as any,
+      dadosNovos: resultado as unknown as Record<string, unknown>,
     });
 
     return resultado;
@@ -1086,7 +1089,7 @@ export class AccountingService {
       entidade: 'FECHAMENTO',
       entidadeId: closing.id,
       actorId,
-      dadosNovos: closing as any,
+      dadosNovos: closing as unknown as Record<string, unknown>,
     });
 
     return closing;
@@ -1130,7 +1133,7 @@ export class AccountingService {
       entidade: 'PENDENCIA',
       entidadeId: pendencia.id,
       actorId: 'sistema_contabil_eddie',
-      dadosNovos: pendencia as any,
+      dadosNovos: pendencia as unknown as Record<string, unknown>,
     });
 
     return pendencia;
@@ -1144,7 +1147,7 @@ export class AccountingService {
     return result;
   }
 
-  async resolverPendencia(tenantId: string, pendenciaId: string, actorId: string, parecer: string, lancamentoAjusteInput?: any) {
+  async resolverPendencia(tenantId: string, pendenciaId: string, actorId: string, parecer: string, lancamentoAjusteInput?: ClassifyFactInputDto) {
     const p = this.pendencies.find((item) => item.id === pendenciaId);
     if (!p) throw new NotFoundException(`Pendência ${pendenciaId} não encontrada.`);
 
@@ -1164,7 +1167,7 @@ export class AccountingService {
       entidadeId: p.id,
       actorId,
       motivo: parecer,
-      dadosNovos: p as any,
+      dadosNovos: p as unknown as Record<string, unknown>,
     });
 
     return p;

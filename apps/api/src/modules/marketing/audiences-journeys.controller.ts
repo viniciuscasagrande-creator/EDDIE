@@ -109,7 +109,7 @@ export class AudiencesJourneysController {
   @ApiOperation({ summary: 'Calcula preview real de regras de segmentação AND/OR' })
   previewSegmento(
     @Param('eventId') eventId: string,
-    @Body() body: any,
+    @Body() body: Record<string, unknown>,
     @Headers('x-tenant-id') tenantIdHeader?: string,
   ) {
     return this.service.previewSegmento(resolveTenant(tenantIdHeader), eventId, body);

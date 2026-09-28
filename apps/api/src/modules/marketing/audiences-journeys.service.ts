@@ -18,7 +18,7 @@ export interface AudienceDto {
   origem: string;
   segmentacao: {
     conjuncaoPrincipal: 'AND' | 'OR';
-    grupos: any[];
+    grupos: Array<Record<string, unknown>>;
   };
   tamanhoCalculado?: number;
   statusCalculo?: 'CALCULADO' | 'CALCULANDO' | 'AGUARDANDO_DADOS';
@@ -34,8 +34,8 @@ export interface JourneyDto {
   eventoId: string;
   produtorId?: string;
   status?: 'DRAFT' | 'VALIDATING' | 'ACTIVE' | 'PAUSED' | 'ERROR' | 'ENDED';
-  nodes: any[];
-  edges: any[];
+  nodes: Array<Record<string, unknown> & { id?: string; type?: string; data?: Record<string, unknown> }>;
+  edges: Array<Record<string, unknown> & { id?: string; source?: string; target?: string }>;
   criadoEm?: string;
   atualizadoEm?: string;
 }
@@ -300,8 +300,8 @@ export class AudiencesJourneysService {
     };
   }
 
-  previewSegmento(tenantId: string, eventId: string, body: any) {
-    const grupos = body.grupos || [];
+  previewSegmento(tenantId: string, eventId: string, body: Record<string, unknown>) {
+    const grupos = Array.isArray(body['grupos']) ? body['grupos'] : [];
     let count = 450;
     if (grupos.length > 1) count = Math.round(count / grupos.length);
     return {
@@ -389,10 +389,10 @@ export class AudiencesJourneysService {
 
   validarJourney(tenantId: string, eventId: string, id: string) {
     const journey = this.obterJourney(tenantId, eventId, id);
-    const nodes = journey.nodes || [];
-    const hasTrigger = nodes.some((n: any) => n.type === 'TRIGGER');
-    const hasExit = nodes.some((n: any) => n.type === 'EXIT');
-    const hasAction = nodes.some((n: any) => n.type === 'ACTION');
+    const nodes = (journey.nodes || []) as Array<{ id?: string; type?: string; data?: Record<string, unknown> }>;
+    const hasTrigger = nodes.some((n: { type?: string }) => n.type === 'TRIGGER');
+    const hasExit = nodes.some((n: { type?: string }) => n.type === 'EXIT');
+    const hasAction = nodes.some((n: { type?: string }) => n.type === 'ACTION');
 
     const valid = hasTrigger && hasExit && hasAction;
     return {
