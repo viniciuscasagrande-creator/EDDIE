@@ -17,6 +17,7 @@ import {
   Headphones,
   AlertTriangle,
   ShieldCheck,
+  ShieldAlert,
   FileBarChart,
   Activity,
   Zap,
@@ -148,6 +149,13 @@ const rawMenuItems: MenuItemConfig[] = [
     href: '/governanca',
     icon: ShieldCheck,
     badge: '11.31',
+    scopes: ['DISKINGRESSOS'],
+  },
+  {
+    label: 'Segurança & Antifraude',
+    href: '/seguranca',
+    icon: ShieldAlert,
+    badge: '11.34',
     scopes: ['DISKINGRESSOS'],
   },
   {

@@ -98,7 +98,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `cash-forecast` | `financeiro` / `platform` | EDDIE 11.26: Cash Forecast, Liquidez, Capital de Giro e Backtesting |
 | `financial-risk` | `financeiro` / `platform` | EDDIE 11.27: Financial Risk, Controls & Exposure OS (Scoring, Limites, Circuit Breakers, HHI e Stress Test) |
 | `financial-planning` | `financeiro` / `platform` | EDDIE 11.28: FP&A, Budgeting, Centros de Custo, Margens e Projeção Plurianual |
-| `usuarios` | `platform` / `financeiro` | Gestão de Usuários, Controle de Acesso Baseado em Papéis (RBAC) e Segregação de Visões (Produtor vs DiskIngressos) |
+| `usuarios` | `platform` / `financeiro` | EDDIE 11.29 / 11.34: Gestão de Usuários, RBAC com Escopo Multi-Tenant, Segurança Transversal, Antifraude de Pagamentos e Ingressos, Quarentena Bancária de 24h, SoD e Central de Investigações |
 | `tesouraria` | `financeiro` / `platform` | EDDIE 11.25: Banking Engine, PIX Direto, Remessas CNAB 240/400 e Liquidação de Tesouraria |
 | `inventario` | `inventario` | EDDIE 11.29.2: Motor de Inventário, InventoryPools, Holds com TTL de 10 min, alocação de assentos e anti-oversell |
 | `pagamentos` | `pagamentos` | EDDIE 11.29.3: Núcleo de Pagamentos, PaymentIntent, PIX Direto, Webhooks de Adquirentes e Conciliação Financeira |

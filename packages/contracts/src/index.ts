@@ -18,6 +18,7 @@ import * as Inteligencia from './events/inteligencia.js';
 import * as Governanca from './events/governanca.js';
 import * as Automacoes from './events/automacoes.js';
 import * as Operacao from './events/operacao.js';
+import * as Seguranca from './events/seguranca.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -98,6 +99,14 @@ export const EventCatalog = {
   [Operacao.ProcedimentoOperacionalExecutadoV1.name]: Operacao.ProcedimentoOperacionalExecutadoV1,
   [Operacao.PosIncidenteConcluidoV1.name]: Operacao.PosIncidenteConcluidoV1,
   [Operacao.ProblemaOperacionalRegistradoV1.name]: Operacao.ProblemaOperacionalRegistradoV1,
+  [Seguranca.SessaoSuspeitaDetectadaV1.name]: Seguranca.SessaoSuspeitaDetectadaV1,
+  [Seguranca.OperacaoSensivelRequeridaV1.name]: Seguranca.OperacaoSensivelRequeridaV1,
+  [Seguranca.ReautenticacaoRealizadaV1.name]: Seguranca.ReautenticacaoRealizadaV1,
+  [Seguranca.RiscoTransacaoAvaliadoV1.name]: Seguranca.RiscoTransacaoAvaliadoV1,
+  [Seguranca.TentativaDuplicadaIngressoV1.name]: Seguranca.TentativaDuplicadaIngressoV1,
+  [Seguranca.BloqueioSegurancaAplicadoV1.name]: Seguranca.BloqueioSegurancaAplicadoV1,
+  [Seguranca.InvestigacaoSegurancaAbertaV1.name]: Seguranca.InvestigacaoSegurancaAbertaV1,
+  [Seguranca.PoliticaSegurancaVioladaV1.name]: Seguranca.PoliticaSegurancaVioladaV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

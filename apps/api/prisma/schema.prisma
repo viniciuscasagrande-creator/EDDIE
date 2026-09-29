@@ -2856,6 +2856,193 @@ model ProblemaOperacional {
   @@schema("platform")
 }
 
+// ============================================================================
+//  PLATFORM — Segurança, Antifraude, Identidade & Proteção (EDDIE 11.34)
+// ============================================================================
+
+model IdentidadeSeguranca {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  usuarioId           String
+  email               String
+  tipoIdentidade      String    @default("FUNCIONARIO_DISK") // FUNCIONARIO_DISK, PRODUTOR, FUNCIONARIO_PRODUTOR, PARCEIRO, OPERADOR_PORTARIA, CONTA_SERVICO
+  organizacaoNome     String    @default("DiskIngressos")
+  mfaHabilitado       Boolean   @default(false)
+  mfaMetodo           String?   // TOTP, WEBAUTHN, SMS
+  mfaObrigatorio      Boolean   @default(false)
+  senhaAlteradaEm     DateTime  @default(now())
+  bloqueadoAte        DateTime?
+  motivoBloqueio      String?
+  tentativasFalhas    Int       @default(0)
+  escopos             Json      @default("[]") // Lista de produtores, eventos ou global
+  acessoTemporarioAte DateTime?
+  permissaoTemporaria String?
+  isBreakGlass        Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, email])
+  @@index([tenantId, tipoIdentidade])
+  @@map("identidades_seguranca")
+  @@schema("platform")
+}
+
+model SessaoSeguranca {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @db.Uuid
+  usuarioId        String
+  tokenHash        String
+  ipOrigem         String
+  userAgent        String
+  dispositivo      String
+  localizacaoAprox String?
+  status           String   @default("ATIVA") // ATIVA, SUSPEITA, ENCERRADA, REVOGADA
+  motivoSuspeita   String?
+  mfaValidado      Boolean  @default(false)
+  ultimaAtividade  DateTime @default(now())
+  expiraEm         DateTime
+  createdAt        DateTime @default(now())
+
+  @@index([tenantId, usuarioId, status])
+  @@map("sessoes_seguranca")
+  @@schema("platform")
+}
+
+model OperacaoSensivelLog {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @db.Uuid
+  codigoOperacao   String    // ALTERACAO_CONTA_BANCARIA, REPASSE_EXCEPCIONAL, AJUSTE_SALDO, ALTERACAO_TAXAS, EXPORTACAO_DADOS
+  nivel            String    @default("NIVEL_3_SENSIVEL") // NIVEL_1_COMUM, NIVEL_2_RELEVANTE, NIVEL_3_SENSIVEL, NIVEL_4_CRITICO
+  usuarioId        String
+  usuarioNome      String
+  usuarioPapel     String
+  recursoAfetado   String
+  recursoId        String?
+  detalhes         Json?
+  requereuMfa      Boolean   @default(false)
+  mfaValidado      Boolean   @default(false)
+  aprovadorId      String?
+  quarentenaAte    DateTime?
+  status           String    @default("EXECUTADO") // RETIDO_QUARENTENA, AGUARDANDO_APROVACAO, EXECUTADO, BLOQUEADO
+  createdAt        DateTime  @default(now())
+
+  @@index([tenantId, codigoOperacao, createdAt])
+  @@index([tenantId, usuarioId, createdAt])
+  @@map("operacoes_sensiveis_log")
+  @@schema("platform")
+}
+
+model AvaliacaoRiscoTransacao {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  pedidoId           String
+  valorCents         Int
+  metodo             String
+  clienteDocumento   String?
+  clienteEmail       String?
+  scoreRisco         Int       @default(0) // 0-100
+  classificacaoRisco String    @default("BAIXO") // BAIXO, MODERADO, ELEVADO, CRITICO
+  decisao            String    @default("PERMITIR") // PERMITIR, REVISAO, BLOQUEAR
+  sinais             Json      @default("[]")
+  explicacaoDecisao  String
+  revisadoPor        String?
+  revisadoEm         DateTime?
+  decisaoFinal       String?   // LIBERADO, BLOQUEADO_CONFIRMADO
+  createdAt          DateTime  @default(now())
+
+  @@index([tenantId, decisao, createdAt])
+  @@map("avaliacoes_risco_transacao")
+  @@schema("platform")
+}
+
+model TentativaIngressoPortaria {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @db.Uuid
+  eventoId                String
+  ingressoId              String
+  codigoQr                String
+  resultado               String    // VALIDO, DUPLICADO_JA_UTILIZADO, CANCELADO, OUTRO_EVENTO, QR_INVALIDO
+  isDuplicado             Boolean   @default(false)
+  primeiraValidacaoEm     DateTime?
+  primeiroPortao          String?
+  portao                  String
+  dispositivoIdentificador String
+  operadorId              String
+  timestamp               DateTime  @default(now())
+
+  @@index([tenantId, ingressoId, isDuplicado])
+  @@index([tenantId, eventoId, timestamp])
+  @@map("tentativas_ingresso_portaria")
+  @@schema("platform")
+}
+
+model CasoInvestigacao {
+  id                  String    @id @default(uuid()) @db.Uuid
+  codigo              String    // INV-2026-0081
+  tenantId            String    @db.Uuid
+  titulo              String
+  tipo                String    // COMPROMETIMENTO_FINANCEIRO, FRAUDE_INGRESSOS, ABUSO_CUPOM, ATAQUE_API, CREDENCIAL_COMPROMETIDA
+  severidade          String    @default("MEDIO") // BAIXO, MEDIO, ALTO, CRITICO
+  status              String    @default("ABERTO") // ABERTO, EM_ANALISE, AGUARDANDO_EVIDENCIAS, CONCLUIDO_FRAUDE_CONFIRMADA, CONCLUIDO_FALSO_POSITIVO, ARQUIVADO
+  analistaId          String?
+  analistaNome        String?
+  entidadesVinculadas Json      @default("[]")
+  relacoes            Json      @default("[]")
+  conclusao           String?
+  fechadoEm           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, status])
+  @@map("casos_investigacao")
+  @@schema("platform")
+}
+
+model BloqueioSeguranca {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @db.Uuid
+  tipo              String    // USUARIO, SESSAO, DISPOSITIVO, CREDENCIAL_API, PARCEIRO, INGRESSO, CUPOM, OPERACAO
+  alvoIdentificador String
+  alvoDescricao     String?
+  motivo            String
+  evidencias        Json      @default("[]")
+  expiraEm          DateTime?
+  bloqueadoPor      String
+  ativo             Boolean   @default(true)
+  desbloqueadoEm    DateTime?
+  desbloqueadoPor   String?
+  createdAt         DateTime  @default(now())
+
+  @@index([tenantId, tipo, ativo])
+  @@map("bloqueios_seguranca")
+  @@schema("platform")
+}
+
+model CredencialParceiroApi {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @db.Uuid
+  parceiroId              String
+  parceiroNome            String
+  nome                    String
+  chaveMascarada          String    // '••••4F92'
+  chaveHash               String
+  escopos                 Json      @default("[]") // ['reservas:write', 'eventos:read']
+  limiteRequisicoesMinuto Int       @default(300)
+  ipWhitelist             Json      @default("[]")
+  ativo                   Boolean   @default(true)
+  expiraEm                DateTime
+  ultimoUsoEm             DateTime?
+  rotacionadaEm           DateTime?
+  criadoPor               String
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([tenantId, parceiroId, ativo])
+  @@map("credenciais_parceiro_api")
+  @@schema("platform")
+}
+
 
 
 
