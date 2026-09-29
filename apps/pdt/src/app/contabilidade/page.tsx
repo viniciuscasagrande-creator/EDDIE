@@ -28,10 +28,29 @@ import { useProducerEvent } from '../../components/ProducerEventContext';
 import OperationalPanel from '../../components/OperationalPanel';
 import AccountingEnterprisePanel from '../../components/AccountingEnterprisePanel';
 import AccountingDashboardCharts from '../../components/AccountingDashboardCharts';
+import Accounting1137Panels from '../../components/Accounting1137Panels';
 import { ModuleNavigation } from '../../components/navigation/ModuleNavigation';
 import { CompactOperationalAlert } from '../../components/navigation/CompactOperationalAlert';
 
-type TabView = 'centro_eventos' | 'dre' | 'balancete' | 'lancamentos' | 'conciliacao' | 'plano_contas' | 'fechamento' | 'demonstrativos' | 'auditoria' | 'painel_enterprise' | 'patrimonio' | 'fiscal' | 'recontabilizacao';
+type TabView =
+  | 'painel_enterprise'
+  | 'motor_contabil'
+  | 'ajustes_contabeis'
+  | 'fechamento_eventos'
+  | 'subsistemas'
+  | 'rastreamento_360'
+  | 'centro_eventos'
+  | 'dre'
+  | 'balancete'
+  | 'lancamentos'
+  | 'conciliacao'
+  | 'plano_contas'
+  | 'fechamento'
+  | 'demonstrativos'
+  | 'auditoria'
+  | 'patrimonio'
+  | 'fiscal'
+  | 'recontabilizacao';
 
 type BalanceteItem = {
   contaCodigo: string;
@@ -408,6 +427,11 @@ export default function ContabilidadePage() {
       <ModuleNavigation
         items={[
           { id: 'painel_enterprise', label: 'Painel Contábil', icon: <PieChart size={15} /> },
+          { id: 'motor_contabil', label: 'Motor Contábil & Simulador', icon: <Scale size={15} /> },
+          { id: 'ajustes_contabeis', label: 'Ajustes & Reclassificações', icon: <ArrowRightLeft size={15} /> },
+          { id: 'fechamento_eventos', label: 'Fechamento 12 Gates', icon: <ShieldCheck size={15} /> },
+          { id: 'subsistemas', label: 'Conciliação Subsistemas (3 Vias)', icon: <Landmark size={15} /> },
+          { id: 'rastreamento_360', label: 'Rastrear Lançamento 360º', icon: <Search size={15} /> },
           { id: 'centro_eventos', label: 'Centro de Eventos', icon: <Building2 size={15} /> },
           { id: 'dre', label: 'DRE Gerencial', icon: <FileSpreadsheet size={15} /> },
           { id: 'balancete', label: 'Balancete', icon: <Scale size={15} /> },
@@ -465,7 +489,14 @@ export default function ContabilidadePage() {
         </div>
       ) : (
         <>
-          {/* TAB: CENTRO DE CONTROLE DE EVENTOS */}
+          {/* TABs EDDIE 11.37: Motor, Ajustes, Fechamento Evento, Subsistemas, Rastreamento 360 */}
+          {tab === 'motor_contabil' && <Accounting1137Panels api={api} competencia={competencia} tab="motor_contabil" onRefresh={carregarDados} />}
+          {tab === 'ajustes_contabeis' && <Accounting1137Panels api={api} competencia={competencia} tab="ajustes_contabeis" onRefresh={carregarDados} />}
+          {tab === 'fechamento_eventos' && <Accounting1137Panels api={api} competencia={competencia} tab="fechamento_eventos" onRefresh={carregarDados} />}
+          {tab === 'subsistemas' && <Accounting1137Panels api={api} competencia={competencia} tab="subsistemas" onRefresh={carregarDados} />}
+          {tab === 'rastreamento_360' && <Accounting1137Panels api={api} competencia={competencia} tab="rastreamento_360" onRefresh={carregarDados} />}
+
+          {/* TAB: PAINEL ENTERPRISE & CENTRO DE CONTROLE */}
           {tab === 'painel_enterprise' && <div className="space-y-5"><AccountingDashboardCharts centro={centroControle} balancete={balancete} dashboard={dashboard} onNavigate={setTab} /><AccountingEnterprisePanel api={api} competencia={competencia} kind="painel" /></div>}
           {tab === 'patrimonio' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="patrimonio" />}
           {tab === 'recontabilizacao' && <AccountingEnterprisePanel api={api} competencia={competencia} kind="recontabilizacao" />}

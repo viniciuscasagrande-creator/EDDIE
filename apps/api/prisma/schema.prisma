@@ -811,6 +811,7 @@ model ContaContabil {
 model LancamentoContabil {
   id                    String                @id @default(uuid()) @db.Uuid
   tenantId              String                @db.Uuid
+  codigo                String?               // ex: "LCT-2026-000123"
   numeroLancamento      Int                   @default(autoincrement())
   data                  DateTime
   competencia           String                // "AAAA-MM", ex: "2026-09"
@@ -822,6 +823,10 @@ model LancamentoContabil {
   eventoId              String?               @db.Uuid
   /// ID escalar do produtor no schema crm/eventos (sem @relation cross-schema)
   produtorId            String?               @db.Uuid
+  centroResultado       String?               // ex: "CR-TICKETING"
+  canal                 String?               // WEB, PDV, APP, B2B
+  documentoSuporteId    String?               // Vínculo ao documento 11.35
+  regraVersao           Int?                  // Versão da regra contábil aplicada
   status                String                @default("confirmado") // rascunho | confirmado | estornado
   estornoDeId           String?               @db.Uuid
   criadoPor             String
@@ -845,6 +850,9 @@ model PartidaContabil {
   tipo                  String                // D (Débito) | C (Crédito)
   valor                 Decimal               @db.Decimal(14, 2)
   historicoComplementar String?
+  centroResultado       String?
+  eventoId              String?               @db.Uuid
+  produtorId            String?               @db.Uuid
 
   @@index([tenantId, contaId])
   @@index([lancamentoId])
@@ -889,6 +897,140 @@ model ConciliacaoContabil {
   @@map("conciliacoes_contabeis")
   @@schema("contabilidade")
 }
+
+model RegraContabil {
+  id                         String                  @id @default(uuid()) @db.Uuid
+  tenantId                   String                  @db.Uuid
+  codigo                     String                  // ex: "REG-VENDA-01"
+  fatoTipo                   String                  // VENDA_INGRESSO, TAXA_CONVENIENCIA, etc.
+  versao                     Int                     @default(1)
+  descricao                  String
+  status                     String                  @default("VIGENTE") // RASCUNHO, APROVADA, VIGENTE, EXPIRADA
+  contaDebitoCodigo          String
+  contaCreditoCodigo         String
+  contaTaxaCreditoCodigo     String?
+  politicaReconhecimento     String                  @default("IMEDIATO") // IMEDIATO, RECEITA_DIFERIDA
+  contaReceitaDiferidaCodigo String?
+  vigenciaInicio             DateTime                @default(now())
+  vigenciaFim                DateTime?
+  aprovadoPor                String?
+  criadoPor                  String
+  createdAt                  DateTime                @default(now())
+  updatedAt                  DateTime                @updatedAt
+  partidasRegra              PartidaRegraContabil[]
+
+  @@unique([tenantId, codigo, versao])
+  @@index([tenantId, fatoTipo, status])
+  @@map("regras_contabeis")
+  @@schema("contabilidade")
+}
+
+model PartidaRegraContabil {
+  id                    String         @id @default(uuid()) @db.Uuid
+  tenantId              String         @db.Uuid
+  regraId               String         @db.Uuid
+  regra                 RegraContabil  @relation(fields: [regraId], references: [id], onDelete: Cascade)
+  tipo                  String         // D ou C
+  contaCodigo           String
+  naturezaValor         String         // TOTAL_BRUTO, RECURSO_TERCEIROS, TAXA_DISK, IMPOSTO
+  formulaPercentual     Decimal?       @db.Decimal(5, 2) // ex: 100.00, 10.00
+  historicoComplementar String?
+
+  @@index([tenantId, regraId])
+  @@map("partidas_regras_contabeis")
+  @@schema("contabilidade")
+}
+
+model CentroResultado {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  codigo      String   // ex: "CR-TICKETING", "CR-FINTECH", "CR-MARKETING"
+  nome        String
+  tipo        String   // UNIDADE_NEGOCIO, EVENTO, PRODUTOR, CANAL
+  ativo       Boolean  @default(true)
+  descricao   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, ativo])
+  @@map("centros_resultado")
+  @@schema("contabilidade")
+}
+
+model AjusteContabil {
+  id                    String              @id @default(uuid()) @db.Uuid
+  tenantId              String              @db.Uuid
+  codigo                String              @unique // ex: "AJU-2026-00001"
+  tipo                  String              // ESTORNO, RECLASSIFICACAO, AJUSTE_COMPETENCIA
+  lancamentoOriginalId  String              @db.Uuid
+  lancamentoNovoId      String              @db.Uuid
+  motivo                String
+  justificativa         String
+  documentoSuporteId    String?
+  aprovadoPor           String
+  status                String              @default("CONCLUIDO") // SOLICITADO, APROVADO, CONCLUIDO, REJEITADO
+  createdAt             DateTime            @default(now())
+
+  @@index([tenantId, tipo])
+  @@index([lancamentoOriginalId])
+  @@map("ajustes_contabeis")
+  @@schema("contabilidade")
+}
+
+model FechamentoContabilEvento {
+  id                               String    @id @default(uuid()) @db.Uuid
+  tenantId                         String    @db.Uuid
+  eventoId                         String    @db.Uuid
+  produtorId                       String?   @db.Uuid
+  competencia                      String    // "2026-09"
+  status                           String    @default("EM_FECHAMENTO_FINANCEIRO") // OPERACIONALMENTE_ENCERRADO, EM_FECHAMENTO_FINANCEIRO, FINANCEIRAMENTE_ENCERRADO, REABERTO
+  receitaTotalDiskCentavos         BigInt    @default(0)
+  recursosRepassadosCentavos       BigInt    @default(0)
+  saldoPassivoResidualCentavos     BigInt    @default(0)
+  receitaDiferidaLiquidadaCentavos BigInt    @default(0)
+  gatesChecklist                   Json      // Objeto com status dos 12 gates
+  dossieHash                       String?
+  digitalSignature                 String?
+  fechadoPor                       String?
+  fechadoEm                        DateTime?
+  reabertoPor                      String?
+  reabertoEm                       DateTime?
+  motivoReabertura                 String?
+  createdAt                        DateTime  @default(now())
+  updatedAt                        DateTime  @updatedAt
+
+  @@unique([tenantId, eventoId])
+  @@index([tenantId, status])
+  @@map("fechamentos_contabeis_eventos")
+  @@schema("contabilidade")
+}
+
+model PendenciaContabil {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @db.Uuid
+  tipo                  String    // SEM_REGRA_CLASSIFICACAO, DIVERGENCIA_LEDGER, etc.
+  severidade            String    @default("ALTO") // BAIXO, MEDIO, ALTO, CRITICO
+  status                String    @default("PENDENTE") // PENDENTE, EM_ANALISE, RESOLVIDO, CANCELADO
+  descricao             String
+  fatoOrigemTipo        String?
+  fatoOrigemId          String?
+  competencia           String
+  eventoId              String?   @db.Uuid
+  produtorId            String?   @db.Uuid
+  detalhesTecnicos      Json?
+  resolvidoEm           DateTime?
+  resolvidoPor          String?
+  parecerResolucao      String?
+  lancamentoAjusteId    String?   @db.Uuid
+  createdAt             DateTime  @default(now())
+
+  @@index([tenantId, status, severidade])
+  @@index([tenantId, competencia])
+  @@map("pendencias_contabeis")
+  @@schema("contabilidade")
+}
+
 
 // ============================================================================
 //  SAC — Atendimento ao comprador final, chamados e SLA (ITIL)
