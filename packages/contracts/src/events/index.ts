@@ -19,6 +19,7 @@ export * from './governanca.js';
 export * from './automacoes.js';
 export * from './operacao.js';
 export * from './seguranca.js';
+export * from './documentos.js';
 
 export * as EventosEvents from './eventos.js';
 export * as PedidosEvents from './pedidos.js';
@@ -41,6 +42,7 @@ export * as GovernancaEvents from './governanca.js';
 export * as AutomacoesEvents from './automacoes.js';
 export * as OperacaoEvents from './operacao.js';
 export * as SegurancaEvents from './seguranca.js';
+export * as DocumentosEvents from './documentos.js';
 
 
 

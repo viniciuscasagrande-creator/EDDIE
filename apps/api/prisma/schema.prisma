@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca", "automacoes"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca", "automacoes", "documentos"]
 }
 
 
@@ -3043,6 +3043,257 @@ model CredencialParceiroApi {
   @@schema("platform")
 }
 
+// ============================================================================
+//  DOCUMENTOS — EDDIE 11.35: Documentos, Contratos, Assinatura Digital e Dossiê
+// ============================================================================
 
+model Documento {
+  id                             String    @id @default(uuid()) @db.Uuid
+  tenantId                       String    @db.Uuid
+  codigo                         String    // Ex: CTR-2026-001842, BRD-2026-008721, REP-2026-003821, ANT-2026-000482
+  tipo                           String    // CONTRATO, ADITIVO, BORDERO, SOLICITACAO_REPASSE, ANTECIPACAO, TERMO, DECLARACAO, COMPROVANTE, RELATORIO, FECHAMENTO_EVENTO, DOCUMENTO_FISCAL, DOCUMENTO_BANCARIO, DOCUMENTO_OPERACIONAL, DOCUMENTO_PARCEIRO
+  titulo                         String
+  produtorId                     String?
+  produtorNome                   String?
+  eventoId                       String?
+  eventoNome                     String?
+  parceiroId                     String?
+  parceiroNome                   String?
+  tipoOperacaoOrigem             String?   // REPASSE, ANTECIPACAO, FECHAMENTO_EVENTO, CONTRATO, ADITIVO, BORDERO
+  idOperacaoOrigem               String?
+  origemDescricao                String    // 'Fechamento do Evento 458'
+  versao                         Int       @default(1)
+  situacao                       String    @default("RASCUNHO") // RASCUNHO, EM_ELABORACAO, AGUARDANDO_APROVACAO, APROVADO, AGUARDANDO_ASSINATURA, PARCIALMENTE_ASSINADO, ASSINADO, VIGENTE, SUBSTITUIDO, CANCELADO, EXPIRADO, ARQUIVADO
+  sensibilidade                  String    @default("CONFIDENCIAL") // INTERNO, CONFIDENCIAL, FINANCEIRO, CONTRATUAL, DADO_PESSOAL, RESTRITO
+  vigenciaInicio                 DateTime?
+  vigenciaFim                    DateTime?
+  hashOriginal                   String
+  hashFinal                      String?
+  arquivoOriginalUrl             String?
+  arquivoFinalUrl                String?
+  metadados                      Json      @default("{}") // Dados computacionais do Core imutáveis para exibição e conferência
+  criadoPor                      String
+  aprovadoPor                    String?
+  aprovadoEm                     DateTime?
+  motivoRejeicao                 String?   @db.Text
+  canceladoPor                   String?
+  motivoCancelamento             String?   @db.Text
+  ordemAssinatura                String    @default("SEQUENCIAL") // SEQUENCIAL ou PARALELA
+  regraFinanceiraUltimoAssinante Boolean   @default(false) // Regra rígida: Financeiro Disk assina por último
+  createdAt                      DateTime  @default(now())
+  updatedAt                      DateTime  @updatedAt
 
+  @@unique([tenantId, codigo])
+  @@index([tenantId, tipo, situacao])
+  @@index([tenantId, produtorId])
+  @@index([tenantId, eventoId])
+  @@map("documentos")
+  @@schema("documentos")
+}
 
+model VersaoDocumento {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  documentoId  String   @db.Uuid
+  numeroVersao Int
+  arquivoUrl   String?
+  hashArquivo  String
+  alteracoes   String?  @db.Text
+  criadoPor    String
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId, documentoId])
+  @@map("versoes_documento")
+  @@schema("documentos")
+}
+
+model SignatarioDocumento {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  documentoId            String    @db.Uuid
+  ordem                  Int       @default(1)
+  nome                   String
+  email                  String
+  documentoIdentificacao String
+  papel                  String    // PRODUTOR, FINANCEIRO_DISK, DIRETORIA_DISK, PARCEIRO, TESTEMUNHA, JURIDICO
+  status                 String    @default("PENDENTE") // PENDENTE, ASSINADO, RECUSADO, EXPIRADO
+  metodoAutenticacao     String    @default("INTERNA_SESSAO") // INTERNA_SESSAO, LINK_SEGURO_EXTERNO, CERTIFICADO_DIGITAL, PROVEDOR_EXTERNO
+  assinadoEm             DateTime?
+  recusadoEm             DateTime?
+  motivoRecusa           String?   @db.Text
+  ipAssinatura           String?
+  userAgent              String?
+  tokenAcessoExterno     String?
+  tokenExpiraEm          DateTime?
+  transactionIdProvedor  String?
+  createdAt              DateTime  @default(now())
+
+  @@index([tenantId, documentoId, status])
+  @@map("signatarios_documento")
+  @@schema("documentos")
+}
+
+model EvidenciaAssinatura {
+  id                     String   @id @default(uuid()) @db.Uuid
+  tenantId               String   @db.Uuid
+  documentoId            String   @db.Uuid
+  signatarioId           String   @db.Uuid
+  hashEvidencia          String
+  certificadoDigitalInfo Json?
+  dadosAuditoria         Json     @default("{}")
+  carimboDoTempo         DateTime @default(now())
+  createdAt              DateTime @default(now())
+
+  @@index([tenantId, documentoId])
+  @@map("evidencias_assinatura")
+  @@schema("documentos")
+}
+
+model ModeloDocumento {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @db.Uuid
+  codigo             String   // MOD-CTR-01, MOD-BRD-01, etc.
+  nome               String
+  tipo               String   // CONTRATO, ADITIVO, BORDERO, SOLICITACAO_REPASSE, etc.
+  conteudoTemplate   String   @db.Text
+  camposObrigatorios Json     @default("[]")
+  ativo              Boolean  @default(true)
+  versao             Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@map("modelos_documento")
+  @@schema("documentos")
+}
+
+model Contrato {
+  id                       String   @id @default(uuid()) @db.Uuid
+  tenantId                 String   @db.Uuid
+  codigo                   String   // CTR-2026-001842
+  produtorId               String
+  produtorNome             String
+  empresaContratante       String   @default("DiskIngressos Entretenimento Ltda")
+  documentoId              String?  @db.Uuid
+  vigenciaInicio           DateTime
+  vigenciaFim              DateTime
+  taxaDiskPercentual       Decimal  @db.Decimal(5, 2)
+  prazoRepasseDias         Int      @default(7) // D+7
+  antecipacaoPermitida     Boolean  @default(true)
+  taxaAntecipacaoPercentual Decimal @default(1.80) @db.Decimal(5, 2)
+  taxaServicoFixa          Decimal  @default(0.00) @db.Decimal(10, 2)
+  eventosAutorizados       Json     @default("[]")
+  responsabilidades        String?  @db.Text
+  status                   String   @default("VIGENTE") // VIGENTE, EM_RENOVACAO, EXPIRADO, RESCINDIDO, SUBSTITUIDO
+  criadoPor                String
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, produtorId, status])
+  @@map("contratos")
+  @@schema("documentos")
+}
+
+model AditivoContrato {
+  id                        String   @id @default(uuid()) @db.Uuid
+  tenantId                  String   @db.Uuid
+  contratoId                String   @db.Uuid
+  codigo                    String   // ADT-2026-000241
+  numeroSequencial          Int
+  documentoId               String?  @db.Uuid
+  dataVigencia              DateTime
+  taxaDiskPercentualAnterior Decimal @db.Decimal(5, 2)
+  taxaDiskPercentualNova    Decimal  @db.Decimal(5, 2)
+  prazoRepasseDiasAnterior  Int
+  prazoRepasseDiasNovo      Int
+  justificativa             String   @db.Text
+  status                    String   @default("RASCUNHO") // RASCUNHO, EM_APROVACAO, VIGENTE
+  createdAt                 DateTime @default(now())
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, contratoId])
+  @@map("aditivos_contrato")
+  @@schema("documentos")
+}
+
+model ChecklistDocumental {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  tipoEntidade   String   // PRODUTOR, PARCEIRO, EVENTO
+  entidadeId     String
+  entidadeNome   String
+  itens          Json     @default("[]") // [{ id, tipo, nome, obrigatorio, status: 'CONFORME'|'PENDENTE'|'VENCIDO', dataVencimento, documentoId }]
+  bloqueioAtivo  Boolean  @default(false)
+  motivoBloqueio String?  @db.Text
+  atualizadoEm   DateTime @default(now())
+
+  @@unique([tenantId, tipoEntidade, entidadeId])
+  @@map("checklists_documentais")
+  @@schema("documentos")
+}
+
+model ContestacaoDocumento {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  documentoId        String    @db.Uuid
+  solicitanteId      String
+  solicitanteNome    String
+  motivo             String    @db.Text
+  status             String    @default("ABERTA") // ABERTA, EM_ANALISE, ACEITA, REJEITADA
+  respostaFinanceiro String?   @db.Text
+  resolvidoPor       String?
+  resolvidoEm        DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@index([tenantId, documentoId, status])
+  @@map("contestacoes_documento")
+  @@schema("documentos")
+}
+
+model DossieOperacional {
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @db.Uuid
+  codigo                   String    // DOS-2026-000192
+  tipo                     String    // EVENTO, PRODUTOR, PARCEIRO
+  referenciaId             String    // id do evento, do produtor ou do parceiro
+  referenciaNome           String
+  status                   String    @default("EM_FORMACAO") // EM_FORMACAO, FECHADO, REABERTO
+  versaoFechamento         Int       @default(1)
+  totalArquivos            Int       @default(0)
+  totalDocumentosAssinados Int       @default(0)
+  snapshotFechamento       Json?
+  manifestoHash            String?
+  concluidoEm              DateTime?
+  reabertoEm               DateTime?
+  motivoReabertura         String?   @db.Text
+  reabertoPor              String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, tipo, referenciaId])
+  @@map("dossies_operacionais")
+  @@schema("documentos")
+}
+
+model ItemDossie {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  dossieId      String   @db.Uuid
+  secao         Int      // 1 a 17 para Evento
+  secaoNome     String
+  titulo        String
+  tipoDocumento String
+  documentoId   String?  @db.Uuid
+  origemModulo  String
+  referenciaId  String?
+  hashArquivo   String
+  arquivoUrl    String?
+  metadados     Json?
+  adicionadoEm  DateTime @default(now())
+
+  @@index([tenantId, dossieId, secao])
+  @@map("itens_dossie")
+  @@schema("documentos")
+}

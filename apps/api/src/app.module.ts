@@ -34,6 +34,7 @@ import { PosEventoModule } from './modules/pos-evento/pos-evento.module';
 import { InteligenciaModule } from './modules/inteligencia/inteligencia.module';
 import { GovernancaModule } from './modules/governanca/governanca.module';
 import { AutomacoesModule } from './modules/automacoes/automacoes.module';
+import { DocumentosModule } from './modules/documentos/documentos.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -77,6 +78,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     InteligenciaModule,
     GovernancaModule,
     AutomacoesModule,
+    DocumentosModule,
   ],
 })
 export class AppModule {}

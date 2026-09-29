@@ -19,6 +19,7 @@ import * as Governanca from './events/governanca.js';
 import * as Automacoes from './events/automacoes.js';
 import * as Operacao from './events/operacao.js';
 import * as Seguranca from './events/seguranca.js';
+import * as Documentos from './events/documentos.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -107,6 +108,16 @@ export const EventCatalog = {
   [Seguranca.BloqueioSegurancaAplicadoV1.name]: Seguranca.BloqueioSegurancaAplicadoV1,
   [Seguranca.InvestigacaoSegurancaAbertaV1.name]: Seguranca.InvestigacaoSegurancaAbertaV1,
   [Seguranca.PoliticaSegurancaVioladaV1.name]: Seguranca.PoliticaSegurancaVioladaV1,
+  [Documentos.DocumentoCriadoV1.name]: Documentos.DocumentoCriadoV1,
+  [Documentos.DocumentoAprovadoV1.name]: Documentos.DocumentoAprovadoV1,
+  [Documentos.DocumentoRejeitadoV1.name]: Documentos.DocumentoRejeitadoV1,
+  [Documentos.SolicitacaoAssinaturaEmitidaV1.name]: Documentos.SolicitacaoAssinaturaEmitidaV1,
+  [Documentos.AssinaturaRealizadaV1.name]: Documentos.AssinaturaRealizadaV1,
+  [Documentos.DocumentoConcluidoV1.name]: Documentos.DocumentoConcluidoV1,
+  [Documentos.DocumentoContestadoV1.name]: Documentos.DocumentoContestadoV1,
+  [Documentos.DivergenciaContratualDetectadaV1.name]: Documentos.DivergenciaContratualDetectadaV1,
+  [Documentos.DossieSnapshotGeradoV1.name]: Documentos.DossieSnapshotGeradoV1,
+  [Documentos.DossieReabertoV1.name]: Documentos.DossieReabertoV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

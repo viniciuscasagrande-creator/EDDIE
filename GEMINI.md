@@ -106,6 +106,7 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `inteligencia` | `inteligencia` | EDDIE 11.30: Rentabilidade Real, Inteligência de Receita e Inteligência do Produtor |
 | `governanca` | `governanca` | EDDIE 11.31: Central de Dados, Qualidade dos Dados, Conciliação Sistêmica, Central de Divergências, Linhagem & Rastreabilidade, Catálogo Corporativo e Auditoria Central Imutável |
 | `automacoes` | `automacoes` | EDDIE 11.32: Automação Operacional, Motor Central de Regras (QUANDO/SE/ENTÃO combinados, versionamento, dry-run, kill-switch) e Motor Central de Aprovações (SoD, alçadas, contexto analítico, fluxos) |
+| `documentos` | `documentos` | EDDIE 11.35: Documentos, Contratos, Assinatura Digital, Dossiê Operacional do Evento (17 seções), Modelos e Evidências |
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 

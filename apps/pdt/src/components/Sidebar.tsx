@@ -29,6 +29,7 @@ import {
   Landmark,
   Compass,
   CreditCard,
+  FileText,
 } from 'lucide-react';
 import { useMobileNav } from './MobileNavContext';
 
@@ -157,6 +158,14 @@ const rawMenuItems: MenuItemConfig[] = [
     icon: ShieldAlert,
     badge: '11.34',
     scopes: ['DISKINGRESSOS'],
+  },
+  {
+    label: 'Documentos & Contratos',
+    producerLabel: 'Meus Documentos',
+    href: '/documentos',
+    icon: FileText,
+    badge: '11.35',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Estornos & CDC',
