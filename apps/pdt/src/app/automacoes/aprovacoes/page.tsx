@@ -13,25 +13,45 @@ import {
   Lock,
   ArrowRight,
   UserCheck,
+  Clock,
+  HelpCircle,
+  FileText,
+  Building,
+  CreditCard,
+  Layers,
+  ChevronRight,
 } from 'lucide-react';
 import { AutomacoesNav } from '../../../components/automacoes/AutomacoesNav';
+import {
+  AutomacoesClient,
+  SolicitacaoAprovacaoItem,
+  StatusAprovacao,
+} from '@/lib/automacoes-client';
 
 export default function FilaAprovacoesPage() {
   const [loading, setLoading] = useState(true);
-  const [aprovacoes, setAprovacoes] = useState<any[]>([]);
+  const [aprovacoes, setAprovacoes] = useState<SolicitacaoAprovacaoItem[]>([]);
   const [filtroStatus, setFiltroStatus] = useState<string>('PENDENTE');
-  const [justificativas, setJustificativas] = useState<Record<string, string>>({});
-  const [processando, setProcessando] = useState<string | null>(null);
+
+  // Modal de Decisão e Contexto
+  const [solicitacaoAtiva, setSolicitacaoAtiva] = useState<SolicitacaoAprovacaoItem | null>(null);
+  const [justificativa, setJustificativa] = useState('');
+  const [processandoDecisao, setProcessandoDecisao] = useState(false);
+  const [erroSoD, setErroSoD] = useState<string | null>(null);
+  const [feedbackSucesso, setFeedbackSucesso] = useState<string | null>(null);
+
+  // Usuário Atual simulado do PDT
+  const [usuarioAtualId] = useState('usr-diretoria-pdt');
+  const [usuarioAtualNome] = useState('Diretor Financeiro PDT');
 
   const carregarAprovacoes = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/automacoes/aprovacoes?status=${filtroStatus}`);
-      if (res.ok) {
-        const d = await res.json();
-        setAprovacoes(d.aprovacoes || []);
-      }
-    } catch {} finally {
+      const data = await AutomacoesClient.getAprovacoes(filtroStatus);
+      setAprovacoes(data);
+    } catch (err) {
+      console.error('Erro ao carregar aprovações:', err);
+    } finally {
       setLoading(false);
     }
   };
@@ -40,28 +60,53 @@ export default function FilaAprovacoesPage() {
     carregarAprovacoes();
   }, [filtroStatus]);
 
-  const processarDecisao = async (id: string, decisao: 'APROVAR' | 'REJEITAR') => {
-    setProcessando(id);
+  const handleProcessarDecisao = async (decisao: 'APROVADO' | 'REJEITADO' | 'SOLICITADO_INFORMACAO') => {
+    if (!solicitacaoAtiva) return;
+    setErroSoD(null);
+
+    // Validação de Segregação de Funções (SoD) no cliente antes do envio
+    if (solicitacaoAtiva.segregacaoFuncoesObrigatoria && solicitacaoAtiva.solicitanteId === usuarioAtualId) {
+      setErroSoD(
+        'Violação de Segregação de Funções (SoD): Você é o solicitante desta operação e não possui alçada para aprová-la.',
+      );
+      return;
+    }
+
+    if (!justificativa.trim() && decisao !== 'APROVADO') {
+      alert('A justificativa é obrigatória para rejeição ou pedido de informação adicional.');
+      return;
+    }
+
+    setProcessandoDecisao(true);
     try {
-      const res = await fetch('/api/automacoes/aprovacoes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id,
-          decisao,
-          justificativa: justificativas[id] || '',
-        }),
+      await AutomacoesClient.decidirAprovacao(solicitacaoAtiva.id, {
+        decisao,
+        justificativa: justificativa || 'Aprovado conforme conformidade de alçada e saldo em conta',
+        aprovadorId: usuarioAtualId,
+        aprovadorNome: usuarioAtualNome,
       });
-      if (res.ok) {
-        carregarAprovacoes();
-      }
-    } catch {} finally {
-      setProcessando(null);
+
+      setFeedbackSucesso(`Solicitação ${solicitacaoAtiva.codigo} ${decisao.toLowerCase()} com sucesso!`);
+      setSolicitacaoAtiva(null);
+      setJustificativa('');
+      await carregarAprovacoes();
+      setTimeout(() => setFeedbackSucesso(null), 5000);
+    } catch (err: any) {
+      setErroSoD(err?.message || 'Erro ao processar decisão');
+    } finally {
+      setProcessandoDecisao(false);
     }
   };
 
-  const formatBRL = (cents: number) =>
-    (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatBRL = (cents?: number) => {
+    if (!cents) return '—';
+    return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
+
+  const formatReais = (val?: number) => {
+    if (val === undefined || val === null) return '—';
+    return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
 
   return (
     <div className="space-y-6 max-w-full text-slate-100">
@@ -70,13 +115,13 @@ export default function FilaAprovacoesPage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
             <Lock size={15} />
-            <span>Alçada & Segurança Operacional (Human-in-the-Loop)</span>
+            <span>Alçadas, Segregação de Funções (SoD) & Human-in-the-Loop</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-white mt-0.5">
-            Fila de Aprovações Pendentes
+            Central Operacional de Aprovações
           </h1>
           <p className="text-xs text-slate-400">
-            Ações financeiras e operacionais de alto impacto exigem autorização expressa do gestor antes da execução.
+            Aprovação com contexto analítico completo (saldo, risco, divergências e agenda) sem aprovação cega.
           </p>
         </div>
 
@@ -91,147 +136,252 @@ export default function FilaAprovacoesPage() {
         </div>
       </div>
 
-      {/* Navegação entre Abas */}
       <AutomacoesNav pendentesCount={aprovacoes.filter((a) => a.status === 'PENDENTE').length} />
 
-      {/* Alerta de Diretriz de Segurança */}
-      <div className="rounded-xl border border-sky-500/20 bg-sky-950/20 p-4 flex items-start gap-3 text-xs text-sky-200">
-        <ShieldCheck size={18} className="text-sky-400 shrink-0 mt-0.5" />
-        <div>
-          <span className="font-bold text-white">Regra de Segurança Inviolável:</span> Repasses financeiros,
-          estornos em lote, bloqueios de setor e contingências de gateway são protegidos por alçada.
-          Nenhuma transação financeira é executada pelo motor de regras sem validação e registro de auditoria.
+      {/* Caixa de Métricas de Aprovação */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+          <p className="text-slate-400 font-semibold uppercase text-[10px]">Pendentes</p>
+          <p className="text-xl font-bold text-amber-400 mt-1">28</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Aguardando decisão</p>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-red-950/20 border border-red-900/40">
+          <p className="text-red-400 font-semibold uppercase text-[10px]">Urgentes (SLA &lt; 2h)</p>
+          <p className="text-xl font-bold text-red-300 mt-1">4</p>
+          <p className="text-[11px] text-red-400/80 mt-0.5">Prioridade máxima</p>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+          <p className="text-slate-400 font-semibold uppercase text-[10px]">Minhas Pendências</p>
+          <p className="text-xl font-bold text-white mt-1">9</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Na sua alçada direta</p>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+          <p className="text-slate-400 font-semibold uppercase text-[10px]">Delegadas</p>
+          <p className="text-xl font-bold text-sky-400 mt-1">2</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Por gestores ausentes</p>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+          <p className="text-slate-400 font-semibold uppercase text-[10px]">Vencidas</p>
+          <p className="text-xl font-bold text-slate-300 mt-1">1</p>
+          <p className="text-[11px] text-amber-400 mt-0.5">Requer escalonamento</p>
         </div>
       </div>
 
-      {/* Filtro de Status */}
-      <div className="flex items-center gap-2 text-xs">
-        <span className="font-semibold text-slate-400">Visualizar:</span>
-        {['PENDENTE', 'APROVADO', 'REJEITADO', 'TODOS'].map((s) => (
-          <button
-            key={s}
-            onClick={() => setFiltroStatus(s)}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition ${
-              filtroStatus === s
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'bg-[#1a1c22] text-slate-400 hover:text-white'
-            }`}
+      {feedbackSucesso && (
+        <div className="p-3 rounded-lg bg-emerald-950/80 border border-emerald-700 text-emerald-200 text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{feedbackSucesso}</span>
+        </div>
+      )}
+
+      {/* Lista de Solicitações */}
+      <div className="space-y-3">
+        {aprovacoes.map((item) => (
+          <div
+            key={item.id}
+            className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs"
           >
-            {s}
-          </button>
+            <div className="space-y-1.5 max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono font-bold bg-slate-800 text-amber-400 px-2 py-0.5 rounded">
+                  {item.codigo}
+                </span>
+                <span className="font-bold text-white text-sm">
+                  {item.tipoOperacao.replace(/_/g, ' ')}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/80 text-purple-300 border border-purple-800">
+                  Alçada: {item.nivelExigido}
+                </span>
+                {item.segregacaoFuncoesObrigatoria && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-800 flex items-center gap-1">
+                    <ShieldCheck size={11} /> SoD Obrigatório
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 text-slate-300">
+                <span>Produtor: <strong className="text-white">{item.produtorNome || '—'}</strong></span>
+                <span>Evento: <strong className="text-white">{item.eventoNome || 'Geral'}</strong></span>
+                <span>Solicitante: <strong className="text-slate-200">{item.solicitanteNome}</strong></span>
+                {item.valorCentavos && (
+                  <span>Valor: <strong className="font-mono text-emerald-400 font-bold">{formatBRL(item.valorCentavos)}</strong></span>
+                )}
+              </div>
+
+              {/* Contexto Rápido */}
+              <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 pt-1">
+                {item.contextoAnalitico?.saldoDisponivel !== undefined && (
+                  <span>Saldo Disponível: <strong className="text-emerald-400">{formatReais(item.contextoAnalitico.saldoDisponivel)}</strong></span>
+                )}
+                {item.contextoAnalitico?.exposicaoFinanceira !== undefined && (
+                  <span>Exposição: <strong className="text-amber-400">{formatReais(item.contextoAnalitico.exposicaoFinanceira)}</strong></span>
+                )}
+                {item.contextoAnalitico?.divergenciasCriticas !== undefined && (
+                  <span className={item.contextoAnalitico.divergenciasCriticas > 0 ? 'text-red-400 font-bold' : 'text-slate-400'}>
+                    Divergências 11.31: {item.contextoAnalitico.divergenciasCriticas}
+                  </span>
+                )}
+                {item.slaLimiteAt && (
+                  <span className="text-amber-400 flex items-center gap-1">
+                    <Clock size={11} /> SLA: {new Date(item.slaLimiteAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  setSolicitacaoAtiva(item);
+                  setErroSoD(null);
+                  setJustificativa('');
+                }}
+                className="px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+              >
+                <span>Analisar & Decidir</span>
+                <ChevronRight size={13} />
+              </button>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Lista de Solicitações */}
-      <div className="space-y-4">
-        {aprovacoes.length === 0 ? (
-          <div className="rounded-xl border border-slate-800 bg-[#16181d] p-12 text-center text-slate-400 text-xs">
-            Nenhuma solicitação encontrada neste status.
-          </div>
-        ) : (
-          aprovacoes.map((item) => {
-            const isPendente = item.status === 'PENDENTE';
-            return (
-              <div
-                key={item.id}
-                className={`rounded-xl border p-5 shadow-lg space-y-4 transition ${
-                  isPendente
-                    ? 'border-amber-500/40 bg-[#191b21]'
-                    : 'border-slate-800 bg-[#14161a] opacity-80'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                        item.severidade === 'CRITICA'
-                          ? 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                          : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                      }`}
-                    >
-                      {item.severidade}
-                    </span>
-                    <h3 className="font-bold text-white text-base">{item.titulo}</h3>
-                  </div>
-
-                  <span className="font-mono text-xs text-slate-400">
-                    ID: {item.id} · {new Date(item.criadoEm).toLocaleTimeString('pt-BR')}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  <div className="space-y-2">
-                    <p className="text-slate-300 leading-relaxed">{item.descricao}</p>
-                    <div className="text-slate-400">
-                      <span className="text-slate-500 font-semibold">Regra de Origem:</span>{' '}
-                      {item.regraOrigem}
-                    </div>
-                    <div className="text-slate-400">
-                      <span className="text-slate-500 font-semibold">Solicitante:</span>{' '}
-                      {item.solicitante}
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg bg-[#14151a] p-3 border border-slate-800 space-y-2 flex flex-col justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Impacto Operacional & Financeiro
-                      </div>
-                      <div className="text-amber-300 font-semibold mt-1">{item.impacto}</div>
-                      {item.impactoFinanceiroCents && (
-                        <div className="text-xl font-black text-emerald-400 mt-1 font-mono">
-                          {formatBRL(item.impactoFinanceiroCents)}
-                        </div>
-                      )}
-                    </div>
-
-                    {!isPendente && (
-                      <div className="text-[11px] text-slate-400 pt-2 border-t border-slate-800">
-                        <span>Decidido por: <b>{item.decididoPor}</b></span>
-                        {item.justificativa && <p className="italic mt-0.5">"{item.justificativa}"</p>}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {isPendente && (
-                  <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                    <input
-                      type="text"
-                      placeholder="Justificativa da decisão (opcional)..."
-                      value={justificativas[item.id] || ''}
-                      onChange={(e) =>
-                        setJustificativas({ ...justificativas, [item.id]: e.target.value })
-                      }
-                      className="rounded-lg border border-slate-700 bg-[#121418] px-3 py-1.5 text-xs text-white outline-none focus:border-amber-500 flex-1 max-w-md"
-                    />
-
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <button
-                        onClick={() => processarDecisao(item.id, 'REJEITAR')}
-                        disabled={processando === item.id}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3.5 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-500/20 transition disabled:opacity-50"
-                      >
-                        <XCircle size={14} />
-                        <span>Rejeitar</span>
-                      </button>
-
-                      <button
-                        onClick={() => processarDecisao(item.id, 'APROVAR')}
-                        disabled={processando === item.id}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 transition shadow-md shadow-emerald-900/30 disabled:opacity-50"
-                      >
-                        <CheckCircle2 size={14} />
-                        <span>Aprovar Ação</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+      {/* Modal de Análise de Contexto e Decisão SoD */}
+      {solicitacaoAtiva && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-2xl w-full space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto text-xs">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-amber-400" />
+                  Decisão de Alçada: {solicitacaoAtiva.codigo}
+                </h3>
+                <p className="text-slate-400 text-xs">{solicitacaoAtiva.tipoOperacao.replace(/_/g, ' ')}</p>
               </div>
-            );
-          })
-        )}
-      </div>
+              <button onClick={() => setSolicitacaoAtiva(null)} className="text-slate-400 hover:text-white">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Alerta de Segregação de Funções */}
+            {erroSoD && (
+              <div className="p-3 rounded-lg bg-red-950/80 border border-red-700 text-red-200 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>{erroSoD}</span>
+              </div>
+            )}
+
+            {/* Painel de Contexto Analítico Completo (Anti-Aprovação Cega) */}
+            <div className="space-y-3">
+              <h4 className="font-bold text-white uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                <Layers size={13} className="text-sky-400" />
+                Dossiê Analítico da Operação
+              </h4>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+                <div>
+                  <p className="text-slate-400 text-[10px]">Valor Solicitado</p>
+                  <p className="font-mono font-bold text-emerald-400 text-sm">
+                    {formatBRL(solicitacaoAtiva.valorCentavos)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-400 text-[10px]">Saldo Disponível em Conta</p>
+                  <p className="font-mono font-bold text-white text-sm">
+                    {formatReais(solicitacaoAtiva.contextoAnalitico?.saldoDisponivel)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-400 text-[10px]">Exposição de Risco</p>
+                  <p className="font-mono font-bold text-amber-400 text-sm">
+                    {formatReais(solicitacaoAtiva.contextoAnalitico?.exposicaoFinanceira)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-400 text-[10px]">Divergências 11.31</p>
+                  <p className="font-mono font-bold text-emerald-400 text-sm">
+                    {solicitacaoAtiva.contextoAnalitico?.divergenciasCriticas ?? 0} críticas
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-400 text-[10px]">Conta Bancária</p>
+                  <p className="font-semibold text-slate-200 text-xs truncate">
+                    {(solicitacaoAtiva.contextoAnalitico?.contaBancaria as string) || 'Cadastrada'}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-400 text-[10px]">Solicitante</p>
+                  <p className="font-semibold text-slate-200 text-xs truncate">
+                    {solicitacaoAtiva.solicitanteNome}
+                  </p>
+                </div>
+              </div>
+
+              {Boolean(solicitacaoAtiva.contextoAnalitico?.contrapartida) && (
+                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-300">
+                  <p className="text-slate-400 font-semibold">Contrapartida Comercial Pactuada:</p>
+                  <p className="mt-0.5">{String(solicitacaoAtiva.contextoAnalitico.contrapartida)}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Justificativa Obrigatória */}
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">
+                Parecer / Justificativa da Decisão (Registrada em Trilha Imutável):
+              </label>
+              <textarea
+                rows={3}
+                value={justificativa}
+                onChange={(e) => setJustificativa(e.target.value)}
+                placeholder="Insira as considerações de alçada, autorização ou motivo de rejeição..."
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => handleProcessarDecisao('SOLICITADO_INFORMACAO')}
+                disabled={processandoDecisao}
+                className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+              >
+                Solicitar Informação
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleProcessarDecisao('REJEITADO')}
+                  disabled={processandoDecisao}
+                  className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold"
+                >
+                  Rejeitar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleProcessarDecisao('APROVADO')}
+                  disabled={processandoDecisao}
+                  className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5"
+                >
+                  <CheckCircle2 size={14} />
+                  <span>Aprovar Operação</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

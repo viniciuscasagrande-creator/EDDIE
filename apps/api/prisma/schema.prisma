@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca", "automacoes"]
 }
 
 
@@ -2518,6 +2518,177 @@ model PoliticaRetencaoDados {
   @@index([tenantId, tipoDado])
   @@map("politicas_retencao_dados")
   @@schema("governanca")
+}
+
+// ============================================================================
+//  AUTOMACOES — Motor Central de Regras, Fluxos e Aprovações (EDDIE 11.32)
+// ============================================================================
+
+model RegraAutomacao {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @db.Uuid
+  codigo           String    // REG-2026-001
+  nome             String
+  descricao        String
+  categoria        String    // FINANCEIRO, COMERCIAL, EVENTOS, PORTARIA, PAGAMENTOS, PARCEIROS, SAC, INFRAESTRUTURA
+  gatilhoEvento    String    // SOLICITACAO_REPASSE_CRIADA, CHARGEBACK_REGISTRADO, LOTE_ESGOTANDO, etc.
+  escopoTipo       String    // GLOBAL, PRODUTOR, EVENTO, CANAL, PARCEIRO
+  escopoId         String?
+  status           String    // ATIVA, PAUSADA, MODO_OBSERVACAO, RASCUNHO
+  prioridade       Int       @default(10)
+  versaoAtiva      Int       @default(1)
+  cooldownSegundos Int       @default(0)
+  vigenciaInicio   DateTime?
+  vigenciaFim      DateTime?
+  criadoPor        String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, categoria, status])
+  @@map("regras_automacao")
+  @@schema("automacoes")
+}
+
+model VersaoRegra {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  regraId         String   @db.Uuid
+  versao          Int
+  condicoesGrupos Json     // Grupos lógicos com E/OU, operandos, comparadores
+  acoes           Json     // Array de ações com tipo, parâmetros e alçadas
+  motivoAlteracao String
+  criadoPor       String
+  aprovadoPor     String?
+  createdAt       DateTime @default(now())
+
+  @@unique([tenantId, regraId, versao])
+  @@index([tenantId, regraId])
+  @@map("versoes_regra")
+  @@schema("automacoes")
+}
+
+model ExecucaoAutomacao {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @db.Uuid
+  regraId            String   @db.Uuid
+  versaoRegra        Int
+  correlationId      String   @db.Uuid
+  eventoDisparo      String
+  status             String   // SUCESSO, BLOQUEADO, ENCAMINHADO_APROVACAO, ERRO, MODO_OBSERVACAO
+  contextoEntrada    Json
+  condicoesAvaliadas Json
+  acoesDisparadas    Json
+  duracaoMs          Int      @default(0)
+  profundidade       Int      @default(1)
+  erroMensagem       String?
+  createdAt          DateTime @default(now())
+
+  @@index([tenantId, regraId, status])
+  @@index([tenantId, correlationId])
+  @@map("execucoes_automacao")
+  @@schema("automacoes")
+}
+
+model SolicitacaoAprovacao {
+  id                           String    @id @default(uuid()) @db.Uuid
+  tenantId                     String    @db.Uuid
+  codigo                       String    // APR-2026-001
+  tipoOperacao                 String    // REPASSE_PRODUTOR, ANTECIPACAO, ESTORNO_EXCEPCIONAL, ALTERACAO_CONTA_BANCARIA, etc.
+  entidadeOrigemTipo           String
+  entidadeOrigemId             String
+  eventoId                     String?   @db.Uuid
+  produtorId                   String?
+  valorCentavos                BigInt?
+  solicitanteId                String
+  solicitanteNome              String
+  nivelExigido                 String    // SIMPLES, FINANCEIRO, FINANCEIRO_E_ADMIN, DUPLA_APROVACAO_DIRETORIA
+  segregacaoFuncoesObrigatoria Boolean   @default(true)
+  status                       String    // PENDENTE, EM_ANALISE, APROVADO, REJEITADO, SOLICITADO_INFORMACAO, CANCELADO
+  contextoAnalitico            Json      // Saldo, risco, divergências 11.31, histórico
+  slaLimiteAt                  DateTime?
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, status, tipoOperacao])
+  @@map("solicitacoes_aprovacao")
+  @@schema("automacoes")
+}
+
+model DecisaoAprovacao {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  solicitacaoId String   @db.Uuid
+  aprovadorId   String
+  aprovadorNome String
+  etapaOrdem    Int      @default(1)
+  decisao       String   // APROVADO, REJEITADO, SOLICITADO_INFORMACAO
+  justificativa String
+  ipOrigem      String?
+  delegadoPor   String?
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId, solicitacaoId])
+  @@map("decisoes_aprovacao")
+  @@schema("automacoes")
+}
+
+model DelegacaoAprovacao {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @db.Uuid
+  usuarioOrigemId   String
+  usuarioDelegadoId String
+  departamento      String
+  dataInicio        DateTime
+  dataFim           DateTime
+  motivo            String
+  status            String   // ATIVA, REVOGADA, EXPIRADA
+  createdAt         DateTime @default(now())
+
+  @@index([tenantId, usuarioOrigemId, status])
+  @@map("delegacoes_aprovacao")
+  @@schema("automacoes")
+}
+
+model DefinicaoFluxo {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  codigo       String   // FLUXO-REPASSE-01
+  nome         String
+  descricao    String
+  categoria    String
+  modeloPadrao String   // REPASSE, ANTECIPACAO, ESTORNO, ALTERACAO_BANCARIA, FECHAMENTO, etc.
+  etapas       Json
+  ativo        Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@map("definicoes_fluxo")
+  @@schema("automacoes")
+}
+
+model FilaTrabalho {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  departamento           String    // FINANCEIRO, CONTABILIDADE, COMERCIAL, MARKETING, ATENDIMENTO, OPERACOES, TECNOLOGIA
+  itemTipo               String
+  itemId                 String
+  titulo                 String
+  descricao              String
+  severidade             String
+  prioridade             Int       @default(10)
+  status                 String    // DISPONIVEL, EM_ATENDIMENTO, CONCLUIDO
+  atribuidoParaUsuarioId String?
+  atribuidoEm            DateTime?
+  slaLimiteAt            DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([tenantId, departamento, status])
+  @@map("filas_trabalho")
+  @@schema("automacoes")
 }
 
 

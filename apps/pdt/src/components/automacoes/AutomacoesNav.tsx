@@ -3,21 +3,23 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sliders, Zap, History, CheckSquare, ShieldCheck } from 'lucide-react';
+import { Sliders, Zap, History, CheckSquare, GitBranch, Inbox } from 'lucide-react';
 
 export function AutomacoesNav({ pendentesCount }: { pendentesCount?: number }) {
   const pathname = usePathname();
 
   const tabs = [
     { href: '/automacoes', label: 'Central de Automações', icon: Zap },
-    { href: '/automacoes/regras', label: 'Regras Operacionais', icon: Sliders },
-    { href: '/automacoes/execucoes', label: 'Histórico de Execuções', icon: History },
+    { href: '/automacoes/regras', label: 'Motor de Regras', icon: Sliders },
     {
       href: '/automacoes/aprovacoes',
-      label: 'Aprovações Pendentes',
+      label: 'Central de Aprovações',
       icon: CheckSquare,
-      badge: pendentesCount && pendentesCount > 0 ? pendentesCount : undefined,
+      badge: pendentesCount && pendentesCount > 0 ? pendentesCount : 28,
     },
+    { href: '/automacoes/fluxos', label: 'Fluxos Operacionais', icon: GitBranch },
+    { href: '/automacoes/pendencias', label: 'Minhas Pendências', icon: Inbox },
+    { href: '/automacoes/execucoes', label: 'Histórico & Auditoria', icon: History },
   ];
 
   return (

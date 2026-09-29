@@ -209,14 +209,6 @@ const rawMenuItems: MenuItemConfig[] = [
     badge: 'RBAC',
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
-  {
-    label: 'ScrollSpy & UI',
-    producerLabel: 'ScrollSpy & UI',
-    href: '/componentes/scrollspy',
-    icon: Compass,
-    badge: 'UI',
-    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
-  },
 ];
 
 export function Sidebar() {

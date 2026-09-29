@@ -16,6 +16,7 @@ import * as Contabilidade from './events/contabilidade.js';
 import * as PosEvento from './events/pos-evento.js';
 import * as Inteligencia from './events/inteligencia.js';
 import * as Governanca from './events/governanca.js';
+import * as Automacoes from './events/automacoes.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -79,6 +80,14 @@ export const EventCatalog = {
   [Governanca.AuditoriaOperacaoRegistradaV1.name]: Governanca.AuditoriaOperacaoRegistradaV1,
   [Governanca.CatalogoTermoAtualizadoV1.name]: Governanca.CatalogoTermoAtualizadoV1,
   [Governanca.IntegracaoStatusAlteradoV1.name]: Governanca.IntegracaoStatusAlteradoV1,
+  [Automacoes.RegraAutomacaoCriadaV1.name]: Automacoes.RegraAutomacaoCriadaV1,
+  [Automacoes.RegraAutomacaoAlteradaV1.name]: Automacoes.RegraAutomacaoAlteradaV1,
+  [Automacoes.RegraAutomacaoPausadaV1.name]: Automacoes.RegraAutomacaoPausadaV1,
+  [Automacoes.AutomacaoExecutadaV1.name]: Automacoes.AutomacaoExecutadaV1,
+  [Automacoes.AprovacaoSolicitadaV1.name]: Automacoes.AprovacaoSolicitadaV1,
+  [Automacoes.AprovacaoDecididaV1.name]: Automacoes.AprovacaoDecididaV1,
+  [Automacoes.DelegacaoAprovacaoRegistradaV1.name]: Automacoes.DelegacaoAprovacaoRegistradaV1,
+  [Automacoes.NotificacaoCentralDisparadaV1.name]: Automacoes.NotificacaoCentralDisparadaV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;
