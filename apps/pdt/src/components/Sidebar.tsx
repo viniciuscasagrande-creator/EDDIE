@@ -30,6 +30,7 @@ import {
   Compass,
   CreditCard,
   FileText,
+  Receipt,
 } from 'lucide-react';
 import { useMobileNav } from './MobileNavContext';
 
@@ -166,6 +167,13 @@ const rawMenuItems: MenuItemConfig[] = [
     icon: FileText,
     badge: '11.35',
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
+    label: 'Fiscal & Tributário',
+    href: '/fiscal',
+    icon: Receipt,
+    badge: '11.38',
+    scopes: ['DISKINGRESSOS'],
   },
   {
     label: 'Estornos & CDC',

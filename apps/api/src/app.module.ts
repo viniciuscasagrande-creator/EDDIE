@@ -35,6 +35,7 @@ import { InteligenciaModule } from './modules/inteligencia/inteligencia.module';
 import { GovernancaModule } from './modules/governanca/governanca.module';
 import { AutomacoesModule } from './modules/automacoes/automacoes.module';
 import { DocumentosModule } from './modules/documentos/documentos.module';
+import { FiscalModule } from './modules/fiscal/fiscal.module';
 
 import { validateApiEnv } from './shared/config/env.validation';
 
@@ -79,6 +80,7 @@ import { validateApiEnv } from './shared/config/env.validation';
     GovernancaModule,
     AutomacoesModule,
     DocumentosModule,
+    FiscalModule,
   ],
 })
 export class AppModule {}

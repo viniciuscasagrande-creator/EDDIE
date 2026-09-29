@@ -21,6 +21,7 @@ import * as Operacao from './events/operacao.js';
 import * as Seguranca from './events/seguranca.js';
 import * as Documentos from './events/documentos.js';
 import * as Tesouraria from './events/tesouraria.js';
+import * as Fiscal from './events/fiscal.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -130,6 +131,15 @@ export const EventCatalog = {
   [Tesouraria.DivergenciaMdrDetectadaV1.name]: Tesouraria.DivergenciaMdrDetectadaV1,
   [Tesouraria.TransferenciaExecutadaV1.name]: Tesouraria.TransferenciaExecutadaV1,
   [Tesouraria.FechamentoTesourariaConcluidoV1.name]: Tesouraria.FechamentoTesourariaConcluidoV1,
+  [Fiscal.DocumentoFiscalEmitidoV1.name]: Fiscal.DocumentoFiscalEmitidoV1,
+  [Fiscal.DocumentoFiscalAutorizadoV1.name]: Fiscal.DocumentoFiscalAutorizadoV1,
+  [Fiscal.DocumentoFiscalRejeitadoV1.name]: Fiscal.DocumentoFiscalRejeitadoV1,
+  [Fiscal.DocumentoFiscalCanceladoV1.name]: Fiscal.DocumentoFiscalCanceladoV1,
+  [Fiscal.RegraTributariaPublicadaV1.name]: Fiscal.RegraTributariaPublicadaV1,
+  [Fiscal.ApuracaoTributariaConcluidaV1.name]: Fiscal.ApuracaoTributariaConcluidaV1,
+  [Fiscal.ObrigacaoFiscalCumpridaV1.name]: Fiscal.ObrigacaoFiscalCumpridaV1,
+  [Fiscal.RetencaoTributariaRegistradaV1.name]: Fiscal.RetencaoTributariaRegistradaV1,
+  [Fiscal.DivergenciaFiscalDetectadaV1.name]: Fiscal.DivergenciaFiscalDetectadaV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

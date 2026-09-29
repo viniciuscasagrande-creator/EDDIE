@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca", "automacoes", "documentos"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca", "automacoes", "documentos", "fiscal"]
 }
 
 
@@ -3647,4 +3647,298 @@ model ItemDossie {
   @@index([tenantId, dossieId, secao])
   @@map("itens_dossie")
   @@schema("documentos")
+}
+
+// ============================================================================
+//  FISCAL E TRIBUTÁRIO (EDDIE 11.38)
+//  Interpretação fiscal e tributária, regras versionadas com vigência (LC 214/2025,
+//  LC 227/2026, Reforma Tributária, IBS/CBS), NFS-e, retenções, apurações,
+//  obrigações, three-way match de entrada e conciliação em 4 pontos.
+//  Regra Inviolável: VENDA DO INGRESSO ≠ RECEITA DA DISK ≠ BASE TRIBUTÁVEL DA DISK.
+// ============================================================================
+
+model Tributo {
+  id                  String             @id @default(uuid()) @db.Uuid
+  tenantId            String             @db.Uuid
+  codigo              String             // ex: "ISS", "PIS", "COFINS", "CBS", "IBS", "IS"
+  nome                String             // ex: "Imposto sobre Serviços", "Contribuição sobre Bens e Serviços"
+  esfera              String             // "MUNICIPAL", "FEDERAL", "ESTADUAL"
+  tipo                String             // "DIRETO", "INDIRETO", "CONTRIBUICAO"
+  aliquotaReferencia  Decimal            @db.Decimal(5, 2) // ex: 5.00
+  vigenciaInicio      DateTime           @default(now())
+  vigenciaFim         DateTime?
+  ativo               Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, ativo])
+  @@map("tributos")
+  @@schema("fiscal")
+}
+
+model RegraTributaria {
+  id                   String               @id @default(uuid()) @db.Uuid
+  tenantId             String               @db.Uuid
+  codigo               String               // ex: "RT-INTERMED-01"
+  versao               Int                  @default(1)
+  descricao            String
+  operacaoTipo         String               // "INTERMEDIACAO_VENDA", "TAXA_CONVENIENCIA", "SERVICO_PLATAFORMA", "DESPESA_FORNECEDOR"
+  regimeTributario     String               // "LUCRO_PRESUMIDO", "LUCRO_REAL", "SIMPLES_NACIONAL", "REFORMA_TRIBUTARIA"
+  municipioIncidencia  String?
+  ufIncidencia         String?
+  status               String               @default("VIGENTE") // "RASCUNHO", "VIGENTE", "EXPIRADA", "REVOGADA"
+  exigeNfse            Boolean              @default(true)
+  politicaRetencao     String               @default("DISPENSADA") // "DISPENSADA", "RETENCAO_FONTE"
+  vigenciaInicio       DateTime             @default(now())
+  vigenciaFim          DateTime?
+  criadoPor            String
+  aprovadoPor          String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  itens                ItemRegraTributaria[]
+
+  @@unique([tenantId, codigo, versao])
+  @@index([tenantId, operacaoTipo, status])
+  @@map("regras_tributarias")
+  @@schema("fiscal")
+}
+
+model ItemRegraTributaria {
+  id                   String          @id @default(uuid()) @db.Uuid
+  tenantId             String          @db.Uuid
+  regraId              String          @db.Uuid
+  regra                RegraTributaria @relation(fields: [regraId], references: [id], onDelete: Cascade)
+  tributoCodigo        String          // "ISS", "PIS", "COFINS", "CBS", "IBS"
+  basePercentual       Decimal         @default(100.00) @db.Decimal(5, 2)
+  aliquotaPercentual   Decimal         @db.Decimal(5, 2)
+  retencao             Boolean         @default(false)
+  responsavelRetencao  String          @default("PRESTADOR") // "TOMADOR", "PRESTADOR"
+
+  @@index([tenantId, regraId])
+  @@map("itens_regras_tributarias")
+  @@schema("fiscal")
+}
+
+model ServicoOperacaoFiscal {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  codigo                 String    @unique // ex: "SRV-TICKETING-01"
+  nome                   String    // ex: "Intermediação na Venda de Ingressos"
+  codigoServicoMunicipal String    // ex: "17.06"
+  itemLc116              String    // ex: "10.05"
+  descricao              String
+  aliquotaIssPadrao      Decimal   @default(5.00) @db.Decimal(5, 2)
+  ativo                  Boolean   @default(true)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([tenantId, ativo])
+  @@map("servicos_operacoes_fiscais")
+  @@schema("fiscal")
+}
+
+model DocumentoFiscal {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  tenantId             String                 @db.Uuid
+  chaveFiscal          String                 @unique // ex: "FIS-2026-000001"
+  numero               String?
+  serie                String?
+  tipo                 String                 @default("NFSE") // "NFSE", "NFE", "CTE", "OUTRO"
+  prestadorCnpj        String                 // String para suportar CNPJ alfanumérico
+  tomadorCpfCnpj       String                 // String para suportar CPF e CNPJ alfanumérico
+  tomadorNome          String
+  competencia          String                 // "2026-09"
+  valorTotalCentavos   BigInt
+  baseCalculoCentavos  BigInt
+  valorTributosCentavos BigInt                @default(0)
+  valorLiquidoCentavos BigInt
+  status               String                 @default("PENDENTE") // "PENDENTE", "EM_PROCESSAMENTO", "AUTORIZADO", "REJEITADO", "CANCELAMENTO_SOLICITADO", "CANCELADO", "SUBSTITUIDO", "ERRO"
+  protocoloAutorizacao String?
+  xmlAutorizado        String?                @db.Text
+  motivoRejeicao       String?
+  origemTipo           String                 // "SERVICO_DISK", "EVENTO_PRODUTOR", "FORNECEDOR_ENTRADA"
+  origemReferenciaId   String
+  contratoId           String?                @db.Uuid
+  eventoId             String?                @db.Uuid
+  produtorId           String?                @db.Uuid
+  substituiDocumentoId String?                @db.Uuid
+  dataEmissao          DateTime               @default(now())
+  dataAutorizacao      DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  itens                ItemDocumentoFiscal[]
+  retencoes            RetencaoTributaria[]
+
+  @@index([tenantId, competencia, status])
+  @@index([tenantId, origemTipo, origemReferenciaId])
+  @@index([eventoId])
+  @@index([produtorId])
+  @@map("documentos_fiscais")
+  @@schema("fiscal")
+}
+
+model ItemDocumentoFiscal {
+  id                   String          @id @default(uuid()) @db.Uuid
+  tenantId             String          @db.Uuid
+  documentoFiscalId    String          @db.Uuid
+  documentoFiscal      DocumentoFiscal @relation(fields: [documentoFiscalId], references: [id], onDelete: Cascade)
+  descricao            String
+  valorCentavos        BigInt
+  baseCalculoCentavos  BigInt
+  aliquota             Decimal         @db.Decimal(5, 2)
+  valorTributoCentavos BigInt
+  tributoCodigo        String
+
+  @@index([tenantId, documentoFiscalId])
+  @@map("itens_documentos_fiscais")
+  @@schema("fiscal")
+}
+
+model RetencaoTributaria {
+  id                      String          @id @default(uuid()) @db.Uuid
+  tenantId                String          @db.Uuid
+  documentoFiscalId       String          @db.Uuid
+  documentoFiscal         DocumentoFiscal @relation(fields: [documentoFiscalId], references: [id], onDelete: Cascade)
+  tributoCodigo           String          // "IRRF", "PIS", "COFINS", "CSLL", "ISS"
+  baseCalculoCentavos     BigInt
+  aliquotaPercentual      Decimal         @db.Decimal(5, 2)
+  valorRetidoCentavos     BigInt
+  responsavelRecolhimento String          @default("TOMADOR") // "TOMADOR", "PRESTADOR"
+  competencia             String          // "2026-09"
+  status                  String          @default("APURADA") // "APURADA", "RECOLHIDA", "COMPENSADA"
+  createdAt               DateTime        @default(now())
+
+  @@index([tenantId, competencia, status])
+  @@index([documentoFiscalId])
+  @@map("retencoes_tributarias")
+  @@schema("fiscal")
+}
+
+model ApuracaoTributaria {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  codigo                 String    @unique // ex: "APU-2026-09-PIS"
+  competencia            String    // "2026-09"
+  tributoCodigo          String    // "PIS", "COFINS", "ISS", "CBS", "IBS"
+  valorFaturamentoCentavos BigInt
+  baseCalculoCentavos    BigInt
+  debitosCentavos        BigInt    @default(0)
+  creditosCentavos       BigInt    @default(0)
+  retencoesCentavos      BigInt    @default(0)
+  valorApuradoCentavos   BigInt
+  status                 String    @default("EM_REVISAO") // "EM_REVISAO", "CONCLUIDA", "FECHADA"
+  memoriaCalculo         Json      // Drill-down com lista de operações e documentos
+  fechadoPor             String?
+  fechadoEm              DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, competencia, tributoCodigo])
+  @@index([tenantId, competencia, status])
+  @@map("apuracoes_tributarias")
+  @@schema("fiscal")
+}
+
+model ObrigacaoFiscal {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  codigo                 String    @unique // ex: "OBR-2026-00001"
+  tipo                   String    @default("PRINCIPAL") // "PRINCIPAL", "ACESSORIA"
+  tributoCodigo          String?   // "PIS", "COFINS", "ISS", "SPED", "EFD"
+  descricao              String
+  competencia            String    // "2026-09"
+  dataVencimento         DateTime
+  valorPrevistoCentavos  BigInt    @default(0)
+  valorEfetivoCentavos   BigInt    @default(0)
+  status                 String    @default("PENDENTE") // "PENDENTE", "EM_PREPARACAO", "AGUARDANDO_PAGAMENTO", "PAGA_CUMPRIDA", "ATRASADA"
+  guiaCodigoBarras       String?
+  tituloPagarId          String?   @db.Uuid // Vínculo com contas a pagar / tesouraria 11.36
+  comprovanteDocumentoId String?   // Vínculo com documento / arquivo 11.35
+  cumpridoPor            String?
+  cumpridoEm             DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([tenantId, competencia, status])
+  @@index([tenantId, dataVencimento])
+  @@map("obrigações_fiscais")
+  @@schema("fiscal")
+}
+
+model CertificadoDigitalFiscal {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @db.Uuid
+  cnpjTitular    String
+  razaoSocial    String
+  emissora       String
+  validadeInicio DateTime
+  validadeFim    DateTime
+  status         String    @default("ATIVO") // "ATIVO", "EXPIRADO", "REVOGADO"
+  thumbprintSha1 String
+  diasParaVencer Int       @default(365)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@map("certificados_digitais_fiscais")
+  @@schema("fiscal")
+}
+
+model ConciliacaoFiscal {
+  id                   String   @id @default(uuid()) @db.Uuid
+  tenantId             String   @db.Uuid
+  competencia          String   // "2026-09"
+  pontoConciliacao     String   // "OPERACAO_DOCUMENTO", "DOCUMENTO_CONTABILIDADE", "CONTABILIDADE_APURACAO", "APURACAO_PAGAMENTO"
+  valorOrigemCentavos  BigInt
+  valorDestinoCentavos BigInt
+  diferencaCentavos    BigInt
+  status               String   @default("CONCILIADO") // "CONCILIADO", "DIVERGENTE"
+  detalhes             Json?
+  createdAt            DateTime @default(now())
+
+  @@index([tenantId, competencia, pontoConciliacao])
+  @@map("conciliacoes_fiscais")
+  @@schema("fiscal")
+}
+
+model PendenciaFiscal {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @db.Uuid
+  tipo              String    // "DOCUMENTO_REJEITADO", "SEM_DOCUMENTO", "DIVERGENCIA_CONTABIL", "OBRIGACAO_PROXIMA", "CERTIFICADO_EXPIRANDO"
+  severidade        String    @default("MEDIA") // "BAIXA", "MEDIA", "ALTA", "CRITICA"
+  descricao         String
+  competencia       String
+  status            String    @default("PENDENTE") // "PENDENTE", "EM_ANALISE", "RESOLVIDA", "CANCELADA"
+  documentoFiscalId String?   @db.Uuid
+  resolucao         String?
+  resolvidoPor      String?
+  resolvidoEm       DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([tenantId, status, severidade])
+  @@index([tenantId, competencia])
+  @@map("pendencias_fiscais")
+  @@schema("fiscal")
+}
+
+model FechamentoFiscal {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @db.Uuid
+  competencia             String    // "2026-09"
+  status                  String    @default("ABERTO") // "ABERTO", "EM_REVISAO", "PRE_FECHAMENTO", "FECHADO", "REABERTO"
+  checklist               Json      // Validações concluídas
+  totalDocumentosEmitidos Int       @default(0)
+  totalValorCentavos      BigInt    @default(0)
+  fechadoPor              String?
+  fechadoEm               DateTime?
+  reabertoPor             String?
+  reabertoEm              DateTime?
+  motivoReabertura        String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@unique([tenantId, competencia])
+  @@map("fechamentos_fiscais")
+  @@schema("fiscal")
 }
