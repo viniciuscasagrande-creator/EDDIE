@@ -50,10 +50,10 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
-    label: 'Central Operacional',
+    label: 'Central de Operações',
     href: '/operacao',
     icon: Activity,
-    badge: 'Ao Vivo',
+    badge: 'NOC Ao Vivo',
     scopes: ['DISKINGRESSOS'],
   },
   {

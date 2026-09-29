@@ -17,6 +17,7 @@ export * from './pos-evento.js';
 export * from './inteligencia.js';
 export * from './governanca.js';
 export * from './automacoes.js';
+export * from './operacao.js';
 
 export * as EventosEvents from './eventos.js';
 export * as PedidosEvents from './pedidos.js';
@@ -37,6 +38,7 @@ export * as PosEventoEvents from './pos-evento.js';
 export * as InteligenciaEvents from './inteligencia.js';
 export * as GovernancaEvents from './governanca.js';
 export * as AutomacoesEvents from './automacoes.js';
+export * as OperacaoEvents from './operacao.js';
 
 
 

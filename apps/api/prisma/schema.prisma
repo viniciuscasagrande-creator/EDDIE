@@ -2691,6 +2691,171 @@ model FilaTrabalho {
   @@schema("automacoes")
 }
 
+// ============================================================================
+//  PLATFORM — Operação, Monitoramento em Tempo Real & Incidentes (EDDIE 11.33)
+// ============================================================================
+
+model SinalOperacional {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  eventoId        String?  @db.Uuid
+  origem          String   // 'GATEWAY_ADYEN', 'PORTARIA_PORTAO_A', 'OUTBOX_WORKER', etc.
+  tipo            String
+  severidade      String   @default("INFORMATIVO") // INFORMATIVO, BAIXO, MEDIO, ALTO, CRITICO
+  chaveCorrelacao String
+  dados           Json?
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId, chaveCorrelacao, createdAt])
+  @@index([tenantId, severidade, createdAt])
+  @@map("sinais_operacionais")
+  @@schema("platform")
+}
+
+model AlertaOperacional {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  eventoId            String?   @db.Uuid
+  codigo              String
+  titulo              String
+  descricao           String
+  severidade          String    @default("MEDIO") // INFORMATIVO, BAIXO, MEDIO, ALTO, CRITICO
+  categoria           String    // VENDAS, PAGAMENTOS, PORTARIA, DISPOSITIVOS, INTEGRACOES, FILAS, INFRA
+  status              String    @default("ABERTO") // ABERTO, RECONHECIDO, SILENCIADO, EM_INCIDENTE, RESOLVIDO
+  contagemSinais      Int       @default(1)
+  chaveCorrelacao     String
+  primeiraOcorrencia  DateTime  @default(now())
+  ultimaOcorrencia    DateTime  @default(now())
+  silenciadoAte       DateTime?
+  motivoSilenciamento String?
+  responsavelId       String?
+  reconhecidoEm       DateTime?
+  reconhecidoPor      String?
+  incidenteId         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([tenantId, status, severidade])
+  @@index([tenantId, chaveCorrelacao])
+  @@map("alertas_operacionais")
+  @@schema("platform")
+}
+
+model IncidenteOperacional {
+  id                      String    @id @default(uuid()) @db.Uuid
+  codigo                  String    // INC-2026-0042
+  tenantId                String    @db.Uuid
+  eventoId                String?   @db.Uuid
+  titulo                  String
+  descricao               String
+  severidade              String    @default("P3_MEDIO") // P1_CRITICO, P2_ALTO, P3_MEDIO, P4_BAIXO
+  status                  String    @default("ABERTO") // ABERTO, INVESTIGANDO, IDENTIFICADO, MITIGADO, MONITORANDO, RESOLVIDO, FECHADO
+  coordenadorId           String?
+  responsavelTecnicoId    String?
+  responsavelOperacionalId String?
+  responsavelComunicacaoId String?
+  sistemasAfetados        Json      @default("[]")
+  eventosAfetados         Json      @default("[]")
+  pedidosRepresados       Int       @default(0)
+  gmvEmRiscoCentavos      BigInt    @default(0)
+  publicoAfetadoPortaria  Int       @default(0)
+  problemaId              String?
+  iniciadoEm              DateTime  @default(now())
+  mitigadoEm              DateTime?
+  resolvidoEm             DateTime?
+  fechadoEm               DateTime?
+  duracaoMinutos          Int       @default(0)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, status, severidade])
+  @@map("incidentes_operacionais")
+  @@schema("platform")
+}
+
+model AtualizacaoIncidente {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  incidenteId String
+  autorId     String
+  autorNome   String
+  tipo        String   // INVESTIGACAO, EVIDENCIA, MITIGACAO, COMUNICACAO_INTERNA, COMUNICACAO_EXTERNA, STATUS_CHANGE, PROCEDIMENTO
+  mensagem    String
+  payload     Json?
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, incidenteId, timestamp])
+  @@map("atualizacoes_incidente")
+  @@schema("platform")
+}
+
+model ProcedimentoOperacional {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  incidenteId  String?
+  nome         String
+  descricao    String
+  tipo         String    // FAILOVER_ADQUIRENTE, CONTINGENCIA_OFFLINE_PORTARIA, REINICIAR_WORKERS, BLOQUEIO_FRAUDE, REPROCESSAR_FILA, CHAVEAMENTO_GATEWAY_PIX
+  parametros   Json?
+  status       String    @default("PENDENTE") // PENDENTE, EXECUTANDO, SUCESSO, FALHOU
+  executadoPor String?
+  resultado    String?
+  executadoEm  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([tenantId, incidenteId, status])
+  @@map("procedimentos_operacionais")
+  @@schema("platform")
+}
+
+model AnalisePosIncidente {
+  id                         String   @id @default(uuid()) @db.Uuid
+  tenantId                   String   @db.Uuid
+  incidenteId                String   @unique
+  codigoIncidente            String
+  titulo                     String
+  resumoExecutivo            String
+  linhaDoTempoOficial        Json     @default("[]")
+  hipotesesDescartadas       Json     @default("[]")
+  causaRaizConfirmada        String
+  evidenciasCausaRaiz        Json     @default("[]")
+  impactoFinanceiroFinalCents BigInt   @default(0)
+  gmvRecuperadoCents         BigInt   @default(0)
+  licoesAprendidas           Json     @default("[]")
+  acoesCorretivas            Json     @default("[]")
+  auditorId                  String
+  aprovadoPor                String?
+  concluidoEm                DateTime @default(now())
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@index([tenantId, codigoIncidente])
+  @@map("analises_pos_incidente")
+  @@schema("platform")
+}
+
+model ProblemaOperacional {
+  id                        String   @id @default(uuid()) @db.Uuid
+  codigo                    String   // PRB-2026-0008
+  tenantId                  String   @db.Uuid
+  titulo                    String
+  descricao                 String
+  categoria                 String
+  status                    String   @default("REGISTRADO") // REGISTRADO, INVESTIGANDO, CAUSA_CONHECIDA, SOLUCAO_DEFINITIVA_IMPLANTADA, FECHADO
+  solucaoContorno           String?
+  solucaoDefinitiva         String?
+  totalIncidentesAssociados Int      @default(0)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, status])
+  @@map("problemas_operacionais")
+  @@schema("platform")
+}
+
 
 
 

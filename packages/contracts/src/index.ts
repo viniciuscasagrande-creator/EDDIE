@@ -17,6 +17,7 @@ import * as PosEvento from './events/pos-evento.js';
 import * as Inteligencia from './events/inteligencia.js';
 import * as Governanca from './events/governanca.js';
 import * as Automacoes from './events/automacoes.js';
+import * as Operacao from './events/operacao.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -88,6 +89,15 @@ export const EventCatalog = {
   [Automacoes.AprovacaoDecididaV1.name]: Automacoes.AprovacaoDecididaV1,
   [Automacoes.DelegacaoAprovacaoRegistradaV1.name]: Automacoes.DelegacaoAprovacaoRegistradaV1,
   [Automacoes.NotificacaoCentralDisparadaV1.name]: Automacoes.NotificacaoCentralDisparadaV1,
+  [Operacao.SinalOperacionalEmitidoV1.name]: Operacao.SinalOperacionalEmitidoV1,
+  [Operacao.AlertaOperacionalDisparadoV1.name]: Operacao.AlertaOperacionalDisparadoV1,
+  [Operacao.AlertaOperacionalReconhecidoV1.name]: Operacao.AlertaOperacionalReconhecidoV1,
+  [Operacao.IncidenteOperacionalAbertoV1.name]: Operacao.IncidenteOperacionalAbertoV1,
+  [Operacao.IncidenteOperacionalAtualizadoV1.name]: Operacao.IncidenteOperacionalAtualizadoV1,
+  [Operacao.IncidenteOperacionalEncerradoV1.name]: Operacao.IncidenteOperacionalEncerradoV1,
+  [Operacao.ProcedimentoOperacionalExecutadoV1.name]: Operacao.ProcedimentoOperacionalExecutadoV1,
+  [Operacao.PosIncidenteConcluidoV1.name]: Operacao.PosIncidenteConcluidoV1,
+  [Operacao.ProblemaOperacionalRegistradoV1.name]: Operacao.ProblemaOperacionalRegistradoV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

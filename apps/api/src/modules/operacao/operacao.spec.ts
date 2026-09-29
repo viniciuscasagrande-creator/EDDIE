@@ -168,4 +168,222 @@ describe('OperacaoService (EDDIE 11.10 - Centro de Operações)', () => {
     expect(resumo.kpis.receitaConfirmadaCents).toBe(25000);
     expect(resumo.portaria.scannersOnline).toBe(4);
   });
+
+  // ==========================================================================
+  //  EDDIE 11.33 — Testes da Central de Operações, Alertas & Incidentes
+  // ==========================================================================
+  describe('EDDIE 11.33 — Central de Operações & War Room', () => {
+    it('obterSnapshotCentral consolida visão ponta a ponta sem inventar dados', async () => {
+      const snapshot = await service.obterSnapshotCentral('tenant-1');
+
+      // 1. Header operacional
+      expect(snapshot.header.eventosEmOperacao).toBe(12);
+      expect(snapshot.header.vendasUltimos5Min).toBe(1482);
+      expect(snapshot.header.pagamentosProcessando).toBe(37);
+      expect(snapshot.header.incidentesCriticos).toBeGreaterThanOrEqual(1);
+
+      // 2. Grid de eventos com status padronizados
+      expect(snapshot.eventos.length).toBeGreaterThanOrEqual(5);
+      const situacoes = snapshot.eventos.map((e) => e.situacaoGeral);
+      expect(situacoes).toContain('NORMAL');
+      expect(situacoes).toContain('ATENCAO');
+      expect(situacoes).toContain('CRITICO');
+
+      // 3. Pagamentos e adquirentes
+      expect(snapshot.metricasPagamentos.adquirentes.length).toBeGreaterThan(0);
+      const pix = snapshot.metricasPagamentos.adquirentes.find((a) => a.adquirente.includes('PIX'));
+      expect(pix).toBeDefined();
+      expect(pix?.taxaAprovacaoPercent).toBeGreaterThan(95);
+
+      // 4. Portaria e modo contingência
+      expect(snapshot.metricasPortaria.portoes.length).toBeGreaterThan(0);
+      expect(snapshot.metricasPortaria.modoContingenciaOfflineAtivo).toBe(false);
+
+      // 5. Integrações com impacto financeiro
+      const adyen = snapshot.integracoes.find((i) => i.nome.includes('Adyen'));
+      expect(adyen).toBeDefined();
+      expect(adyen?.pedidosAfetados).toBeGreaterThan(0);
+      expect(adyen?.gmvEmRiscoCents).toBeGreaterThan(0);
+    });
+
+    it('pipeline de ingestão de sinais reduz ruído agrupando 10 sinais na mesma chave de correlação', async () => {
+      const chave = `GATEWAY:FAILOVER:${Date.now()}`;
+
+      // Emite primeiro sinal -> cria alerta novo
+      const primeiro = await service.emitirSinal('tenant-1', {
+        origem: 'GATEWAY_TEST',
+        tipo: 'TIMEOUT',
+        severidade: 'ALTO',
+        chaveCorrelacao: chave,
+        titulo: 'Timeout em massa de gateway',
+        descricao: 'Falhas consecutivas em pool de conexões',
+        categoria: 'PAGAMENTOS',
+      });
+
+      expect(primeiro.contagemSinais).toBe(1);
+
+      // Emite mais 9 sinais com a mesma chave -> acumula no mesmo alerta sem tempestade de alertas
+      let ultimoResultado = primeiro;
+      for (let i = 0; i < 9; i++) {
+        ultimoResultado = await service.emitirSinal('tenant-1', {
+          origem: 'GATEWAY_TEST',
+          tipo: 'TIMEOUT',
+          severidade: 'ALTO',
+          chaveCorrelacao: chave,
+          titulo: 'Timeout em massa de gateway',
+          descricao: 'Falhas consecutivas em pool de conexões',
+          categoria: 'PAGAMENTOS',
+        });
+      }
+
+      expect(ultimoResultado.alertaId).toBe(primeiro.alertaId);
+      expect(ultimoResultado.contagemSinais).toBe(10);
+    });
+
+    it('silencia alerta com justificativa e TTL', async () => {
+      const resSinal = await service.emitirSinal('tenant-1', {
+        origem: 'PORTARIA',
+        tipo: 'FILA',
+        severidade: 'MEDIO',
+        chaveCorrelacao: `PORTARIA:FILA:${Date.now()}`,
+        titulo: 'Fila alta momentânea',
+        descricao: 'Abertura de portão principal',
+        categoria: 'PORTARIA',
+      });
+
+      const silenciado = await service.silenciarAlerta('tenant-1', resSinal.alertaId, 45, 'Investigando fluxo', 'op-teste');
+      expect(silenciado.status).toBe('SILENCIADO');
+      expect(silenciado.motivoSilenciamento).toBe('Investigando fluxo');
+      expect(silenciado.silenciadoAte).toBeDefined();
+    });
+
+    it('escala alerta crítico para novo incidente com severidade P1/P2', async () => {
+      const resSinal = await service.emitirSinal('tenant-1', {
+        origem: 'CHECKOUT',
+        tipo: 'OUTAGE',
+        severidade: 'CRITICO',
+        chaveCorrelacao: `CHECKOUT:500:${Date.now()}`,
+        titulo: 'Erro 500 no checkout',
+        descricao: 'Checkout indisponível',
+        categoria: 'VENDAS',
+      });
+
+      const incidente = await service.escalarAlertaParaIncidente('tenant-1', resSinal.alertaId, {
+        titulo: 'Incidente Crítico de Checkout',
+        severidade: 'P1_CRITICO',
+        coordenadorId: 'coord-1',
+      });
+
+      expect(incidente.id).toBeDefined();
+      expect(incidente.codigo).toMatch(/^INC-2026-\d{4}$/);
+      expect(incidente.severidade).toBe('P1_CRITICO');
+      expect(incidente.status).toBe('ABERTO');
+    });
+
+    it('gerencia ciclo de vida do incidente, atualizações e execução de runbook', async () => {
+      const incidente = await service.criarIncidente('tenant-1', 'evento-1', {
+        titulo: 'Indisponibilidade de Adquirente Primário',
+        descricao: 'Timeout generalizado no processamento de cartões de crédito',
+        severidade: 'P1_CRITICO',
+        sistemasAfetados: ['PAGAMENTOS', 'CHECKOUT'],
+        gmvEmRiscoCentavos: 5000000,
+        pedidosRepresados: 150,
+      });
+
+      expect(incidente.status).toBe('ABERTO');
+      expect(incidente.procedimentos.length).toBeGreaterThan(0);
+
+      // Transição para INVESTIGANDO
+      const investigando = await service.atualizarStatusIncidente('tenant-1', incidente.id, {
+        status: 'INVESTIGANDO',
+        autorNome: 'Eng. Plantão',
+        mensagem: 'Engenharia acionada e analisando traces',
+      });
+      expect(investigando.status).toBe('INVESTIGANDO');
+
+      // Executa runbook de failover
+      const procId = incidente.procedimentos[0]?.id || 'proc-01';
+      const execucao = await service.executarProcedimento('tenant-1', procId, 'coord-noc');
+      expect(execucao.status).toBe('SUCESSO');
+      expect(execucao.resultado).toContain('contingência');
+
+      // Transição para MITIGADO e RESOLVIDO
+      await service.atualizarStatusIncidente('tenant-1', incidente.id, {
+        status: 'MITIGADO',
+        autorNome: 'coord-noc',
+        mensagem: 'Tráfego redirecionado com sucesso',
+      });
+
+      const resolvido = await service.atualizarStatusIncidente('tenant-1', incidente.id, {
+        status: 'RESOLVIDO',
+        autorNome: 'coord-noc',
+        mensagem: 'Operação totalmente normalizada',
+      });
+      expect(resolvido.status).toBe('RESOLVIDO');
+      expect(resolvido.resolvidoEm).toBeDefined();
+      expect(resolvido.duracaoMinutos).toBeGreaterThanOrEqual(1);
+    });
+
+    it('registra análise Pós-Incidente (Post-Mortem / RCA) com causa raiz confirmada e ações', async () => {
+      const incidente = await service.criarIncidente('tenant-1', 'evento-1', {
+        titulo: 'Falha de Switch de Portaria',
+        descricao: 'Queda de conexão no Portão Norte',
+        severidade: 'P2_ALTO',
+      });
+
+      const posIncidente = await service.registrarAnalisePosIncidente('tenant-1', {
+        incidenteId: incidente.id,
+        titulo: 'Post-Mortem: Falha de Switch de Portaria',
+        resumoExecutivo: 'Switch sofreu curto circuito e operou em contingência offline.',
+        linhaDoTempoOficial: [
+          { timestamp: '20:00:00', fato: 'Alarme de switch offline', evidencia: 'Syslog Portão Norte' },
+          { timestamp: '20:02:15', fato: 'Modo offline ativado', evidencia: 'Log Catracas' },
+        ],
+        hipotesesDescartadas: [
+          { hipotese: 'Rompimento de fibra óptica externa', motivoDescarte: 'Outros portões intactos' },
+        ],
+        causaRaizConfirmada: 'Sobreaquecimento da fonte secundária de energia do rack.',
+        evidenciasCausaRaiz: ['Relatório técnico de campo', 'Fotografia do componente queimado'],
+        impactoFinanceiroFinalCents: 0,
+        gmvRecuperadoCents: 0,
+        licoesAprendidas: ['Manter switches sobressalentes pré-configurados no local'],
+        acoesCorretivas: [
+          { acao: 'Instalação de no-break dedicado', responsavel: 'Infra', prazo: '2026-10-30' },
+        ],
+        auditorId: 'auditor-sênior',
+      });
+
+      expect(posIncidente.incidenteId).toBe(incidente.id);
+      expect(posIncidente.causaRaizConfirmada).toContain('Sobreaquecimento');
+      expect(posIncidente.acoesCorretivas.length).toBe(1);
+
+      const busca = await service.obterAnalisePosIncidente('tenant-1', incidente.id);
+      expect(busca.id).toBe(posIncidente.id);
+    });
+
+    it('registra problema conhecido ITIL e lista na base de conhecimento operacional', async () => {
+      const problema = await service.registrarProblema('tenant-1', {
+        titulo: 'Incompatibilidade de firmware em coletores modelo X9',
+        descricao: 'Queda intermitente de Wi-Fi 5GHz em ambientes densos',
+        categoria: 'DISPOSITIVOS_HARDWARE',
+        solucaoContorno: 'Fixar conexão em SSID 2.4GHz com canal estático',
+        solucaoDefinitiva: 'Atualização de firmware v2.4.1 em lote',
+      });
+
+      expect(problema.codigo).toMatch(/^PRB-2026-\d{4}$/);
+      expect(problema.status).toBe('INVESTIGANDO');
+
+      const lista = await service.obterProblemas('tenant-1');
+      expect(lista.some((p) => p.id === problema.id)).toBe(true);
+    });
+
+    it('permite alternar contingência offline da portaria com log e auditoria', async () => {
+      const ativacao = await service.alternarContingenciaOfflinePortaria('tenant-1', 'evento-1', true, 'lider-portaria');
+      expect(ativacao.modoContingenciaOfflineAtivo).toBe(true);
+      expect(ativacao.alteradoPor).toBe('lider-portaria');
+
+      const desativacao = await service.alternarContingenciaOfflinePortaria('tenant-1', 'evento-1', false, 'lider-portaria');
+      expect(desativacao.modoContingenciaOfflineAtivo).toBe(false);
+    });
+  });
 });
