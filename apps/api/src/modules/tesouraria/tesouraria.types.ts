@@ -1,4 +1,36 @@
-import { BancoCodigo, LayoutCnab, StatusRemessaCnab, StatusItemCnab, StatusPixPayout, TipoChavePix } from '@ticketing/contracts';
+import {
+  BancoCodigo,
+  LayoutCnab,
+  StatusRemessaCnab,
+  StatusItemCnab,
+  StatusPixPayout,
+  TipoChavePix,
+  TipoOrdemPagamento,
+  StatusOrdemPagamento,
+  MetodoOrdemPagamento,
+  NivelConciliacao,
+  StatusConciliacaoRegistro,
+  CenarioProjecaoCaixa,
+  TipoTransferencia,
+  TipoFechamentoCaixa,
+} from '@ticketing/contracts';
+
+export type {
+  BancoCodigo,
+  LayoutCnab,
+  StatusRemessaCnab,
+  StatusItemCnab,
+  StatusPixPayout,
+  TipoChavePix,
+  TipoOrdemPagamento,
+  StatusOrdemPagamento,
+  MetodoOrdemPagamento,
+  NivelConciliacao,
+  StatusConciliacaoRegistro,
+  CenarioProjecaoCaixa,
+  TipoTransferencia,
+  TipoFechamentoCaixa,
+};
 
 export interface ContaBancaria {
   id: string;
@@ -8,6 +40,8 @@ export interface ContaBancaria {
   conta: string;
   digito: string;
   tipo: 'CORRENTE' | 'APLICACAO' | 'PAGAMENTO';
+  finalidade?: string;
+  tipoTitularidade?: string;
   titular: string;
   cnpj: string;
   saldoReal: number;
@@ -83,6 +117,10 @@ export interface PosicaoConsolidadaTesouraria {
   contas: ContaBancaria[];
 }
 
+// ============================================================================
+//  DTOs EDDIE 11.25 Legados Mantidos para Retrocompatibilidade
+// ============================================================================
+
 export interface GerarRemessaDto {
   bancoCodigo: BancoCodigo;
   layout: LayoutCnab;
@@ -118,4 +156,279 @@ export interface ExecutarPixDto {
   tipoChave: TipoChavePix;
   idempotencyKey: string;
   executadoPor: string;
+  documentoId?: string;
+  simularTimeoutBancario?: boolean;
+}
+
+// ============================================================================
+//  Novos DTOs & Interfaces EDDIE 11.36
+// ============================================================================
+
+export interface SubcontaEventoSegregada {
+  eventoId: string;
+  eventoNome: string;
+  produtorId: string;
+  produtorNome: string;
+  saldoCentavos: number;
+  saldoDisponivelCentavos: number;
+  saldoRetidoCentavos: number;
+}
+
+export interface PosicaoCaixaSegregadaDto {
+  saldoBancarioRealCentavos: number;
+  saldoConciliadoCentavos: number;
+  saldoDisponivelCentavos: number;
+  saldoComprometidoCentavos: number;
+  saldoEmLiquidacaoCentavos: number;
+  recursosPropriosDiskCentavos: number;
+  recursosTerceirosProdutoresCentavos: number;
+  valoresEmConciliacaoCentavos: number;
+  subcontasEventos: SubcontaEventoSegregada[];
+  contas: ContaBancaria[];
+  dataHora: string;
+}
+
+export interface AgendaFinanceiraItem {
+  id: string;
+  dataPrevista: string;
+  tipo: 'ENTRADA' | 'SAIDA';
+  categoria: 'RECEBIVEL_ADQUIRENTE' | 'PIX_RECEBIDO' | 'REPASSE_PRODUTOR' | 'ANTECIPACAO' | 'FORNECEDOR' | 'TRIBUTO' | 'TARIFA';
+  descricao: string;
+  valorCentavos: number;
+  status: string;
+  contraparte: string;
+}
+
+export interface AgendaFinanceiraProjetadaDto {
+  cenario: CenarioProjecaoCaixa;
+  dataInicio: string;
+  dataFim: string;
+  posicaoInicialCentavos: number;
+  totalEntradasPrevistasCentavos: number;
+  totalSaidasPrevistasCentavos: number;
+  posicaoFinalProjetadaCentavos: number;
+  itens: AgendaFinanceiraItem[];
+  fatoresEstresseAplicados?: { fator: string; impactoCentavos: number }[];
+}
+
+export interface RecebivelAdquirenteDto {
+  id: string;
+  adquirente: string;
+  bandeira: string;
+  modalidade: string;
+  nsu: string;
+  codigoAutorizacao?: string;
+  eventoId?: string;
+  produtorId?: string;
+  dataVenda: string;
+  dataPrevista: string;
+  dataLiquidada?: string;
+  valorBrutoCentavos: number;
+  mdrTaxaEsperadaPercent: number;
+  mdrValorEsperadoCentavos: number;
+  mdrTaxaCobradaPercent?: number;
+  mdrValorCobradoCentavos?: number;
+  divergenciaCentavos: number;
+  valorLiquidoCentavos: number;
+  status: string;
+}
+
+export interface AuditarMdrDto {
+  recebivelId: string;
+  mdrTaxaCobradaPercent: number;
+  mdrValorCobradoCentavos: number;
+  auditadoPor: string;
+}
+
+export interface CriarOrdemPagamentoDto {
+  tipo: TipoOrdemPagamento;
+  metodo: MetodoOrdemPagamento;
+  beneficiarioNome: string;
+  beneficiarioCpfCnpj: string;
+  beneficiarioChavePix?: string;
+  beneficiarioBanco?: string;
+  beneficiarioAgencia?: string;
+  beneficiarioConta?: string;
+  beneficiarioTipoConta?: string;
+  valorCentavos: number;
+  dataVencimento: string;
+  idempotencyKey: string;
+  documentoId?: string;
+  documentoCodigo?: string;
+  operacaoOrigem?: string;
+  operacaoOrigemId?: string;
+  eventoId?: string;
+  produtorId?: string;
+  contaBancariaId?: string;
+  solicitadoPor: string;
+}
+
+export interface OrdemPagamentoDto {
+  id: string;
+  codigo: string;
+  tipo: TipoOrdemPagamento;
+  status: StatusOrdemPagamento;
+  metodo: MetodoOrdemPagamento;
+  beneficiarioNome: string;
+  beneficiarioCpfCnpj: string;
+  beneficiarioChavePix?: string;
+  beneficiarioBanco?: string;
+  beneficiarioAgencia?: string;
+  beneficiarioConta?: string;
+  beneficiarioTipoConta?: string;
+  valorCentavos: number;
+  dataVencimento: string;
+  dataAgendada?: string;
+  dataLiquidacao?: string;
+  idempotencyKey: string;
+  documentoId?: string;
+  documentoCodigo?: string;
+  operacaoOrigem?: string;
+  operacaoOrigemId?: string;
+  eventoId?: string;
+  produtorId?: string;
+  contaBancariaId?: string;
+  lotePagamentoId?: string;
+  endToEndId?: string;
+  autenticacaoBancaria?: string;
+  motivoRejeicao?: string;
+  solicitadoPor: string;
+  aprovadoPor?: string;
+  executadoPor?: string;
+  comprovanteUrl?: string;
+  createdAt: string;
+}
+
+export interface AvancarStatusOrdemDto {
+  novoStatus: StatusOrdemPagamento;
+  operador: string;
+  motivo?: string;
+  autenticacaoBancaria?: string;
+  endToEndId?: string;
+  contaBancariaId?: string;
+}
+
+export interface CriarLotePagamentoDto {
+  contaBancariaId: string;
+  metodo: string;
+  ordensIds: string[];
+  solicitadoPor: string;
+}
+
+export interface LotePagamentoDto {
+  id: string;
+  codigo: string;
+  status: string;
+  contaBancariaId: string;
+  metodo: string;
+  quantidadeOrdens: number;
+  valorTotalCentavos: number;
+  saldoDisponivelNoMomentoCentavos: number;
+  impactoSaldoProjetadoCentavos: number;
+  sha256Hash?: string;
+  solicitadoPor: string;
+  aprovadoPor?: string;
+  executadoPor?: string;
+  executadoEm?: string;
+  createdAt: string;
+  ordens?: OrdemPagamentoDto[];
+}
+
+export interface ConciliacaoRegistroDto {
+  contaBancariaId: string;
+  nivel: NivelConciliacao;
+  dataExtrato: string;
+  descricaoExtrato: string;
+  valorCentavos: number;
+  tipo: 'ENTRADA' | 'SAIDA';
+  correspondenciaTipo?: string;
+  correspondenciaId?: string;
+  status: StatusConciliacaoRegistro;
+  diferencaCentavos?: number;
+  justificativaDivergencia?: string;
+  conciliadoPor: string;
+}
+
+export interface ConciliacaoItemDto {
+  id: string;
+  contaBancariaId: string;
+  dataExtrato: string;
+  saldoExtrato: number;
+  saldoLedger: number;
+  divergencia: number;
+  status: string;
+  nivel: string;
+  correspondenciaTipo?: string;
+  correspondenciaId?: string;
+  diferencaCentavos: number;
+  justificativaDivergencia?: string;
+  divergenciasDetectadas: number;
+  conciliadoPor: string;
+  conciliadoEm: string;
+}
+
+export interface TransferenciaBancariaDto {
+  contaOrigemId: string;
+  contaDestinoId: string;
+  valorCentavos: number;
+  motivo: string;
+  solicitadoPor: string;
+}
+
+export interface TransferenciaInternaLedgerDto {
+  eventoOrigemId: string;
+  eventoDestinoId: string;
+  produtorOrigemId?: string;
+  produtorDestinoId?: string;
+  valorCentavos: number;
+  motivo: string;
+  justificativa: string;
+  solicitadoPor: string;
+}
+
+export interface TimelineItemRastreamento {
+  fase: string;
+  titulo: string;
+  descricao: string;
+  dataHora: string;
+  status: 'CONCLUIDO' | 'EM_ANDAMENTO' | 'PENDENTE' | 'ALERTA';
+  detalhes?: Record<string, any>;
+}
+
+export interface RastreamentoResultadoDto {
+  encontrado: boolean;
+  tipoIdentificado: string;
+  codigo: string;
+  valorCentavos: number;
+  beneficiario: string;
+  origemOperacao: string;
+  documentoFormal: { codigo?: string; assinado: boolean; status?: string };
+  ordemPagamento: { codigo?: string; status?: string; metodo?: string };
+  bancario: { banco?: string; endToEndId?: string; autenticacao?: string; liquidadoEm?: string };
+  conciliacao: { status?: string; nivel?: string; conciliadoEm?: string };
+  ledger: { registrado: boolean; subconta?: string };
+  timeline: TimelineItemRastreamento[];
+}
+
+export interface FechamentoTesourariaDto {
+  tipo: TipoFechamentoCaixa;
+  dataReferencia: string;
+  fechadoPor: string;
+  checklist: { item: string; verificado: boolean; observacao?: string }[];
+  ressalvas?: string[];
+}
+
+export interface CadastrarBeneficiarioDto {
+  produtorId?: string;
+  nome: string;
+  cpfCnpj: string;
+  tipoChavePix?: string;
+  chavePix?: string;
+  banco: string;
+  agencia: string;
+  conta: string;
+  digito?: string;
+  tipoConta?: string;
+  aprovadoPor?: string;
+  justificativa?: string;
 }

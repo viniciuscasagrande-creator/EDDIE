@@ -20,6 +20,7 @@ import * as Automacoes from './events/automacoes.js';
 import * as Operacao from './events/operacao.js';
 import * as Seguranca from './events/seguranca.js';
 import * as Documentos from './events/documentos.js';
+import * as Tesouraria from './events/tesouraria.js';
 
 /**
  * Catálogo central. Toda vez que criar um evento novo, registre aqui.
@@ -118,6 +119,13 @@ export const EventCatalog = {
   [Documentos.DivergenciaContratualDetectadaV1.name]: Documentos.DivergenciaContratualDetectadaV1,
   [Documentos.DossieSnapshotGeradoV1.name]: Documentos.DossieSnapshotGeradoV1,
   [Documentos.DossieReabertoV1.name]: Documentos.DossieReabertoV1,
+  [Tesouraria.OrdemPagamentoCriadaV1.name]: Tesouraria.OrdemPagamentoCriadaV1,
+  [Tesouraria.OrdemPagamentoLiquidadaV1.name]: Tesouraria.OrdemPagamentoLiquidadaV1,
+  [Tesouraria.PagamentoPixDesconhecidoV1.name]: Tesouraria.PagamentoPixDesconhecidoV1,
+  [Tesouraria.ConciliacaoBancariaRealizadaV1.name]: Tesouraria.ConciliacaoBancariaRealizadaV1,
+  [Tesouraria.DivergenciaMdrDetectadaV1.name]: Tesouraria.DivergenciaMdrDetectadaV1,
+  [Tesouraria.TransferenciaExecutadaV1.name]: Tesouraria.TransferenciaExecutadaV1,
+  [Tesouraria.FechamentoTesourariaConcluidoV1.name]: Tesouraria.FechamentoTesourariaConcluidoV1,
 } as const;
 
 export type EventName = keyof typeof EventCatalog;

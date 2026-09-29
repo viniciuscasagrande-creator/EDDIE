@@ -1138,6 +1138,8 @@ model ContaBancaria {
   conta                 String
   digito                String
   tipo                  String   @default("CORRENTE")
+  finalidade            String   @default("OPERACIONAL") // OPERACIONAL, RECEBIMENTOS, PAGAMENTOS, REPASSES, TRIBUTOS, RESERVA, OUTRAS
+  tipoTitularidade      String   @default("PROPRIA_DISK") // PROPRIA_DISK, VINCULADA_PRODUTOR, ESCROW_TERCEIROS
   titular               String
   cnpj                  String
   saldoRealCents        BigInt   @default(0)
@@ -1272,6 +1274,207 @@ model PixPayoutExecutado {
 
   @@index([tenantId, status])
   @@map("pix_payouts_executados")
+  @@schema("financeiro")
+}
+
+// ============================================================================
+//  FINANCEIRO — Tesouraria, Ordens de Pagamento, Recebíveis e Gestão de Caixa (EDDIE 11.36)
+// ============================================================================
+
+model RecebivelAdquirente {
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @db.Uuid
+  adquirente               String    // CIELO, REDE, STONE, PAGBANK, PAGARME, SAFRAPAY, PIX_DIRETO
+  bandeira                 String    // VISA, MASTERCARD, ELO, AMEX, HIPERCARD, PIX
+  modalidade               String    // CREDITO_VISTA, PARCELADO_2X_6X, PARCELADO_7X_12X, DEBITO, PIX
+  nsu                      String
+  codigoAutorizacao        String?
+  eventoId                 String?   @db.Uuid
+  produtorId               String?   @db.Uuid
+  resumoVendaRef           String?
+  dataVenda                DateTime  @default(now())
+  dataPrevista             DateTime
+  dataLiquidada            DateTime?
+  valorBrutoCentavos       BigInt
+  mdrTaxaEsperadaPercent   Decimal   @db.Decimal(5, 2)
+  mdrValorEsperadoCentavos BigInt
+  mdrTaxaCobradaPercent    Decimal?  @db.Decimal(5, 2)
+  mdrValorCobradoCentavos  BigInt?
+  divergenciaCentavos      BigInt    @default(0)
+  valorLiquidoCentavos     BigInt
+  status                   String    @default("PREVISTO") // PREVISTO, LIQUIDADO, DIVERGENCIA, ANTECIPADO, CANCELADO
+  contaBancariaId          String?   @db.Uuid
+  loteLiquidacaoAdquirente  String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@index([tenantId, adquirente, status])
+  @@index([tenantId, dataPrevista])
+  @@index([eventoId])
+  @@map("recebiveis_adquirentes")
+  @@schema("financeiro")
+}
+
+model OrdemPagamento {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @db.Uuid
+  codigo                String    @unique // OPG-2026-00001
+  tipo                  String    // REPASSE, ANTECIPACAO, FORNECEDOR, TRIBUTO, REEMBOLSO, TARIFA, OUTRO
+  status                String    @default("CRIADO") // CRIADO, VALIDADO, APROVADO, PROGRAMADO, ENVIADO, PROCESSANDO, LIQUIDADO, CONCILIADO, REJEITADO, CANCELADO, EXPIRADO, SITUACAO_DESCONHECIDA
+  metodo                String    @default("PIX") // PIX, TED, CNAB_240, CNAB_400
+  beneficiarioNome      String
+  beneficiarioCpfCnpj   String
+  beneficiarioChavePix  String?
+  beneficiarioBanco     String?
+  beneficiarioAgencia   String?
+  beneficiarioConta     String?
+  beneficiarioTipoConta String?   // CORRENTE, POUPANCA, PAGAMENTO
+  valorCentavos         BigInt
+  dataVencimento        DateTime
+  dataAgendada          DateTime?
+  dataLiquidacao        DateTime?
+  idempotencyKey        String    @unique
+  documentoId           String?   // Vínculo obrigatório com Documento formalizado 11.35 para repasse/antecipação
+  documentoCodigo       String?
+  operacaoOrigem        String?   // REPASSE, ANTECIPACAO, FECHAMENTO_EVENTO, etc.
+  operacaoOrigemId      String?
+  eventoId              String?   @db.Uuid
+  produtorId            String?   @db.Uuid
+  contaBancariaId       String?   @db.Uuid
+  lotePagamentoId       String?   @db.Uuid
+  endToEndId            String?
+  autenticacaoBancaria  String?
+  motivoRejeicao        String?
+  solicitadoPor         String
+  aprovadoPor           String?
+  executadoPor          String?
+  comprovanteUrl        String?
+  historicoStatus       Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, tipo])
+  @@index([tenantId, produtorId])
+  @@index([lotePagamentoId])
+  @@map("ordens_pagamento")
+  @@schema("financeiro")
+}
+
+model LotePagamento {
+  id                               String    @id @default(uuid()) @db.Uuid
+  tenantId                         String    @db.Uuid
+  codigo                           String    @unique // LOT-2026-00001
+  status                           String    @default("RASCUNHO") // RASCUNHO, SIMULADO, AUTORIZADO, PROCESSANDO, CONCLUIDO, FALHA_PARCIAL, CANCELADO
+  contaBancariaId                  String    @db.Uuid
+  metodo                           String    // PIX, CNAB_240, CNAB_400, TED
+  quantidadeOrdens                 Int       @default(0)
+  valorTotalCentavos               BigInt    @default(0)
+  saldoDisponivelNoMomentoCentavos BigInt    @default(0)
+  impactoSaldoProjetadoCentavos    BigInt    @default(0)
+  sha256Hash                       String?
+  solicitadoPor                    String
+  aprovadoPor                      String?
+  executadoPor                     String?
+  executadoEm                      DateTime?
+  createdAt                        DateTime  @default(now())
+  updatedAt                        DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@map("lotes_pagamento")
+  @@schema("financeiro")
+}
+
+model TransferenciaBancaria {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @db.Uuid
+  codigo                String    @unique // TRF-2026-00001
+  contaOrigemId         String    @db.Uuid
+  contaDestinoId        String    @db.Uuid
+  valorCentavos         BigInt
+  tarifaCentavos        BigInt    @default(0)
+  status                String    @default("SOLICITADA") // SOLICITADA, EM_TRANSITO, CONCLUIDA, REJEITADA
+  motivo                String
+  comprovanteOrigemUrl  String?
+  comprovanteDestinoUrl String?
+  solicitadoPor         String
+  aprovadoPor           String?
+  executadoEm           DateTime?
+  createdAt             DateTime  @default(now())
+
+  @@index([tenantId, status])
+  @@map("transferencias_bancarias")
+  @@schema("financeiro")
+}
+
+model TransferenciaInternaLedger {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @db.Uuid
+  codigo               String    @unique // TIL-2026-00001
+  eventoOrigemId       String    @db.Uuid
+  eventoDestinoId      String    @db.Uuid
+  produtorOrigemId     String?   @db.Uuid
+  produtorDestinoId    String?   @db.Uuid
+  valorCentavos        BigInt
+  motivo               String
+  justificativa        String
+  ledgerEntryOrigemId  String?   @db.Uuid
+  ledgerEntryDestinoId String?   @db.Uuid
+  status               String    @default("SOLICITADA") // SOLICITADA, APROVADA, EXECUTADA, REJEITADA
+  solicitadoPor        String
+  aprovadoPor          String?
+  executadoEm          DateTime?
+  createdAt            DateTime  @default(now())
+
+  @@index([tenantId, status])
+  @@map("transferencias_internas_ledger")
+  @@schema("financeiro")
+}
+
+model FechamentoTesouraria {
+  id                           String    @id @default(uuid()) @db.Uuid
+  tenantId                     String    @db.Uuid
+  codigo                       String    @unique // FCH-2026-00001
+  dataReferencia               DateTime
+  tipo                         String    @default("DIARIO") // DIARIO, MENSAL
+  saldoBancarioTotalCentavos   BigInt
+  saldoConciliadoTotalCentavos  BigInt
+  pendenciasQtd                Int       @default(0)
+  pendenciasJustificadasQtd    Int       @default(0)
+  status                       String    @default("FECHADO") // EM_CONCILIACAO, FECHADO, FECHADO_COM_RESSALVAS
+  fechadoPor                   String
+  checklist                    Json
+  ressalvas                    Json?
+  createdAt                    DateTime  @default(now())
+
+  @@index([tenantId, dataReferencia])
+  @@map("fechamentos_tesouraria")
+  @@schema("financeiro")
+}
+
+model BeneficiarioBancario {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @db.Uuid
+  produtorId             String?   @db.Uuid
+  nome                   String
+  cpfCnpj                String
+  tipoChavePix           String?   // CPF, CNPJ, EMAIL, TELEFONE, ALEATORIA
+  chavePix               String?
+  banco                  String
+  agencia                String
+  conta                  String
+  digito                 String?
+  tipoConta              String    @default("CORRENTE") // CORRENTE, POUPANCA, PAGAMENTO
+  status                 String    @default("EM_QUARENTENA") // ATIVO, EM_QUARENTENA, BLOQUEADO
+  quarentenaAte          DateTime
+  aprovadoPor            String?
+  justificativaAlteracao String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([tenantId, cpfCnpj])
+  @@index([produtorId])
+  @@map("beneficiarios_bancarios")
   @@schema("financeiro")
 }
 
@@ -1679,19 +1882,25 @@ model ItemLiquidacao {
 }
 
 model ConciliacaoBancariaRegistro {
-  id                    String   @id @default(uuid()) @db.Uuid
-  tenantId              String   @db.Uuid
-  contaBancariaId       String   @db.Uuid
-  dataExtrato           DateTime
-  saldoExtrato          Decimal  @db.Decimal(14, 2)
-  saldoLedger           Decimal  @db.Decimal(14, 2)
-  divergencia           Decimal  @default(0) @db.Decimal(14, 2)
-  status                String   @default("CONCILIADO")
-  divergenciasDetectadas Int     @default(0)
-  conciliadoPor         String
-  conciliadoEm          DateTime @default(now())
+  id                     String   @id @default(uuid()) @db.Uuid
+  tenantId               String   @db.Uuid
+  contaBancariaId        String   @db.Uuid
+  dataExtrato            DateTime
+  saldoExtrato           Decimal  @db.Decimal(14, 2)
+  saldoLedger            Decimal  @db.Decimal(14, 2)
+  divergencia            Decimal  @default(0) @db.Decimal(14, 2)
+  status                 String   @default("CONCILIADO") // CONCILIADO_AUTOMATICO, REQUER_ANALISE, DIVERGENCIA, IGNORADO
+  nivel                  String   @default("NIVEL_2_BANCO_LIQUIDACAO") // NIVEL_1_OPERACIONAL, NIVEL_2_BANCO_LIQUIDACAO, NIVEL_3_BANCO_LEDGER
+  correspondenciaTipo    String?  // RECEBIVEL, ORDEM_PAGAMENTO, TARIFA, TRANSFERENCIA, PIX
+  correspondenciaId      String?
+  diferencaCentavos      BigInt   @default(0)
+  justificativaDivergencia String?
+  divergenciasDetectadas  Int      @default(0)
+  conciliadoPor          String
+  conciliadoEm           DateTime @default(now())
 
   @@index([tenantId, contaBancariaId, dataExtrato])
+  @@index([tenantId, nivel, status])
   @@map("conciliacoes_bancarias_registros")
   @@schema("financeiro")
 }
