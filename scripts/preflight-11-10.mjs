@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 const req=[
-'docs/EDDIE_11_10_CENTRO_OPERACOES_EVENTO_TEMPO_REAL.md',
-'docs/EDDIE_11_10_CONTRATOS_REALTIME.md',
-'docs/EDDIE_11_10_LAYOUT_CENTRO_OPERACOES.md',
+'docs/fases/fase_11/11_10_a_11_16/EDDIE_11_10_CENTRO_OPERACOES_EVENTO_TEMPO_REAL.md',
+'docs/fases/fase_11/11_10_a_11_16/EDDIE_11_10_CONTRATOS_REALTIME.md',
+'docs/fases/fase_11/11_10_a_11_16/EDDIE_11_10_LAYOUT_CENTRO_OPERACOES.md',
 '.gemini/prompts/EDDIE_11_10.md',
 'packages/contracts/src/operacao-real/live-operations.ts'
 ];

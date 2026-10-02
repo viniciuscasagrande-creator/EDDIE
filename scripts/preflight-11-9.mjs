@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 const req=[
-'docs/EDDIE_11_9_PORTARIA_ANTIFRAUDE_CONCILIACAO_CHARGEBACK.md',
-'docs/EDDIE_11_9_CONTRATOS_OPERACIONAIS.md',
-'docs/EDDIE_11_9_TELAS.md',
+'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_9_PORTARIA_ANTIFRAUDE_CONCILIACAO_CHARGEBACK.md',
+'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_9_CONTRATOS_OPERACIONAIS.md',
+'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_9_TELAS.md',
 '.gemini/prompts/EDDIE_11_9.md',
 'packages/contracts/src/operacao-real/risk-reconciliation.ts'
 ];

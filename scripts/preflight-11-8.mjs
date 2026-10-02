@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 const req=[
-'docs/EDDIE_11_8_OPERACAO_REAL_PONTA_A_PONTA.md',
-'docs/EDDIE_11_8_CONTRATOS_TRANSACIONAIS.md',
-'docs/EDDIE_11_8_MODELO_FINANCEIRO.md',
+'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_8_OPERACAO_REAL_PONTA_A_PONTA.md',
+'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_8_CONTRATOS_TRANSACIONAIS.md',
+'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_8_MODELO_FINANCEIRO.md',
 '.gemini/prompts/EDDIE_11_8.md',
 'packages/contracts/src/operacao-real/index.ts'
 ];

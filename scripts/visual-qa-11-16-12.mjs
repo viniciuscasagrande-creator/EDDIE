@@ -210,7 +210,7 @@ async function runVisualQA() {
 
   await browser.close();
 
-  const reportPath = path.resolve('docs/QA_VISUAL_REPORT_11_16_12.json');
+  const reportPath = path.resolve('docs/relatorios_qa/QA_VISUAL_REPORT_11_16_12.json');
   fs.writeFileSync(reportPath, JSON.stringify({ summary: countsByClassification, results: allResults }, null, 2));
 
   console.log(`\n======================================================`);

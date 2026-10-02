@@ -209,7 +209,7 @@ async function scanButtons() {
     rotas: auditResults,
   };
 
-  const reportPath = path.resolve('docs/SCANNER_BOTOES_MARKETING_REMARKETING_REPORT.json');
+  const reportPath = path.resolve('docs/relatorios_qa/SCANNER_BOTOES_MARKETING_REMARKETING_REPORT.json');
   fs.mkdirSync(path.dirname(reportPath), { recursive: true });
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf-8');
   console.log(`📄 Relatório completo salvo em: ${reportPath}`);

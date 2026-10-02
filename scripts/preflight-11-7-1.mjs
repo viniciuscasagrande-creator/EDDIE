@@ -3,7 +3,7 @@ const req=[
 'apps/pdt/src/components/navigation/ModuleNavigation.tsx',
 'apps/pdt/src/components/navigation/module-navigation.css',
 'apps/pdt/src/components/navigation/CompactOperationalAlert.tsx',
-'docs/EDDIE_11_7_1_NAVEGACAO_FIXA_RESPONSIVA.md',
+'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_7_1_NAVEGACAO_FIXA_RESPONSIVA.md',
 '.gemini/prompts/EDDIE_11_7_1.md'
 ];
 let ok=true;

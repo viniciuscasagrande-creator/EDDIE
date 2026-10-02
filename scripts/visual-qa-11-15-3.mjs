@@ -218,11 +218,11 @@ async function runVisualQA() {
   await browser.close();
 
   // Exporta resultados em JSON
-  const jsonReportPath = path.resolve('docs/EDDIE_11_15_3_QA_RESULTS.json');
+  const jsonReportPath = path.resolve('docs/relatorios_qa/EDDIE_11_15_3_QA_RESULTS.json');
   fs.writeFileSync(jsonReportPath, JSON.stringify({ summary: countsByClassification, total: allResults.length, results: allResults }, null, 2));
 
   // Exporta Relatório Markdown Consolidado
-  const mdReportPath = path.resolve('docs/EDDIE_11_15_3_RELATORIO_QA_VISUAL.md');
+  const mdReportPath = path.resolve('docs/fases/fase_11/11_10_a_11_16/EDDIE_11_15_3_RELATORIO_QA_VISUAL.md');
   const mdContent = `# Relatório de QA Visual Automatizado — EDDIE 11.15.3
 
 **Data de Execução:** ${new Date().toISOString()}  

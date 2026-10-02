@@ -12,4 +12,5 @@ secrets/
 generated/
 *.tsbuildinfo
 *.zip
-EDEddie/
+archives/
+!archives/EDDIE_11_24_MEGA_HIPER_GIGANTESCO_EVENT_CLOSING_PRODUCER_SETTLEMENT.zip

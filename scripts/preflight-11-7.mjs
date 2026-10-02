@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 
 const required = [
-  'docs/EDDIE_11_7_OPERACAO_COMPLETA_EVENTO.md',
+  'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_7_OPERACAO_COMPLETA_EVENTO.md',
   '.gemini/prompts/EDDIE_11_7.md',
-  'docs/EDDIE_11_7_CONTRATOS_TELAS_E_API.md',
+  'docs/fases/fase_11/11_00_a_11_09/EDDIE_11_7_CONTRATOS_TELAS_E_API.md',
   'apps/pdt/src/app/eventos/page.tsx',
   'apps/pdt/src/app/eventos/novo/page.tsx',
   'apps/pdt/src/app/eventos/[eventoId]/dashboard/page.tsx',

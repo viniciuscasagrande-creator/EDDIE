@@ -3,8 +3,8 @@ import { execSync } from "node:child_process";
 
 const required = [
   "apps/pdt/src/lib/buildInfo.ts",
-  "docs/EDDIE_11_9_1_GO_LIVE_REAL_CORRECAO_DEPLOY.md",
-  "docs/EDDIE_11_9_1_CHECKLIST_GO_LIVE.md",
+  "docs/fases/fase_11/11_00_a_11_09/EDDIE_11_9_1_GO_LIVE_REAL_CORRECAO_DEPLOY.md",
+  "docs/fases/fase_11/11_00_a_11_09/EDDIE_11_9_1_CHECKLIST_GO_LIVE.md",
   ".gemini/prompts/EDDIE_11_9_1.md"
 ];
 
