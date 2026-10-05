@@ -3,6 +3,7 @@
 Esta versão reorganiza o módulo Recursos Humanos (RH Disk) dentro do Módulo Financeiro oficial.
 
 ## Estrutura
+
 - Visão Geral RH
 - Central de Aprovações
 - Pessoas e Estrutura
