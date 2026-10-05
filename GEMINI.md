@@ -108,6 +108,8 @@ packages/contracts/                  # eventos de domínio (Zod) — fonte da ve
 | `automacoes` | `automacoes` | EDDIE 11.32: Automação Operacional, Motor Central de Regras (QUANDO/SE/ENTÃO combinados, versionamento, dry-run, kill-switch) e Motor Central de Aprovações (SoD, alçadas, contexto analítico, fluxos) |
 | `documentos` | `documentos` | EDDIE 11.35: Documentos, Contratos, Assinatura Digital, Dossiê Operacional do Evento (17 seções), Modelos e Evidências |
 | `fiscal` | `fiscal` | EDDIE 11.38: Fiscal, Tributário, Documentos Fiscais (NFS-e), Retenções, Apurações, Three-Way Match, Reforma Tributária (LC 214) e Obrigações |
+| `rh` | `rh` | EDDIE 11.39: Recursos Humanos, Colaboradores, Ponto Eletrônico (REP-P Portaria 671 MTE), Geofencing de Arenas/Sede, Apropriação de Custos de Pessoal por Evento (DRE) e Auditoria |
+
 
 ## Módulos Planejados / Reservados (Evolução Futura)
 

@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca", "automacoes", "documentos", "fiscal"]
+  schemas  = ["platform", "eventos", "estorno", "financeiro", "crm", "marketing", "contabilidade", "sac", "suporte", "pedidos", "inventario", "pagamentos", "posevento", "inteligencia", "governanca", "automacoes", "documentos", "fiscal", "rh"]
 }
 
 
@@ -3942,3 +3942,272 @@ model FechamentoFiscal {
   @@map("fechamentos_fiscais")
   @@schema("fiscal")
 }
+
+// ============================================================================
+//  RECURSOS HUMANOS (RH DISK & DISK PONTO - EDDIE 11.39)
+//  Gestão de Colaboradores, Cargos, Departamentos, Escalas, Ponto Eletrônico
+//  (REP-P / Portaria 671 MTE), Geofencing de Sede e Arenas de Eventos,
+//  Banco de Horas, Apropriação de Mão de Obra por Evento (DRE) e Auditoria.
+// ============================================================================
+
+model DepartamentoRH {
+  id            String          @id @default(uuid()) @db.Uuid
+  tenantId      String          @db.Uuid
+  nome          String
+  sigla         String
+  centroCusto   String          // Ex: "CC-1010 Diretoria", "CC-2040 Operações Eventos"
+  ativo         Boolean         @default(true)
+  cargos        CargoRH[]
+  colaboradores ColaboradorRH[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([tenantId, ativo])
+  @@map("rh_departamentos")
+  @@schema("rh")
+}
+
+model CargoRH {
+  id                  String          @id @default(uuid()) @db.Uuid
+  tenantId            String          @db.Uuid
+  titulo              String
+  cbo                 String          // Classificação Brasileira de Ocupações
+  departamentoId      String          @db.Uuid
+  departamento        DepartamentoRH  @relation(fields: [departamentoId], references: [id])
+  nivel               String          @default("Pleno") // Júnior, Pleno, Sênior, Especialista, Coordenador
+  salarioBase         Decimal         @default(0.0) @db.Decimal(12, 2)
+  tipoContratoDefault String          @default("CLT") // CLT, PJ, TEMPORARIO, FREELANCER_EVENTO, ESTAGIO
+  ativo               Boolean         @default(true)
+  colaboradores       ColaboradorRH[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([tenantId, departamentoId])
+  @@map("rh_cargos")
+  @@schema("rh")
+}
+
+model LocalGeofenceRH {
+  id              String            @id @default(uuid()) @db.Uuid
+  tenantId        String            @db.Uuid
+  nome            String            // Ex: "Sede DiskIngressos Curitiba", "Arena da Baixada (Athletico)"
+  tipo            String            @default("SEDE") // SEDE, FILIAL, ARENA_EVENTO, LOCAL_EXTERNO
+  latitude        Float             // Ex: -25.4284
+  longitude       Float             // Ex: -49.2733
+  raioMetros      Int               @default(150) // 150m para sede, 300m para arena de evento
+  endereco        String
+  cidade          String            @default("Curitiba")
+  uf              String            @default("PR")
+  ativo           Boolean           @default(true)
+  eventoId        String?           @db.Uuid // Referência escalar ao módulo eventos
+  colaboradores   ColaboradorRH[]
+  registrosPonto  RegistroPontoRH[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([tenantId, tipo, ativo])
+  @@map("rh_locais_geofence")
+  @@schema("rh")
+}
+
+model ColaboradorRH {
+  id                String                   @id @default(uuid()) @db.Uuid
+  tenantId          String                   @db.Uuid
+  matricula         String                   // Ex: "DISK-00142"
+  nome              String
+  cpf               String
+  rg                String?
+  email             String
+  telefone          String
+  dataNascimento    DateTime?
+  fotoUrl           String?
+  tipoContrato      String                   @default("CLT") // CLT, PJ, TEMPORARIO, FREELANCER_EVENTO, ESTAGIO
+  status            String                   @default("ATIVO") // ATIVO, FERIAS, AFASTADO, DESLIGADO
+  dataAdmissao      DateTime                 @default(now())
+  dataDesligamento  DateTime?
+  cargoId           String                   @db.Uuid
+  cargo             CargoRH                  @relation(fields: [cargoId], references: [id])
+  departamentoId    String                   @db.Uuid
+  departamento      DepartamentoRH           @relation(fields: [departamentoId], references: [id])
+  salario           Decimal                  @default(0.0) @db.Decimal(12, 2)
+  valorDiariaEvento Decimal                  @default(0.0) @db.Decimal(12, 2)
+  banco             String?
+  agencia           String?
+  conta             String?
+  tipoChavePix      String?
+  chavePix          String?
+  geofencePadraoId  String?                  @db.Uuid
+  geofencePadrao    LocalGeofenceRH?         @relation(fields: [geofencePadraoId], references: [id])
+
+  registrosPonto    RegistroPontoRH[]
+  ajustesPonto      SolicitacaoAjustePontoRH[]
+  escalas           EscalaColaboradorRH[]
+  bancosHoras       BancoHorasRH[]
+  custosEventos     CustoMaoDeObraEventoRH[]
+  auditorias        RHAuditLogRH[]           @relation("ColaboradorAfetado")
+
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  @@unique([tenantId, matricula])
+  @@unique([tenantId, cpf])
+  @@unique([tenantId, email])
+  @@index([tenantId, status])
+  @@map("rh_colaboradores")
+  @@schema("rh")
+}
+
+model EscalaTrabalhoRH {
+  id                      String                @id @default(uuid()) @db.Uuid
+  tenantId                String                @db.Uuid
+  nome                    String                // Ex: "Comercial 44h (Seg-Sex)", "Operação Show Noturno"
+  regime                  String                @default("SEMANAL_5X2") // SEMANAL_5X2, SEMANAL_6X1, ESCALA_12X36, EVENTO_PONTUAL
+  cargaHorariaSemanal     Int                   @default(44)
+  toleranciaMinutos       Int                   @default(10)
+  horarioEntrada          String                @default("08:00")
+  horarioIntervaloInicio  String                @default("12:00")
+  horarioIntervaloFim     String                @default("13:00")
+  horarioSaida            String                @default("17:48")
+  ativo                   Boolean               @default(true)
+  escalasColaboradores    EscalaColaboradorRH[]
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  @@index([tenantId, ativo])
+  @@map("rh_escalas_trabalho")
+  @@schema("rh")
+}
+
+model EscalaColaboradorRH {
+  id            String           @id @default(uuid()) @db.Uuid
+  tenantId      String           @db.Uuid
+  colaboradorId String           @db.Uuid
+  colaborador   ColaboradorRH    @relation(fields: [colaboradorId], references: [id])
+  escalaId      String           @db.Uuid
+  escala        EscalaTrabalhoRH @relation(fields: [escalaId], references: [id])
+  dataInicio    DateTime
+  dataFim       DateTime?
+  eventoId      String?          @db.Uuid // Referência escalar ao módulo eventos
+  createdAt     DateTime         @default(now())
+
+  @@index([tenantId, colaboradorId, dataInicio])
+  @@map("rh_escalas_colaboradores")
+  @@schema("rh")
+}
+
+model RegistroPontoRH {
+  id                String           @id @default(uuid()) @db.Uuid
+  tenantId          String           @db.Uuid
+  nsr               Int              // Número Sequencial de Registro (Portaria 671 MTE)
+  colaboradorId     String           @db.Uuid
+  colaborador       ColaboradorRH    @relation(fields: [colaboradorId], references: [id])
+  tipo              String           // ENTRADA, INTERVALO_INICIO, INTERVALO_FIM, SAIDA
+  dataHoraMarcacao  DateTime
+  dataHoraServidor  DateTime         @default(now())
+  latitude          Float?
+  longitude         Float?
+  precisaoMetros    Float?
+  geofenceId        String?          @db.Uuid
+  geofence          LocalGeofenceRH? @relation(fields: [geofenceId], references: [id])
+  dentroGeofence    Boolean          @default(true)
+  distanciaGeofence Float?           // Metros de distância calculados via Haversine
+  modoCaptura       String           @default("APP_ONLINE") // APP_ONLINE, APP_OFFLINE_SYNC, WEB_ADMIN
+  hashIntegridade   String           // SHA-256 (NSR + Colaborador + DataHora + Lat + Lng)
+  comprovanteNsr    String           // Código de autenticação visual
+  ipOrigem          String?
+  dispositivoInfo   String?          // Modelo Android, OS, IMEI virtual
+  uuidDispositivo   String?          // ID local idempotente gerado pelo APK
+  sincronizado      Boolean          @default(true)
+  sincronizadoEm    DateTime?
+  createdAt         DateTime         @default(now())
+
+  @@unique([tenantId, nsr])
+  @@index([tenantId, colaboradorId, dataHoraMarcacao])
+  @@map("rh_registros_ponto")
+  @@schema("rh")
+}
+
+model SolicitacaoAjustePontoRH {
+  id             String        @id @default(uuid()) @db.Uuid
+  tenantId       String        @db.Uuid
+  colaboradorId  String        @db.Uuid
+  colaborador    ColaboradorRH @relation(fields: [colaboradorId], references: [id])
+  dataPonto      DateTime
+  tipoAjuste     String        // ENTRADA, INTERVALO_INICIO, INTERVALO_FIM, SAIDA
+  horarioCorreto String        // "08:00"
+  motivo         String        // "ESQUECIMENTO", "PROBLEMA_TECNICO", "SERVICO_EXTERNO", "ATESTADO"
+  justificativa  String        @db.Text
+  comprovanteUrl String?
+  status         String        @default("PENDENTE") // PENDENTE, APROVADO, REJEITADO
+  analisadoPorId String?       @db.Uuid
+  analisadoEm    DateTime?
+  parecerRH      String?       @db.Text
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([tenantId, status])
+  @@map("rh_solicitacoes_ajuste_ponto")
+  @@schema("rh")
+}
+
+model BancoHorasRH {
+  id                   String        @id @default(uuid()) @db.Uuid
+  tenantId             String        @db.Uuid
+  colaboradorId        String        @db.Uuid
+  colaborador          ColaboradorRH @relation(fields: [colaboradorId], references: [id])
+  mesAno               String        // "2026-10"
+  saldoMinutosAnterior Int           @default(0)
+  creditosMinutos      Int           @default(0) // Horas extras trabalhadas
+  debitosMinutos       Int           @default(0) // Atrasos, faltas
+  saldoMinutosAtual    Int           @default(0)
+  fechado              Boolean       @default(false)
+  updatedAt            DateTime      @updatedAt
+
+  @@unique([tenantId, colaboradorId, mesAno])
+  @@map("rh_bancos_horas")
+  @@schema("rh")
+}
+
+model CustoMaoDeObraEventoRH {
+  id                 String        @id @default(uuid()) @db.Uuid
+  tenantId           String        @db.Uuid
+  eventoId           String        @db.Uuid // Referência escalar ao módulo eventos
+  colaboradorId      String        @db.Uuid
+  colaborador        ColaboradorRH @relation(fields: [colaboradorId], references: [id])
+  cargoFuncao        String        // "Coordenador de Bilheteria", "Operador de Caixa", "Fiscal"
+  tipoContratacao    String        // CLT, PJ, TEMPORARIO, FREELANCER_EVENTO, ESTAGIO
+  valorDiaria        Decimal       @default(0.0) @db.Decimal(12, 2)
+  horasTrabalhadas   Decimal       @default(0.0) @db.Decimal(6, 2)
+  valorHorasExtras   Decimal       @default(0.0) @db.Decimal(12, 2)
+  auxilioAlimentacao Decimal       @default(0.0) @db.Decimal(12, 2)
+  auxilioTransporte  Decimal       @default(0.0) @db.Decimal(12, 2)
+  valorTotal         Decimal       @default(0.0) @db.Decimal(12, 2)
+  statusPagamento    String        @default("PREVISTO") // PREVISTO, AUTORIZADO_RH, ENVIADO_TESOURARIA, PAGO_PIX
+  chavePixDestino    String?
+  lotePagamentoId    String?       @db.Uuid // Referência escalar ao módulo tesouraria
+  pagoEm             DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([tenantId, eventoId])
+  @@map("rh_custos_mao_de_obra_evento")
+  @@schema("rh")
+}
+
+model RHAuditLogRH {
+  id                   String         @id @default(uuid()) @db.Uuid
+  tenantId             String         @db.Uuid
+  usuarioId            String?        @db.Uuid
+  colaboradorAfetadoId String?        @db.Uuid
+  colaboradorAfetado   ColaboradorRH? @relation("ColaboradorAfetado", fields: [colaboradorAfetadoId], references: [id])
+  acao                 String         // CADASTRO_COLABORADOR, ALTERACAO_SALARIAL, REGISTRO_PONTO, etc.
+  entidade             String         // Colaborador, RegistroPonto, Folha, Geofence
+  detalhes             String         @db.Text
+  ip                   String?
+  createdAt            DateTime       @default(now())
+
+  @@index([tenantId, acao])
+  @@map("rh_audit_logs")
+  @@schema("rh")
+}
+

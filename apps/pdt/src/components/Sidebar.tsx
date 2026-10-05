@@ -89,6 +89,14 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
+    label: 'Recursos Humanos',
+    producerLabel: 'Equipes & Escalas',
+    href: '/rh',
+    icon: Users,
+    badge: 'RH DISK',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
     label: 'Financeiro Geral',
     href: '/financeiro',
     icon: Wallet,
