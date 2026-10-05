@@ -142,8 +142,19 @@ export function Header() {
         </div>
       </div>
 
-      {/* Lado Direito: Notificações, Atalho Usuários e Perfil */}
+      {/* Lado Direito: Atalho RH, Notificações, Atalho Usuários e Perfil */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <Link
+          href="/rh"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition shadow-sm"
+          title="Recursos Humanos & Disk Ponto (Portaria 671 MTE)"
+        >
+          <Users size={14} className="text-emerald-400 shrink-0" />
+          <span className="hidden sm:inline font-bold">
+            {isAdmin ? 'RH & Ponto' : 'Equipes & Escalas'}
+          </span>
+        </Link>
+
         <Link
           href="/usuarios"
           className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition"

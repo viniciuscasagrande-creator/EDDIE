@@ -22,6 +22,7 @@ export function BottomNav() {
 
   const isHomeActive = pathname === '/';
   const isEventsActive = pathname.startsWith('/eventos');
+  const isRhActive = pathname.startsWith('/rh');
   const isOperacaoActive = pathname.startsWith('/operacao');
   const isExtratoActive = pathname.startsWith('/financeiro/portal-produtor');
   const isUsersActive = pathname.startsWith('/usuarios');
@@ -58,7 +59,20 @@ export function BottomNav() {
           <span className="truncate max-w-[64px]">{isAdmin ? 'Eventos' : 'Meus Shows'}</span>
         </Link>
 
-        {/* 3. Operação (Admin) ou Extrato (Produtor) */}
+        {/* 3. Recursos Humanos / Equipes */}
+        <Link
+          href="/rh"
+          className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-lg text-[10px] font-medium transition ${
+            isRhActive
+              ? 'text-emerald-400 font-bold bg-emerald-500/10'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Users size={18} className="mb-0.5" />
+          <span className="truncate max-w-[64px]">{isAdmin ? 'RH Ponto' : 'Equipes'}</span>
+        </Link>
+
+        {/* 4. Operação (Admin) ou Extrato (Produtor) */}
         {isAdmin ? (
           <Link
             href="/operacao"
@@ -84,19 +98,6 @@ export function BottomNav() {
             <span className="truncate max-w-[64px]">Extrato</span>
           </Link>
         )}
-
-        {/* 4. Usuários / Equipe */}
-        <Link
-          href="/usuarios"
-          className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-lg text-[10px] font-medium transition ${
-            isUsersActive
-              ? 'text-emerald-400 font-bold bg-emerald-500/10'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Users size={18} className="mb-0.5" />
-          <span className="truncate max-w-[64px]">{isAdmin ? 'Usuários' : 'Equipe'}</span>
-        </Link>
 
         {/* 5. Menu Hambúrguer (Drawer Completo) */}
         <button

@@ -53,6 +53,14 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
+    label: 'Recursos Humanos',
+    producerLabel: 'RH & Equipes',
+    href: '/rh',
+    icon: Users,
+    badge: 'RH DISK',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
     label: 'Central de Operações',
     href: '/operacao',
     icon: Activity,
@@ -86,14 +94,6 @@ const rawMenuItems: MenuItemConfig[] = [
     href: '/eventos',
     icon: Calendar,
     badge: null,
-    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
-  },
-  {
-    label: 'Recursos Humanos',
-    producerLabel: 'Equipes & Escalas',
-    href: '/rh',
-    icon: Users,
-    badge: 'RH DISK',
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
@@ -375,6 +375,70 @@ export function Sidebar() {
                   )}
                 </Link>
 
+                {/* Sub-itens do RH Disk (Visão Completa de Gestão) */}
+                {item.href === '/rh' && (
+                  <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
+                    <Link
+                      href="/rh?tab=visao"
+                      onClick={closeMobileMenu}
+                      className={`block px-2 py-1 text-[11px] rounded transition ${
+                        pathname === '/rh' ? 'text-emerald-400 font-bold bg-emerald-950/30' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      • Visão Geral RH
+                    </Link>
+                    <Link
+                      href="/rh?tab=colaboradores"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Colaboradores &amp; Cargos
+                    </Link>
+                    <Link
+                      href="/rh?tab=ponto"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Ponto &amp; Jornada (REP-P 671)
+                    </Link>
+                    <Link
+                      href="/rh?tab=geofences"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Cercas Virtuais (Geofences)
+                    </Link>
+                    <Link
+                      href="/rh?tab=equipes"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Equipes por Evento (DRE)
+                    </Link>
+                    <Link
+                      href="/rh?tab=folha"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Folha &amp; Benefícios
+                    </Link>
+                    <Link
+                      href="/rh?tab=aprovacoes"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Central de Aprovações (SoD)
+                    </Link>
+                    <Link
+                      href="/rh?tab=auditoria"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Auditoria &amp; LGPD
+                    </Link>
+                  </div>
+                )}
+
                 {/* Sub-itens da Operação Global (apenas para Admin) */}
                 {item.href === '/operacao' && isActive && isAdmin && (
                   <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
@@ -417,6 +481,29 @@ export function Sidebar() {
                     </div>
                     <div className="font-mono text-[11px] text-sky-300 bg-sky-950/50 px-2 py-1 rounded border border-sky-800/40 truncate">
                       {currentEventId}
+                    </div>
+                    <div className="pt-1 space-y-0.5">
+                      <Link
+                        href={`/eventos/${currentEventId}/operacao`}
+                        onClick={closeMobileMenu}
+                        className="block px-1.5 py-0.5 text-[11px] rounded text-slate-400 hover:text-emerald-400 hover:bg-slate-800/40 transition"
+                      >
+                        • Operação ao Vivo
+                      </Link>
+                      <Link
+                        href={`/eventos/${currentEventId}/rh`}
+                        onClick={closeMobileMenu}
+                        className="block px-1.5 py-0.5 text-[11px] rounded font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-slate-800/40 transition"
+                      >
+                        • Equipes &amp; RH do Evento
+                      </Link>
+                      <Link
+                        href={`/eventos/${currentEventId}/financeiro`}
+                        onClick={closeMobileMenu}
+                        className="block px-1.5 py-0.5 text-[11px] rounded text-slate-400 hover:text-emerald-400 hover:bg-slate-800/40 transition"
+                      >
+                        • Financeiro &amp; DRE
+                      </Link>
                     </div>
                   </div>
                 )}

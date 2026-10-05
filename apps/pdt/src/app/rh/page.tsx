@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Users,
   Clock,
@@ -336,11 +337,20 @@ const staffEventosMock: StaffEvento[] = [
   }
 ];
 
-export default function RecursosHumanosPage() {
+function RecursosHumanosContent() {
   const { evento } = useProducerEvent();
   const { currentUser } = useAuthSession();
 
-  const [activeTab, setActiveTab] = useState<'visao' | 'colaboradores' | 'ponto' | 'geofences' | 'equipes' | 'folha' | 'aprovacoes' | 'auditoria'>('visao');
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab') as 'visao' | 'colaboradores' | 'ponto' | 'geofences' | 'equipes' | 'folha' | 'aprovacoes' | 'auditoria' | null;
+
+  const [activeTab, setActiveTab] = useState<'visao' | 'colaboradores' | 'ponto' | 'geofences' | 'equipes' | 'folha' | 'aprovacoes' | 'auditoria'>(tabParam || 'visao');
+
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroDepto, setFiltroDepto] = useState('ALL');
   const [modalPontoAberto, setModalPontoAberto] = useState(false);
@@ -1289,3 +1299,12 @@ export default function RecursosHumanosPage() {
     </div>
   );
 }
+
+export default function RecursosHumanosPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Carregando Recursos Humanos &amp; Disk Ponto...</div>}>
+      <RecursosHumanosContent />
+    </Suspense>
+  );
+}
+

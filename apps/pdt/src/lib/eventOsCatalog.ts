@@ -51,6 +51,7 @@ export const EVENT_OS_NAV: EventOsNavItem[] = [
   { key: 'antifraude', slug: 'antifraude', label: 'Antifraude & Risco', shortLabel: 'Antifraude', icon: ShieldAlert, priority: true, category: 'seguranca' },
   { key: 'mapa', slug: 'mapa', label: 'Mapa & Setores', shortLabel: 'Mapa', icon: Map, priority: true, category: 'gestao' },
   { key: 'financeiro', slug: 'financeiro', label: 'Financeiro', shortLabel: 'Financeiro', icon: Wallet, priority: true, category: 'gestao' },
+  { key: 'rh', slug: 'rh', label: 'Equipes & RH', shortLabel: 'Equipes & RH', icon: Users, priority: true, category: 'operacao' },
 
 
   // Secundários (agrupados no menu "Mais" para evitar overflow horizontal)

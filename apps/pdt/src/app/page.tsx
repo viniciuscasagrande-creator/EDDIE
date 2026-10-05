@@ -517,6 +517,32 @@ export default function SuperDashboardPage() {
             </div>
           </Link>
 
+          {/* Recursos Humanos & Disk Ponto */}
+          <Link
+            href="/rh"
+            className="group bg-[#111827] hover:bg-[#162032] border border-slate-800 hover:border-emerald-500/50 rounded-xl p-5 transition-all space-y-3 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Users size={20} />
+              </div>
+              <ArrowUpRight size={18} className="text-slate-500 group-hover:text-emerald-400 transition" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white text-sm group-hover:text-emerald-400 transition">
+                  Recursos Humanos &amp; Ponto
+                </h3>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  RH DISK
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                Portaria 671 MTE (REP-P), geofencing, ponto no APK e apropriação de equipe no DRE.
+              </p>
+            </div>
+          </Link>
+
           {/* Financeiro */}
           <Link
             href="/financeiro"
