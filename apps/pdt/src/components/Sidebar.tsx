@@ -54,14 +54,6 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
-    label: 'Recursos Humanos',
-    producerLabel: 'RH & Equipes',
-    href: '/rh',
-    icon: Users,
-    badge: 'RH DISK',
-    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
-  },
-  {
     label: 'Central de Operações',
     href: '/operacao',
     icon: Activity,
@@ -103,6 +95,14 @@ const rawMenuItems: MenuItemConfig[] = [
     icon: Wallet,
     badge: 'Livro-Razão',
     scopes: ['DISKINGRESSOS'],
+  },
+  {
+    label: 'Recursos Humanos',
+    producerLabel: 'RH & Equipes',
+    href: '/rh',
+    icon: Users,
+    badge: 'RH DISK',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Tesouraria & Bancos',
@@ -255,31 +255,68 @@ export function Sidebar() {
   const activeEventId = eventMatch?.[1] || null;
   const currentEventId = activeEventId || eventoId || 'evento-operacao';
 
-  const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>({
-    '/rh': pathname.startsWith('/rh'),
-    '/operacao': pathname.startsWith('/operacao'),
-    '/eventos': pathname.startsWith('/eventos') || Boolean(activeEventId),
+  const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('sidebar_expanded_menus');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return {
+      '/rh': pathname.startsWith('/rh'),
+      '/operacao': pathname.startsWith('/operacao'),
+      '/eventos': pathname.startsWith('/eventos') || Boolean(activeEventId),
+    };
   });
 
   React.useEffect(() => {
     if (pathname.startsWith('/rh')) {
-      setExpandedMenus((prev) => ({ ...prev, '/rh': true }));
+      setExpandedMenus((prev) => {
+        if (prev['/rh']) return prev;
+        const next = { ...prev, '/rh': true };
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('sidebar_expanded_menus', JSON.stringify(next)); } catch (e) {}
+        }
+        return next;
+      });
     }
     if (pathname.startsWith('/operacao')) {
-      setExpandedMenus((prev) => ({ ...prev, '/operacao': true }));
+      setExpandedMenus((prev) => {
+        if (prev['/operacao']) return prev;
+        const next = { ...prev, '/operacao': true };
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('sidebar_expanded_menus', JSON.stringify(next)); } catch (e) {}
+        }
+        return next;
+      });
     }
     if (pathname.startsWith('/eventos') || activeEventId) {
-      setExpandedMenus((prev) => ({ ...prev, '/eventos': true }));
+      setExpandedMenus((prev) => {
+        if (prev['/eventos']) return prev;
+        const next = { ...prev, '/eventos': true };
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('sidebar_expanded_menus', JSON.stringify(next)); } catch (e) {}
+        }
+        return next;
+      });
     }
   }, [pathname, activeEventId]);
 
   const toggleMenu = (href: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setExpandedMenus((prev) => ({
-      ...prev,
-      [href]: !prev[href],
-    }));
+    setExpandedMenus((prev) => {
+      const next = {
+        ...prev,
+        [href]: !prev[href],
+      };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('sidebar_expanded_menus', JSON.stringify(next));
+        } catch (e) {}
+      }
+      return next;
+    });
   };
 
   // Filtra itens com base na visão atual (Admin DiskIngressos vs Produtor)
@@ -453,7 +490,7 @@ export function Sidebar() {
                   </Link>
                 )}
 
-                {/* Sub-itens do RH Disk (Expansível / Accordion com Chevron) */}
+                {/* Sub-itens do RH Disk V2.1 (Menu Hierárquico dos 10 Grupos Oficiais) */}
                 {item.href === '/rh' && isExpanded && (
                   <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
                     <Link
@@ -466,53 +503,67 @@ export function Sidebar() {
                       • Visão Geral RH
                     </Link>
                     <Link
-                      href="/rh?tab=colaboradores"
+                      href="/rh?tab=aprovacoes"
                       onClick={closeMobileMenu}
                       className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
                     >
-                      • Colaboradores &amp; Cargos
+                      • Central de Aprovações
+                    </Link>
+                    <Link
+                      href="/rh?tab=pessoas"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Pessoas e Estrutura
+                    </Link>
+                    <Link
+                      href="/rh?tab=dp"
+                      onClick={closeMobileMenu}
+                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
+                    >
+                      • Departamento Pessoal
                     </Link>
                     <Link
                       href="/rh?tab=ponto"
                       onClick={closeMobileMenu}
                       className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
                     >
-                      • Ponto &amp; Jornada (REP-P 671)
+                      • Ponto e Jornada
                     </Link>
                     <Link
-                      href="/rh?tab=geofences"
+                      href="/rh?tab=talentos"
                       onClick={closeMobileMenu}
                       className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
                     >
-                      • Cercas Virtuais (Geofences)
+                      • Talentos e Desenvolvimento
                     </Link>
                     <Link
-                      href="/rh?tab=equipes"
+                      href="/rh?tab=seguranca"
                       onClick={closeMobileMenu}
                       className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
                     >
-                      • Equipes por Evento (DRE)
+                      • Saúde e Segurança
                     </Link>
                     <Link
-                      href="/rh?tab=folha"
+                      href="/rh?tab=eventos"
                       onClick={closeMobileMenu}
                       className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
                     >
-                      • Folha &amp; Benefícios
+                      • Eventos e Custos
                     </Link>
                     <Link
-                      href="/rh?tab=aprovacoes"
+                      href="/rh?tab=portais"
                       onClick={closeMobileMenu}
                       className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
                     >
-                      • Central de Aprovações (SoD)
+                      • Portais e Gestão
                     </Link>
                     <Link
-                      href="/rh?tab=auditoria"
+                      href="/rh?tab=administracao"
                       onClick={closeMobileMenu}
                       className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
                     >
-                      • Auditoria &amp; LGPD
+                      • Administração do RH
                     </Link>
                   </div>
                 )}
