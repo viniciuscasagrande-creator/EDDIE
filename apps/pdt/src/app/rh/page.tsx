@@ -30,10 +30,12 @@ import {
   HeartPulse,
   BadgeCheck,
   ExternalLink,
-  ShieldAlert
+  ShieldAlert,
+  X,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 import { useAuthSession } from '../../components/AuthSessionContext';
+import { ModuleNavigation, type ModuleNavigationItem } from '../../components/navigation/ModuleNavigation';
 
 // --- MOCK DATA ---
 interface Colaborador {
@@ -337,6 +339,42 @@ const staffEventosMock: StaffEvento[] = [
   }
 ];
 
+interface SolicitacaoAprovacao {
+  id: string;
+  tipo: string;
+  tipoBadge: string;
+  titulo: string;
+  detalhe: string;
+  status: 'PENDENTE' | 'APROVADO' | 'REJEITADO';
+}
+
+const solicitacoesIniciais: SolicitacaoAprovacao[] = [
+  {
+    id: 'sol-01',
+    tipo: 'Ajuste de Ponto',
+    tipoBadge: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    titulo: 'Mariana Duarte • 02/10/2026',
+    detalhe: 'Esquecimento de registro de saída • Horário correto: 18:05 • Justificativa: Atendimento de emergência',
+    status: 'PENDENTE',
+  },
+  {
+    id: 'sol-02',
+    tipo: 'Solicitação de Férias',
+    tipoBadge: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+    titulo: 'Lucas Ferreira dos Santos • 20 dias + 10 dias abono',
+    detalhe: 'Período: 15/11/2026 a 04/12/2026 • Saldo aquisitivo: 30 dias • Gestor direto aprovou',
+    status: 'PENDENTE',
+  },
+  {
+    id: 'sol-03',
+    tipo: 'Reembolso de Despesa',
+    tipoBadge: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    titulo: 'Carlos Mendes • R$ 340,00',
+    detalhe: 'Transporte e alimentação em operação de bilheteria • 2 cupons fiscais anexos',
+    status: 'PENDENTE',
+  },
+];
+
 function RecursosHumanosContent() {
   const { evento } = useProducerEvent();
   const { currentUser } = useAuthSession();
@@ -351,13 +389,59 @@ function RecursosHumanosContent() {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
+
+  // Estados principais
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>(colaboradoresIniciais);
+  const [registrosPonto, setRegistrosPonto] = useState<RegistroPontoSimulado[]>(registrosPontoMock);
+  const [geofences, setGeofences] = useState<GeofenceItem[]>(geofencesMock);
+  const [staffEventos, setStaffEventos] = useState<StaffEvento[]>(staffEventosMock);
+  const [solicitacoes, setSolicitacoes] = useState<SolicitacaoAprovacao[]>(solicitacoesIniciais);
+
+  // Estados de busca e filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroDepto, setFiltroDepto] = useState('ALL');
+
+  // Estados dos Modais
   const [modalPontoAberto, setModalPontoAberto] = useState(false);
+  const [pontoColaboradorId, setPontoColaboradorId] = useState('colab-001');
   const [sucessoPonto, setSucessoPonto] = useState<string | null>(null);
 
+  const [modalNovoColaborador, setModalNovoColaborador] = useState(false);
+  const [novoColabForm, setNovoColabForm] = useState({
+    nome: '',
+    cargo: '',
+    departamento: 'Staff de Eventos',
+    tipoContrato: 'CLT' as 'CLT' | 'PJ' | 'TEMPORARIO' | 'ESTAGIO',
+    salario: '',
+    geofenceAutorizada: 'Ligga Arena (Arena da Baixada)',
+    email: '',
+  });
+
+  const [modalNovaGeofence, setModalNovaGeofence] = useState(false);
+  const [novaGeofenceForm, setNovaGeofenceForm] = useState({
+    nome: '',
+    endereco: '',
+    tipo: 'ARENA' as 'SEDE' | 'ARENA' | 'TEATRO' | 'ESPACO_ABERTO',
+    raioMetros: '200',
+    eventoVinculado: 'Festival DiskIngressos Live 2026',
+  });
+
+  const [colaboradorDossie, setColaboradorDossie] = useState<Colaborador | null>(null);
+  const [modalRemessaPix, setModalRemessaPix] = useState(false);
+  const [remessaPixStatus, setRemessaPixStatus] = useState<'PENDENTE' | 'ENVIADO'>('PENDENTE');
+  const [modalExportarDre, setModalExportarDre] = useState(false);
+  const [dreExportado, setDreExportado] = useState(false);
+  const [toastMensagem, setToastMensagem] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMensagem(msg);
+    setTimeout(() => {
+      setToastMensagem(null);
+    }, 4000);
+  };
+
   // Filtro de colaboradores
-  const colaboradoresFiltrados = colaboradoresIniciais.filter(c => {
+  const colaboradoresFiltrados = colaboradores.filter(c => {
     const matchesSearch = c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           c.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           c.matricula.toLowerCase().includes(searchTerm.toLowerCase());
@@ -371,14 +455,132 @@ function RecursosHumanosContent() {
   };
 
   const handleConfirmarPonto = (tipo: 'ENTRADA' | 'INTERVALO_INICIO' | 'INTERVALO_FIM' | 'SAIDA') => {
-    const nsr = 10456 + Math.floor(Math.random() * 100);
-    const hash = 'a9f2' + Math.random().toString(16).substring(2, 10) + '...portaria671';
+    const colab = colaboradores.find(c => c.id === pontoColaboradorId) || colaboradores[0]!;
+    const nsr = 10456 + Math.floor(Math.random() * 500);
+    const hash = 'a9f2' + Math.random().toString(16).substring(2, 10) + '...' + colab.matricula.toLowerCase();
+    const now = new Date();
+    const dataHoraStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
+
+    const novoRegistro: RegistroPontoSimulado = {
+      id: `pnt-${Date.now()}`,
+      nsr,
+      colaboradorNome: colab.nome,
+      cargo: colab.cargo,
+      tipo,
+      dataHora: dataHoraStr,
+      geofenceNome: colab.geofenceAutorizada || 'Sede DiskIngressos Curitiba',
+      precisaoMetros: 10,
+      distanciaMetros: 25,
+      dentroGeofence: true,
+      modo: 'REP-P Online (Disk Ponto APK)',
+      hashIntegridade: hash,
+    };
+
+    setRegistrosPonto(prev => [novoRegistro, ...prev]);
     setSucessoPonto(`Ponto registrado com sucesso! NSR: ${nsr} • Hash SHA-256: ${hash}`);
+    showToast(`Batida de ponto (${tipo}) registrada para ${colab.nome} com sucesso!`);
     setTimeout(() => {
       setModalPontoAberto(false);
       setSucessoPonto(null);
-    }, 2500);
+    }, 2200);
   };
+
+  const handleSalvarNovoColaborador = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!novoColabForm.nome.trim() || !novoColabForm.cargo.trim()) {
+      alert('Por favor, informe o nome completo e cargo do colaborador.');
+      return;
+    }
+
+    const initials = novoColabForm.nome
+      .trim()
+      .split(' ')
+      .map(n => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'DK';
+
+    const novoColab: Colaborador = {
+      id: `colab-${Date.now()}`,
+      matricula: `DK-${Math.floor(1000 + Math.random() * 9000)}`,
+      nome: novoColabForm.nome.trim(),
+      cargo: novoColabForm.cargo.trim(),
+      departamento: novoColabForm.departamento,
+      tipoContrato: novoColabForm.tipoContrato,
+      salario: parseFloat(novoColabForm.salario) || 3200.0,
+      admissao: new Date().toLocaleDateString('pt-BR'),
+      status: 'ATIVO',
+      geofenceAutorizada: novoColabForm.geofenceAutorizada,
+      avatar: initials,
+      email: novoColabForm.email || `${novoColabForm.nome.toLowerCase().replace(/\s+/g, '.')}@diskingressos.com.br`,
+      bancoHoras: '00h 00m',
+      asoValidade: '05/10/2027',
+    };
+
+    setColaboradores(prev => [novoColab, ...prev]);
+    setModalNovoColaborador(false);
+    setNovoColabForm({
+      nome: '',
+      cargo: '',
+      departamento: 'Staff de Eventos',
+      tipoContrato: 'CLT',
+      salario: '',
+      geofenceAutorizada: 'Ligga Arena (Arena da Baixada)',
+      email: '',
+    });
+    showToast(`Colaborador ${novoColab.nome} (${novoColab.matricula}) cadastrado com sucesso!`);
+  };
+
+  const handleSalvarNovaGeofence = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!novaGeofenceForm.nome.trim()) {
+      alert('Por favor, informe o nome do local da cerca.');
+      return;
+    }
+
+    const nova: GeofenceItem = {
+      id: `geo-${Date.now()}`,
+      nome: novaGeofenceForm.nome.trim(),
+      endereco: novaGeofenceForm.endereco.trim() || 'Curitiba, PR',
+      tipo: novaGeofenceForm.tipo,
+      latitude: -25.4284 + (Math.random() - 0.5) * 0.05,
+      longitude: -49.2733 + (Math.random() - 0.5) * 0.05,
+      raioMetros: parseInt(novaGeofenceForm.raioMetros) || 200,
+      colaboradoresAtivos: 0,
+      eventoVinculado: novaGeofenceForm.eventoVinculado,
+    };
+
+    setGeofences(prev => [nova, ...prev]);
+    setModalNovaGeofence(false);
+    setNovaGeofenceForm({
+      nome: '',
+      endereco: '',
+      tipo: 'ARENA',
+      raioMetros: '200',
+      eventoVinculado: 'Festival DiskIngressos Live 2026',
+    });
+    showToast(`Cerca virtual "${nova.nome}" criada com sucesso!`);
+  };
+
+  const handleAprovarSolicitacao = (id: string, status: 'APROVADO' | 'REJEITADO') => {
+    setSolicitacoes(prev =>
+      prev.map(s => (s.id === id ? { ...s, status } : s))
+    );
+    showToast(status === 'APROVADO' ? 'Solicitação aprovada e homologada com sucesso!' : 'Solicitação rejeitada com justificativa.');
+  };
+
+  const pendentesAprovacao = solicitacoes.filter(s => s.status === 'PENDENTE').length;
+
+  const navItems: ModuleNavigationItem[] = [
+    { id: 'visao', label: 'Visão Geral RH', icon: <Award className="w-4 h-4" /> },
+    { id: 'colaboradores', label: 'Colaboradores & Cargos', icon: <Users className="w-4 h-4" />, badge: colaboradores.length },
+    { id: 'ponto', label: 'Ponto & Jornada (REP-P)', icon: <Clock className="w-4 h-4" />, badge: `${registrosPonto.length} Batidas` },
+    { id: 'geofences', label: 'Cercas Virtuais (Geofences)', icon: <MapPin className="w-4 h-4" />, badge: geofences.length },
+    { id: 'equipes', label: 'Equipes por Evento (DRE)', icon: <Briefcase className="w-4 h-4" />, badge: staffEventos.length },
+    { id: 'folha', label: 'Folha & Benefícios', icon: <DollarSign className="w-4 h-4" /> },
+    { id: 'aprovacoes', label: 'Central de Aprovações (SoD)', icon: <CheckCircle2 className="w-4 h-4" />, badge: pendentesAprovacao > 0 ? `${pendentesAprovacao} Pendentes` : '0' },
+    { id: 'auditoria', label: 'Auditoria & LGPD', icon: <ShieldCheck className="w-4 h-4" />, badge: 'SHA-256' },
+  ];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
@@ -488,104 +690,20 @@ function RecursosHumanosContent() {
         </div>
       </div>
 
-      {/* 3. TABS NAVIGATION */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('visao')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'visao'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Award className="w-4 h-4" />
-          <span>Visão Geral RH</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('colaboradores')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'colaboradores'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>Colaboradores &amp; Cargos</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('ponto')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'ponto'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Clock className="w-4 h-4" />
-          <span>Ponto &amp; Jornada (REP-P)</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('geofences')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'geofences'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <MapPin className="w-4 h-4" />
-          <span>Cercas Virtuais (Geofences)</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('equipes')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'equipes'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Briefcase className="w-4 h-4" />
-          <span>Equipes por Evento (DRE)</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('folha')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'folha'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <DollarSign className="w-4 h-4" />
-          <span>Folha &amp; Benefícios</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('aprovacoes')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'aprovacoes'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          <span>Aprovações RH (3)</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('auditoria')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-            activeTab === 'auditoria'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <ShieldCheck className="w-4 h-4" />
-          <span>Auditoria &amp; LGPD</span>
-        </button>
-      </div>
+      {/* 3. NAVEGAÇÃO RESPONSIVA DO MÓDULO (IGUAL AOS DEMAIS MÓDULOS DO EDDIE) */}
+      <ModuleNavigation
+        items={navItems}
+        activeItem={activeTab}
+        onSelect={(tabId) => {
+          setActiveTab(tabId as any);
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', tabId);
+            window.history.replaceState({}, '', url.toString());
+          }
+        }}
+        ariaLabel="Navegação de Recursos Humanos e Ponto"
+      />
 
       {/* 4. TAB CONTENTS */}
 
@@ -754,8 +872,9 @@ function RecursosHumanosContent() {
               </select>
 
               <button
-                onClick={() => alert('Formulário de Admissão Digital aberto: insira os dados do colaborador.')}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+                type="button"
+                onClick={() => setModalNovoColaborador(true)}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Novo Colaborador</span>
@@ -829,8 +948,9 @@ function RecursosHumanosContent() {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <button
-                          onClick={() => alert(`Dossiê do Colaborador: ${c.nome}\nMatrícula: ${c.matricula}\nContrato com assinatura digital SHA-256 ativo.`)}
-                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition"
+                          type="button"
+                          onClick={() => setColaboradorDossie(c)}
+                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
                         >
                           Dossiê
                         </button>
@@ -883,7 +1003,7 @@ function RecursosHumanosContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
-                  {registrosPontoMock.map((r) => (
+                  {registrosPonto.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-800/40 transition">
                       <td className="py-3 px-4 font-mono font-bold text-sky-400">
                         #{r.nsr}
@@ -938,8 +1058,9 @@ function RecursosHumanosContent() {
             </div>
 
             <button
-              onClick={() => alert('Modal para cadastrar novo local de evento ou sede com geofence.')}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1.5"
+              type="button"
+              onClick={() => setModalNovaGeofence(true)}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Nova Cerca Virtual</span>
@@ -947,7 +1068,7 @@ function RecursosHumanosContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {geofencesMock.map((g) => (
+            {geofences.map((g) => (
               <div key={g.id} className="bg-[#111827] rounded-xl border border-slate-800 p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -991,16 +1112,17 @@ function RecursosHumanosContent() {
             </div>
 
             <button
-              onClick={() => alert('Exportando relatório de custos de pessoal por evento para o Financeiro/DRE...')}
-              className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition flex items-center gap-1.5"
+              type="button"
+              onClick={() => setModalExportarDre(true)}
+              className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <DollarSign className="w-4 h-4" />
-              <span>Exportar para DRE</span>
+              <span>{dreExportado ? 'DRE Apropriado ✓' : 'Exportar para DRE'}</span>
             </button>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            {staffEventosMock.map((stf) => (
+            {staffEventos.map((stf) => (
               <div key={stf.id} className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                   <div>
@@ -1046,23 +1168,31 @@ function RecursosHumanosContent() {
       {/* TAB 6: FOLHA & BENEFÍCIOS */}
       {activeTab === 'folha' && (
         <div className="space-y-4">
-          <div className="bg-[#111827] rounded-xl border border-slate-800 p-5 flex items-center justify-between">
+          <div className="bg-[#111827] rounded-xl border border-slate-800 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-emerald-400" />
-                <span>Fechamento da Folha Mensal &amp; Benefícios</span>
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-emerald-400" />
+                  <span>Fechamento da Folha Mensal &amp; Benefícios</span>
+                </h3>
+                {remessaPixStatus === 'ENVIADO' && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    LOTE PIX ENVIADO À TESOURARIA
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400 mt-0.5">
                 Provisões de 13º e férias, teto legal de 6% para Vale-Transporte e integração direta com a Fila PIX da Tesouraria.
               </p>
             </div>
 
             <button
-              onClick={() => alert('Remessa de Pagamento enviada para aprovação na Tesouraria (Fila PIX em lote)!')}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
+              type="button"
+              onClick={() => setModalRemessaPix(true)}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
             >
               <Send className="w-4 h-4" />
-              <span>Gerar Remessa PIX Tesouraria</span>
+              <span>{remessaPixStatus === 'ENVIADO' ? 'Reenviar Lote PIX' : 'Gerar Remessa PIX Tesouraria'}</span>
             </button>
           </div>
 
@@ -1102,65 +1232,58 @@ function RecursosHumanosContent() {
           </div>
 
           <div className="space-y-3">
-            <div className="bg-[#111827] rounded-xl border border-slate-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                    Ajuste de Ponto
-                  </span>
-                  <span className="text-xs font-bold text-white">Mariana Duarte &bull; 02/10/2026</span>
+            {solicitacoes.map((sol) => (
+              <div
+                key={sol.id}
+                className="bg-[#111827] rounded-xl border border-slate-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${sol.tipoBadge}`}>
+                      {sol.tipo}
+                    </span>
+                    <span className="text-xs font-bold text-white">{sol.titulo}</span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        sol.status === 'APROVADO'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : sol.status === 'REJEITADO'
+                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      }`}
+                    >
+                      {sol.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{sol.detalhe}</p>
                 </div>
-                <p className="text-xs text-slate-400">Esquecimento de registro de saída &bull; Horário correto: 18:05 &bull; Justificativa: Atendimento de emergência</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => alert('Ajuste de ponto aprovado! O espelho foi recalculado com NSR de homologação.')}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition"
-                >
-                  Aprovar Ajuste
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-[#111827] rounded-xl border border-slate-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">
-                    Solicitação de Férias
-                  </span>
-                  <span className="text-xs font-bold text-white">Lucas Ferreira dos Santos &bull; 20 dias + 10 dias abono</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  {sol.status === 'PENDENTE' ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleAprovarSolicitacao(sol.id, 'APROVADO')}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1 shadow-sm cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Aprovar</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAprovarSolicitacao(sol.id, 'REJEITADO')}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-600/30 hover:border-rose-500/40 text-slate-300 hover:text-rose-300 text-xs font-medium border border-slate-700 transition cursor-pointer"
+                      >
+                        Rejeitar
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-xs text-slate-400 italic">
+                      {sol.status === 'APROVADO' ? '✓ Homologado no sistema' : '✕ Rejeitado com justificativa'}
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs text-slate-400">Período: 15/11/2026 a 04/12/2026 &bull; Saldo aquisitivo: 30 dias &bull; Gestor direto aprovou</p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => alert('Férias homologadas! Programação enviada ao Financeiro para pagamento de 1/3 legal.')}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition"
-                >
-                  Homologar Férias
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-[#111827] rounded-xl border border-slate-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
-                    Reembolso de Despesa
-                  </span>
-                  <span className="text-xs font-bold text-white">Carlos Mendes &bull; R$ 340,00</span>
-                </div>
-                <p className="text-xs text-slate-400">Transporte e alimentação em operação de bilheteria &bull; 2 cupons fiscais anexos</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => alert('Reembolso validado! Encaminhado para a esteira de pagamento da Tesouraria.')}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition"
-                >
-                  Autorizar Reembolso
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       )}
@@ -1209,90 +1332,568 @@ function RecursosHumanosContent() {
         </div>
       )}
 
-      {/* MODAL SIMULADOR DISK PONTO (PORTARIA 671 MTE) */}
+      {/* ======================================================== */}
+      {/* MODAL 1: SIMULADOR DISK PONTO MOBILE (PORTARIA 671 MTE)  */}
+      {/* ======================================================== */}
       {modalPontoAberto && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111827] border border-emerald-500/30 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl relative">
+          <div className="bg-[#111827] border border-emerald-500/30 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-bold text-white text-base">Disk Ponto (Simulador APK)</h3>
+                <h3 className="font-bold text-white text-base">Disk Ponto (Simulador APK Nativo)</h3>
               </div>
               <button
+                type="button"
                 onClick={() => setModalPontoAberto(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
-            <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Colaborador:</span>
-                <strong className="text-white">Karine Santos (Supervisora RH)</strong>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Selecione o Colaborador:</label>
+                <select
+                  value={pontoColaboradorId}
+                  onChange={(e) => setPontoColaboradorId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none cursor-pointer"
+                >
+                  {colaboradores.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nome} — {c.cargo} ({c.matricula})
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Localização GPS:</span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>Sede Disk Curitiba (-25.4284, -49.2733)</span>
-                </span>
+
+              <div className="bg-slate-900 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Localização GPS:</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>-25.4284, -49.2733</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Cerca Autorizada:</span>
+                  <span className="text-white font-medium truncate max-w-[200px]">
+                    {colaboradores.find(c => c.id === pontoColaboradorId)?.geofenceAutorizada || 'Sede Disk Curitiba'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Precisão GPS:</span>
+                  <span className="text-emerald-400 font-bold">10 metros (Dentro do Raio ✓)</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Homologação MTE:</span>
+                  <span className="text-sky-400 font-bold">Portaria 671/2021 (REP-P Certificado)</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Precisão:</span>
-                <span className="text-emerald-400 font-bold">11 metros (Dentro do raio de 150m ✓)</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Status:</span>
-                <span className="text-sky-400 font-bold">Portaria 671 MTE REP-P Homologado</span>
-              </div>
+
+              {sucessoPonto ? (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center space-y-1">
+                  <div>✓ {sucessoPonto}</div>
+                  <div className="text-[11px] text-slate-400 font-normal">Sincronizado instantaneamente com o Espelho de Ponto &amp; DRE</div>
+                </div>
+              ) : (
+                <div className="space-y-2 pt-1">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Clique na Ação de Batida:</div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmarPonto('ENTRADA')}
+                      className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer"
+                    >
+                      <ArrowUpRight className="w-4 h-4" />
+                      <span>Entrada Turno</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmarPonto('INTERVALO_INICIO')}
+                      className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5 border border-slate-700 cursor-pointer"
+                    >
+                      <Clock className="w-4 h-4 text-amber-400" />
+                      <span>Início Intervalo</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmarPonto('INTERVALO_FIM')}
+                      className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5 border border-slate-700 cursor-pointer"
+                    >
+                      <Clock className="w-4 h-4 text-sky-400" />
+                      <span>Fim Intervalo</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmarPonto('SAIDA')}
+                      className="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-purple-600/20 cursor-pointer"
+                    >
+                      <ArrowUpRight className="w-4 h-4 rotate-90" />
+                      <span>Saída Turno</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {sucessoPonto ? (
-              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center space-y-1">
-                <div>✓ {sucessoPonto}</div>
-                <div className="text-[11px] text-slate-400 font-normal">Sincronizado instantaneamente com o Core RH &amp; Financeiro</div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleConfirmarPonto('ENTRADA')}
-                  className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex flex-col items-center gap-1 shadow-md shadow-emerald-600/20"
-                >
-                  <ArrowUpRight className="w-5 h-5" />
-                  <span>Entrada (08:00)</span>
-                </button>
-
-                <button
-                  onClick={() => handleConfirmarPonto('INTERVALO_INICIO')}
-                  className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition flex flex-col items-center gap-1"
-                >
-                  <Clock className="w-5 h-5 text-amber-400" />
-                  <span>Início Intervalo</span>
-                </button>
-
-                <button
-                  onClick={() => handleConfirmarPonto('INTERVALO_FIM')}
-                  className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition flex flex-col items-center gap-1"
-                >
-                  <Clock className="w-5 h-5 text-sky-400" />
-                  <span>Fim Intervalo</span>
-                </button>
-
-                <button
-                  onClick={() => handleConfirmarPonto('SAIDA')}
-                  className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition flex flex-col items-center gap-1 shadow-md shadow-purple-600/20"
-                >
-                  <ArrowUpRight className="w-5 h-5 rotate-90" />
-                  <span>Saída (18:00)</span>
-                </button>
-              </div>
-            )}
-
-            <div className="text-center text-[10px] text-slate-500">
-              Disk Ponto Mobile v2.2 &bull; Certificação Portaria 671 MTE &bull; Criptografia AES-256
+            <div className="text-center text-[10px] text-slate-500 pt-1 border-t border-slate-800">
+              Disk Ponto Mobile v2.4 &bull; Portaria 671 MTE &bull; Assinatura SHA-256 Imutável
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 2: ADMISSÃO DIGITAL / NOVO COLABORADOR            */}
+      {/* ======================================================== */}
+      {modalNovoColaborador && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-bold text-white text-base">Admissão Digital de Colaborador</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalNovoColaborador(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSalvarNovoColaborador} className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Nome Completo *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Amanda Silva Castro"
+                  value={novoColabForm.nome}
+                  onChange={(e) => setNovoColabForm({ ...novoColabForm, nome: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Cargo *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Operadora de Catraca"
+                    value={novoColabForm.cargo}
+                    onChange={(e) => setNovoColabForm({ ...novoColabForm, cargo: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Departamento</label>
+                  <select
+                    value={novoColabForm.departamento}
+                    onChange={(e) => setNovoColabForm({ ...novoColabForm, departamento: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
+                  >
+                    <option value="Staff de Eventos">Staff de Eventos</option>
+                    <option value="Atendimento & SAC">Atendimento &amp; SAC</option>
+                    <option value="Operação & NOC">Operação &amp; NOC</option>
+                    <option value="Tecnologia & Produto">Tecnologia &amp; Produto</option>
+                    <option value="Diretoria Executiva">Diretoria Executiva</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Tipo de Contrato</label>
+                  <select
+                    value={novoColabForm.tipoContrato}
+                    onChange={(e) => setNovoColabForm({ ...novoColabForm, tipoContrato: e.target.value as any })}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
+                  >
+                    <option value="CLT">CLT (Mensal)</option>
+                    <option value="PJ">PJ (Prestador)</option>
+                    <option value="TEMPORARIO">Temporário (Diária)</option>
+                    <option value="ESTAGIO">Estágio</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Salário Base / Diária (R$)</label>
+                  <input
+                    type="number"
+                    placeholder="Ex: 2800"
+                    value={novoColabForm.salario}
+                    onChange={(e) => setNovoColabForm({ ...novoColabForm, salario: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Cerca Virtual Autorizada (Geofence)</label>
+                <select
+                  value={novoColabForm.geofenceAutorizada}
+                  onChange={(e) => setNovoColabForm({ ...novoColabForm, geofenceAutorizada: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
+                >
+                  {geofences.map(g => (
+                    <option key={g.id} value={`${g.nome} (${g.raioMetros}m)`}>{g.nome} ({g.raioMetros}m)</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">E-mail Institucional</label>
+                <input
+                  type="email"
+                  placeholder="nome.sobrenome@diskingressos.com.br"
+                  value={novoColabForm.email}
+                  onChange={(e) => setNovoColabForm({ ...novoColabForm, email: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setModalNovoColaborador(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Concluir Admissão &amp; Emitir Contrato</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 3: NOVA CERCA VIRTUAL (GEOFENCE)                   */}
+      {/* ======================================================== */}
+      {modalNovaGeofence && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-bold text-white text-base">Nova Cerca Virtual (Geofence)</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalNovaGeofence(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSalvarNovaGeofence} className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Nome do Local / Arena *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Teatro Guaíra"
+                  value={novaGeofenceForm.nome}
+                  onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, nome: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Endereço Completo</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Rua XV de Novembro, 971 - Centro, Curitiba/PR"
+                  value={novaGeofenceForm.endereco}
+                  onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, endereco: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Tipo de Local</label>
+                  <select
+                    value={novaGeofenceForm.tipo}
+                    onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, tipo: e.target.value as any })}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
+                  >
+                    <option value="ARENA">Arena de Show</option>
+                    <option value="TEATRO">Teatro / Auditório</option>
+                    <option value="ESPACO_ABERTO">Espaço Aberto / Festival</option>
+                    <option value="SEDE">Sede Administrativa</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Raio de Tolerância (m)</label>
+                  <input
+                    type="number"
+                    placeholder="Ex: 200"
+                    value={novaGeofenceForm.raioMetros}
+                    onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, raioMetros: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Evento Vinculado</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Festival DiskIngressos Live 2026"
+                  value={novaGeofenceForm.eventoVinculado}
+                  onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, eventoVinculado: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setModalNovaGeofence(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Salvar Cerca Virtual</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 4: DOSSIÊ COMPLETO DO COLABORADOR                 */}
+      {/* ======================================================== */}
+      {colaboradorDossie && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-base flex items-center justify-center border border-emerald-500/30">
+                  {colaboradorDossie.avatar}
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-base leading-tight">{colaboradorDossie.nome}</h3>
+                  <div className="text-xs text-slate-400">{colaboradorDossie.matricula} &bull; {colaboradorDossie.cargo}</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setColaboradorDossie(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Departamento</span>
+                <div className="text-white font-semibold">{colaboradorDossie.departamento}</div>
+              </div>
+              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Regime Contratual</span>
+                <div className="text-white font-semibold">{colaboradorDossie.tipoContrato} &bull; R$ {colaboradorDossie.salario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              </div>
+              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Banco de Horas</span>
+                <div className="text-emerald-400 font-bold">{colaboradorDossie.bancoHoras}</div>
+              </div>
+              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Validade ASO</span>
+                <div className="text-sky-400 font-semibold">{colaboradorDossie.asoValidade} (Apto ✓)</div>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs">
+              <div className="text-slate-400 font-semibold">Cerca Virtual Autorizada:</div>
+              <div className="text-white font-medium flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>{colaboradorDossie.geofenceAutorizada}</span>
+              </div>
+              <div className="text-slate-400 font-semibold pt-1">Assinatura Digital do Contrato:</div>
+              <div className="font-mono text-[11px] text-emerald-400 bg-black/40 p-2 rounded border border-slate-800 break-all">
+                sha256:{colaboradorDossie.matricula.toLowerCase()}-e9b3a41c28f9d417e4867efdc4fb8a04
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setColaboradorDossie(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition cursor-pointer"
+              >
+                Fechar Dossiê
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 5: REMESSA PIX FOLHA TESOURARIA                   */}
+      {/* ======================================================== */}
+      {modalRemessaPix && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-emerald-500/30 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Send className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-bold text-white text-base">Remessa PIX Folha (Tesouraria)</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalRemessaPix(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-300">
+              <p>Envio do lote consolidado da folha de pagamento para liquidação automática via <b>PIX Direto (EDDIE 11.25)</b>.</p>
+              
+              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Total Colaboradores:</span>
+                  <strong className="text-white">{colaboradores.length} contas bancárias</strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Proventos Brutos:</span>
+                  <span className="text-white">R$ 196.400,00</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Descontos Legais &amp; Benefícios:</span>
+                  <span className="text-amber-400">- R$ 31.580,00</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-sm">
+                  <span className="text-white font-bold">Líquido a Pagar:</span>
+                  <span className="text-emerald-400 font-black">R$ 164.820,00</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setModalRemessaPix(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRemessaPixStatus('ENVIADO');
+                  setModalRemessaPix(false);
+                  showToast('Remessa PIX de R$ 164.820,00 enviada à Tesouraria com sucesso!');
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Confirmar Envio para Tesouraria</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 6: EXPORTAR CUSTOS DE STAFF PARA DRE              */}
+      {/* ======================================================== */}
+      {modalExportarDre && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-purple-500/30 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-purple-400" />
+                <h3 className="font-bold text-white text-base">Apropriação Contábil no DRE</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalExportarDre(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-300">
+              <p>Os custos de mão de obra direta (CLT, freelancers, alimentação e transporte) serão apropriados nas contas de despesa do DRE de cada evento no módulo <b>Contabilidade (EDDIE 11.21)</b>.</p>
+
+              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
+                {staffEventos.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between text-xs">
+                    <span className="text-slate-300 truncate max-w-[200px]">{s.eventoNome}:</span>
+                    <span className="text-purple-400 font-bold font-mono">
+                      R$ {s.custoTotalPessoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-sm font-bold">
+                  <span className="text-white">Total Apropriado:</span>
+                  <span className="text-emerald-400 font-black">
+                    R$ {staffEventos.reduce((a, b) => a + b.custoTotalPessoal, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setModalExportarDre(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDreExportado(true);
+                  setStaffEventos(prev => prev.map(s => ({ ...s, statusDRE: 'APROPRIADO_DRE' })));
+                  setModalExportarDre(false);
+                  showToast('Custos de pessoal apropriados com sucesso no DRE dos Eventos!');
+                }}
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-purple-600/20 cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Confirmar no Ledger DRE</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* FLOATING TOAST NOTIFICATION                             */}
+      {/* ======================================================== */}
+      {toastMensagem && (
+        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white font-bold text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-emerald-400/30 animate-in fade-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+          <span>{toastMensagem}</span>
         </div>
       )}
 

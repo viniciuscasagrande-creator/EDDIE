@@ -31,6 +31,7 @@ import {
   CreditCard,
   FileText,
   Receipt,
+  ChevronDown,
 } from 'lucide-react';
 import { useMobileNav } from './MobileNavContext';
 
@@ -254,6 +255,33 @@ export function Sidebar() {
   const activeEventId = eventMatch?.[1] || null;
   const currentEventId = activeEventId || eventoId || 'evento-operacao';
 
+  const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>({
+    '/rh': pathname.startsWith('/rh'),
+    '/operacao': pathname.startsWith('/operacao'),
+    '/eventos': pathname.startsWith('/eventos') || Boolean(activeEventId),
+  });
+
+  React.useEffect(() => {
+    if (pathname.startsWith('/rh')) {
+      setExpandedMenus((prev) => ({ ...prev, '/rh': true }));
+    }
+    if (pathname.startsWith('/operacao')) {
+      setExpandedMenus((prev) => ({ ...prev, '/operacao': true }));
+    }
+    if (pathname.startsWith('/eventos') || activeEventId) {
+      setExpandedMenus((prev) => ({ ...prev, '/eventos': true }));
+    }
+  }, [pathname, activeEventId]);
+
+  const toggleMenu = (href: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [href]: !prev[href],
+    }));
+  };
+
   // Filtra itens com base na visão atual (Admin DiskIngressos vs Produtor)
   const visibleMenuItems = rawMenuItems.filter((item) =>
     item.scopes.includes(currentVision),
@@ -350,33 +378,83 @@ export function Sidebar() {
                 ? pathname === '/'
                 : pathname.startsWith(item.href);
 
+            const hasSubMenu =
+              item.href === '/rh' ||
+              (item.href === '/operacao' && isAdmin) ||
+              item.href === '/eventos';
+
+            const isExpanded = Boolean(expandedMenus[item.href]);
+
             return (
               <React.Fragment key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={closeMobileMenu}
-                  className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
-                    isActive
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icon
-                      size={17}
-                      className={`shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}
-                    />
-                    <span className="truncate">{displayLabel}</span>
+                {hasSubMenu ? (
+                  <div
+                    className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all group ${
+                      isActive
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                    }`}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={closeMobileMenu}
+                      className="flex items-center gap-2.5 min-w-0 flex-1 truncate"
+                    >
+                      <Icon
+                        size={17}
+                        className={`shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}
+                      />
+                      <span className="truncate">{displayLabel}</span>
+                    </Link>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                      {item.badge && (
+                        <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
+                          {item.badge}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => toggleMenu(item.href, e)}
+                        className="p-1 -mr-1 text-slate-400 hover:text-white hover:bg-slate-700/60 rounded transition cursor-pointer"
+                        title={isExpanded ? 'Recolher submenu' : 'Expandir submenu'}
+                        aria-label={isExpanded ? 'Recolher submenu' : 'Expandir submenu'}
+                      >
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform duration-200 ${
+                            isExpanded ? 'rotate-0 text-emerald-400' : '-rotate-90 text-slate-400'
+                          }`}
+                        />
+                      </button>
+                    </div>
                   </div>
-                  {item.badge && (
-                    <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
+                ) : (
+                  <Link
+                    href={item.href}
+                    onClick={closeMobileMenu}
+                    className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                      isActive
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon
+                        size={17}
+                        className={`shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}
+                      />
+                      <span className="truncate">{displayLabel}</span>
+                    </div>
+                    {item.badge && (
+                      <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                )}
 
-                {/* Sub-itens do RH Disk (Visão Completa de Gestão) */}
-                {item.href === '/rh' && (
+                {/* Sub-itens do RH Disk (Expansível / Accordion com Chevron) */}
+                {item.href === '/rh' && isExpanded && (
                   <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
                     <Link
                       href="/rh?tab=visao"
@@ -439,8 +517,8 @@ export function Sidebar() {
                   </div>
                 )}
 
-                {/* Sub-itens da Operação Global (apenas para Admin) */}
-                {item.href === '/operacao' && isActive && isAdmin && (
+                {/* Sub-itens da Operação Global (apenas para Admin - Expansível com Chevron) */}
+                {item.href === '/operacao' && isExpanded && isAdmin && (
                   <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
                     <Link
                       href="/operacao/alertas"
@@ -463,8 +541,8 @@ export function Sidebar() {
                   </div>
                 )}
 
-                {/* Modo Evento: Indicador limpo e conciso */}
-                {item.href === '/eventos' && (isActive || activeEventId) && (
+                {/* Modo Evento: Indicador limpo e conciso - Expansível com Chevron */}
+                {item.href === '/eventos' && isExpanded && (
                   <div className="ml-7 mt-1 mb-2 space-y-1 border-l border-sky-900/70 pl-2.5 text-xs">
                     {activeEventId && (
                       <Link
