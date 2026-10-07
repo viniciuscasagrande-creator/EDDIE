@@ -3,6 +3,7 @@
 import React from 'react';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn, formatBRL, formatNumber, formatPercent } from '../../lib/utils';
+import { DataTrustBadge, type DataTrustInfo } from '../ui/DataTrustBadge';
 
 export interface MetricCardProps {
   title: string;
@@ -10,6 +11,7 @@ export interface MetricCardProps {
   type?: 'currency' | 'number' | 'percentage' | 'string';
   cents?: boolean;
   subtitle?: React.ReactNode;
+  trustMetadata?: DataTrustInfo;
   trend?: {
     value: number | string;
     isPositive?: boolean;
@@ -68,6 +70,7 @@ export function MetricCard({
   type = 'string',
   cents = false,
   subtitle,
+  trustMetadata,
   trend,
   icon: Icon,
   variant = 'default',
@@ -105,7 +108,7 @@ export function MetricCard({
       {/* Header: Title + Icon */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
               {title}
             </span>
@@ -114,6 +117,7 @@ export function MetricCard({
                 {badge}
               </span>
             )}
+            {trustMetadata && <DataTrustBadge info={trustMetadata} />}
           </div>
         </div>
 

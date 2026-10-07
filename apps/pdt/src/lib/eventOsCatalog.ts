@@ -36,7 +36,7 @@ export interface EventOsNavItem {
 }
 
 /**
- * Fonte única de verdade para navegação do Event OS (EDDIE 11.15.1)
+ * Fonte única de verdade para navegação do Event OS (DiskIngressos Event OS / EDDIE v11.39.0)
  * Consumida pela barra contextual horizontal (EventOsShell / EventContextNav) e Sidebar.
  */
 export const EVENT_OS_NAV: EventOsNavItem[] = [

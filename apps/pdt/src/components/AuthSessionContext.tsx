@@ -11,6 +11,7 @@ export type PapelUsuario =
   | 'PORTARIA_CHECKIN';
 
 export type EscopoVisao = 'DISKINGRESSOS' | 'PRODUTOR';
+export type EnterpriseWorkspace = 'ALL' | 'CORPORATE' | 'PRODUCER' | 'OPERATIONS' | 'INTELLIGENCE';
 
 export interface UsuarioSessao {
   id: string;
@@ -33,6 +34,8 @@ export interface AuthSessionContextValue {
   currentVision: EscopoVisao;
   selectedProducer: ProdutorOpcao | null;
   availableProducers: ProdutorOpcao[];
+  workspace: EnterpriseWorkspace;
+  setWorkspace: (ws: EnterpriseWorkspace) => void;
   switchVision: (vision: EscopoVisao, producer?: ProdutorOpcao) => void;
   hasPermission: (permission: string) => boolean;
   isRouteAllowed: (pathname: string) => boolean;
@@ -95,12 +98,16 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
   const [currentVision, setCurrentVision] = useState<EscopoVisao>('DISKINGRESSOS');
   const [currentUser, setCurrentUser] = useState<UsuarioSessao>(DEFAULT_ADMIN_USER);
   const [selectedProducer, setSelectedProducer] = useState<ProdutorOpcao | null>(null);
+  const [workspace, setWorkspaceState] = useState<EnterpriseWorkspace>('ALL');
 
   // Inicializa a sessão a partir do localStorage
   useEffect(() => {
     try {
       const savedVision = localStorage.getItem('diskingressos_auth_vision') as EscopoVisao | null;
       const savedProdId = localStorage.getItem('diskingressos_auth_producer_id');
+      const savedWs = localStorage.getItem('diskingressos_auth_workspace') as EnterpriseWorkspace | null;
+
+      if (savedWs) setWorkspaceState(savedWs);
 
       if (savedVision === 'PRODUTOR') {
         const prod = AVAILABLE_PRODUCERS.find((p) => p.id === savedProdId) || AVAILABLE_PRODUCERS[0]!;
@@ -112,6 +119,13 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
           produtorNome: prod.nome,
         });
       }
+    } catch {}
+  }, []);
+
+  const setWorkspace = useCallback((ws: EnterpriseWorkspace) => {
+    setWorkspaceState(ws);
+    try {
+      localStorage.setItem('diskingressos_auth_workspace', ws);
     } catch {}
   }, []);
 
@@ -181,13 +195,15 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
       currentVision,
       selectedProducer,
       availableProducers: AVAILABLE_PRODUCERS,
+      workspace,
+      setWorkspace,
       switchVision,
       hasPermission,
       isRouteAllowed,
       isAdmin: currentVision === 'DISKINGRESSOS',
       isProducer: currentVision === 'PRODUTOR',
     }),
-    [currentUser, currentVision, selectedProducer, switchVision, hasPermission, isRouteAllowed],
+    [currentUser, currentVision, selectedProducer, workspace, setWorkspace, switchVision, hasPermission, isRouteAllowed],
   );
 
   return (

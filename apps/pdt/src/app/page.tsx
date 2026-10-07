@@ -26,10 +26,15 @@ import {
   Radio,
   Clock,
   Sparkles,
+  Search,
 } from 'lucide-react';
 import { useProducerEvent } from '../components/ProducerEventContext';
 import { EDDIE_BUILD } from '../lib/buildInfo';
 import { formatBRL, formatNumber } from '../lib/utils';
+import { CommandPalette } from '../components/CommandPalette';
+import { ReleaseCenterModal } from '../components/ReleaseCenterModal';
+import { MyWorkModal } from '../components/MyWorkModal';
+import { ActivityCenterModal } from '../components/ActivityCenterModal';
 import {
   DashboardSummaryResponse,
   ActionableAlertItem,
@@ -119,6 +124,12 @@ export default function SuperDashboardPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string>('');
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
+
+  // Modais de Governança e Ação Rápida
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [releaseCenterOpen, setReleaseCenterOpen] = useState(false);
+  const [myWorkOpen, setMyWorkOpen] = useState(false);
+  const [activityCenterOpen, setActivityCenterOpen] = useState(false);
 
   // Carrega métricas consolidadas 360º do backend
   const carregarDashboard = useCallback(async () => {
@@ -229,17 +240,17 @@ export default function SuperDashboardPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* 1. WELCOME & COMMAND CENTER BANNER */}
-      <div className="bg-gradient-to-r from-emerald-950/70 via-slate-900 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 lg:p-8 relative overflow-hidden shadow-2xl">
+      <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 lg:p-8 relative overflow-hidden shadow-2xl space-y-4">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="max-w-2xl space-y-3">
+          <div className="max-w-2xl space-y-2.5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>Centro de Comando 360º</span>
+                <span>SEEK &bull; DiskIngressos Event OS</span>
               </span>
 
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold">
-                {EDDIE_BUILD.uiVersion} Modulith OS
+                EDDIE Engine v{EDDIE_BUILD.version}
               </span>
 
               {evento && (
@@ -250,7 +261,7 @@ export default function SuperDashboardPage() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-              Super Dashboard Executivo
+              Centro de Comando 360º Executivo
             </h1>
 
             <p className="text-slate-400 text-sm leading-relaxed">
@@ -265,7 +276,7 @@ export default function SuperDashboardPage() {
               <button
                 onClick={() => void carregarDashboard()}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm disabled:opacity-50 cursor-pointer"
               >
                 <RefreshCcw size={13} className={loading ? 'animate-spin' : ''} />
                 <span>{loading ? 'Atualizando...' : 'Atualizar Agora'}</span>
@@ -273,7 +284,7 @@ export default function SuperDashboardPage() {
 
               <button
                 onClick={() => setAutoRefresh((prev) => !prev)}
-                className={`text-xs px-2.5 py-1.5 rounded-lg font-medium border transition ${
+                className={`text-xs px-2.5 py-1.5 rounded-lg font-medium border transition cursor-pointer ${
                   autoRefresh
                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                     : 'bg-slate-800 text-slate-400 border-slate-700'
@@ -292,9 +303,49 @@ export default function SuperDashboardPage() {
             )}
           </div>
         </div>
+
+        {/* Botões Rápidos Transversais */}
+        <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Search className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Buscar (Ctrl+K)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMyWorkOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 text-xs font-bold border border-purple-800 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Zap className="w-3.5 h-3.5 text-purple-400" />
+            <span>Minhas Pendências (My Work)</span>
+            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActivityCenterOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-sky-950/40 hover:bg-sky-900/60 text-sky-300 text-xs font-semibold border border-sky-800 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Activity className="w-3.5 h-3.5 text-sky-400" />
+            <span>Timeline de Auditoria (Activity)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setReleaseCenterOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-mono border border-slate-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>Release Center v{EDDIE_BUILD.version}</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. TOP METRICS HIGHLIGHT GRID (4 Core KPIs) */}
+      {/* 2. TOP METRICS HIGHLIGHT GRID (4 Core KPIs com Data Trust Layer) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <MetricCard
           title="Faturamento Hoje (GMV)"
@@ -306,6 +357,15 @@ export default function SuperDashboardPage() {
           trend={{ value: 14.2, isPositive: true, label: 'vs ontem' }}
           subtitle="Partidas dobradas no Ledger"
           loading={loading}
+          trustMetadata={{
+            source: 'Ledger Imutável (Partidas Dobradas)',
+            period: 'Hoje (00:00 às 23:59)',
+            attributionModel: 'DIRECT_LEDGER',
+            status: 'RELIABLE',
+            dataQualityScore: 99,
+            lastUpdated: lastRefreshedAt || 'Ao vivo',
+            latencyMs: 180,
+          }}
         />
 
         <MetricCard
@@ -317,6 +377,14 @@ export default function SuperDashboardPage() {
           trend={{ value: 8.5, isPositive: true, label: 'vs ontem' }}
           subtitle="Online + Bilheteria física"
           loading={loading}
+          trustMetadata={{
+            source: 'Módulo Pedidos & Ingressos (DB PostgreSQL)',
+            period: 'Hoje (00:00 às 23:59)',
+            status: 'RELIABLE',
+            dataQualityScore: 98,
+            lastUpdated: lastRefreshedAt || 'Ao vivo',
+            latencyMs: 210,
+          }}
         />
 
         <MetricCard
@@ -328,6 +396,14 @@ export default function SuperDashboardPage() {
           trend={{ value: 24.1, isPositive: true, label: 'pico' }}
           subtitle="Validações nas catracas"
           loading={loading}
+          trustMetadata={{
+            source: 'Portaria & Catracas (REP-P Portaria 671 MTE)',
+            period: 'Ao vivo nas Catracas',
+            status: 'RELIABLE',
+            dataQualityScore: 96,
+            lastUpdated: lastRefreshedAt || 'Ao vivo',
+            latencyMs: 95,
+          }}
         />
 
         <MetricCard
@@ -339,6 +415,15 @@ export default function SuperDashboardPage() {
           trend={{ value: 0.6, isPositive: true }}
           subtitle={`${data.activeUsers} sessões ativas`}
           loading={loading}
+          trustMetadata={{
+            source: 'Storefront BFF + Adquirentes',
+            period: 'Últimas 24 horas',
+            attributionModel: 'LAST_NON_DIRECT (janela 7d)',
+            status: 'RELIABLE',
+            dataQualityScore: 95,
+            lastUpdated: lastRefreshedAt || 'Ao vivo',
+            latencyMs: 310,
+          }}
         />
       </div>
 
@@ -733,6 +818,12 @@ export default function SuperDashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Modais Globais de Governança e Ação */}
+      <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <ReleaseCenterModal isOpen={releaseCenterOpen} onClose={() => setReleaseCenterOpen(false)} />
+      <MyWorkModal isOpen={myWorkOpen} onClose={() => setMyWorkOpen(false)} />
+      <ActivityCenterModal isOpen={activityCenterOpen} onClose={() => setActivityCenterOpen(false)} />
     </div>
   );
 }

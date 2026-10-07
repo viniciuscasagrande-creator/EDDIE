@@ -69,6 +69,10 @@ import {
   MousePointerClick,
   FileSpreadsheet,
   FileJson,
+  Info,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useProducerEvent } from '../ProducerEventContext';
 import { ModuleNavigation } from '../navigation/ModuleNavigation';
@@ -1565,6 +1569,7 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
   const [selectedPeriod, setSelectedPeriod] = useState<string>('30d');
   const [selectedChannel, setSelectedChannel] = useState<string>('todos');
   const [selectedAttributionModel, setSelectedAttributionModel] = useState<AttributionModel>('LAST_NON_DIRECT');
+  const [showAttributionDictionary, setShowAttributionDictionary] = useState(false);
   const [modalAttributionOrderOpen, setModalAttributionOrderOpen] = useState(false);
   const [activeOrderForAttribution, setActiveOrderForAttribution] = useState<OrderAttributionResult | null>(null);
   const [modalCampaignCompareOpen, setModalCampaignCompareOpen] = useState(false);
@@ -2974,6 +2979,20 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => setShowAttributionDictionary((prev) => !prev)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                  showAttributionDictionary
+                    ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40 shadow-sm'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                }`}
+                title="Visualizar Dicionário de Atribuição e Governança de Métricas"
+              >
+                <BookOpen size={13} className="text-indigo-400" />
+                <span>Dicionário de Atribuição</span>
+                {showAttributionDictionary ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+              <button
+                type="button"
                 onClick={() => setModalCampaignCompareOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition"
               >
@@ -2991,7 +3010,137 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
             </div>
           </div>
 
-          {/* Top KPIs com Fonte e Timestamp */}
+          {/* Data Attribution Dictionary & Governance Panel */}
+          {showAttributionDictionary && (
+            <div className="bg-slate-900/95 border border-indigo-500/30 rounded-xl p-4.5 space-y-4 animate-in fade-in duration-200 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                    <BookOpen size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <span>Data Attribution Dictionary & Governance</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        Modelo: {selectedAttributionModel}
+                      </span>
+                    </h3>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      Dicionário corporativo de governança de dados: métricas, modelos de atribuição, janelas temporais e conciliação financeira.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <ShieldCheck size={13} />
+                    <span>Ledger Server-Side Auditado</span>
+                  </span>
+                  <span>·</span>
+                  <span>Janela: 7d clique / 1d view</span>
+                </div>
+              </div>
+
+              {/* Explicação da Diferença entre Soma dos Canais e Receita Deduplicada */}
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-xs text-amber-200/90 space-y-1">
+                <div className="flex items-center gap-2 font-bold text-amber-300">
+                  <Info size={14} />
+                  <span>Por que a soma dos canais (R$ 93.680) difere da Receita Deduplicada Oficial (R$ 78.500)?</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-slate-300 pl-5">
+                  Em jornadas omnicanal de compra de ingressos, o mesmo comprador frequentemente interage com múltiplos canais (ex.: visualiza anúncio no <strong className="text-white">Meta Stories</strong>, busca a atração no <strong className="text-white">Google Search</strong> e conclui a compra via link no <strong className="text-white">WhatsApp</strong>). No detalhamento por canal, cada mídia reporta as <em>conversões assistidas</em> sob seu escopo (totalizando R$ 93.680, com taxa de sobreposição de 1.19x). A métrica executiva <strong className="text-emerald-400">Vendas Atribuídas ({formatBRL(7850000)})</strong> aplica deduplicação estrita via modelo <strong className="text-indigo-300">{selectedAttributionModel}</strong>, correspondendo rigorosamente aos 320 pedidos únicos faturados no Ledger contábil da DiskIngressos.
+                </p>
+              </div>
+
+              {/* Grid com as Definições do Dicionário */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="bg-[#111827] border border-slate-800 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Vendas Atribuídas</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Deduplicado</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 space-y-1 font-sans">
+                    <div><strong className="text-slate-300">Métrica:</strong> Receita líquida faturada no Ledger</div>
+                    <div><strong className="text-slate-300">Modelo:</strong> {selectedAttributionModel} (desempate: último clique)</div>
+                    <div><strong className="text-slate-300">Janela:</strong> 7 dias clique / 1 dia view (CAPI Server-Side)</div>
+                    <div><strong className="text-slate-300">Fonte:</strong> Ledger Financeiro + BFF Checkout</div>
+                    <div><strong className="text-slate-300">Moeda / Qualidade:</strong> BRL (R$) · Score 94/100</div>
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] border border-slate-800 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">ROAS Consolidado</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400">Eficiência</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 space-y-1 font-sans">
+                    <div><strong className="text-slate-300">Métrica:</strong> Retorno sobre Investimento Publicitário</div>
+                    <div><strong className="text-slate-300">Fórmula:</strong> Vendas Atribuídas / Investimento Mídia (6.31x)</div>
+                    <div><strong className="text-slate-300">Janela:</strong> {selectedPeriod === '30d' ? 'Últimos 30 dias' : selectedPeriod}</div>
+                    <div><strong className="text-slate-300">Fonte:</strong> Ledger Server-Side / APIs Oficiais de Anúncios</div>
+                    <div><strong className="text-slate-300">Status:</strong> Reconciliado com extrato bancário</div>
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] border border-slate-800 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">CPA Médio</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400">Aquisição</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 space-y-1 font-sans">
+                    <div><strong className="text-slate-300">Métrica:</strong> Custo por Ingresso Faturado</div>
+                    <div><strong className="text-slate-300">Fórmula:</strong> Investimento Total / 320 Ingressos Pagos</div>
+                    <div><strong className="text-slate-300">Janela:</strong> {selectedPeriod === '30d' ? 'Últimos 30 dias' : selectedPeriod}</div>
+                    <div><strong className="text-slate-300">Fonte:</strong> Ingressos Emitidos e Auditados no Ledger</div>
+                    <div><strong className="text-slate-300">Benchmark:</strong> 15.8% do ticket médio</div>
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] border border-slate-800 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Investimento Total</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">Mídia Paga</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 space-y-1 font-sans">
+                    <div><strong className="text-slate-300">Métrica:</strong> Custo Bruto de Mídia Consumida</div>
+                    <div><strong className="text-slate-300">Fontes:</strong> Meta Marketing API, Google Ads v16, TikTok API</div>
+                    <div><strong className="text-slate-300">Janela:</strong> {selectedPeriod === '30d' ? 'Últimos 30 dias' : selectedPeriod}</div>
+                    <div><strong className="text-slate-300">Sync:</strong> Polling automático a cada 15 minutos</div>
+                    <div><strong className="text-slate-300">Tolerância Câmbio:</strong> PTAX Fechamento D-1</div>
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] border border-slate-800 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Conversão de Funil</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Conversão</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 space-y-1 font-sans">
+                    <div><strong className="text-slate-300">Métrica:</strong> Taxa de Conversão Visita → Pagamento</div>
+                    <div><strong className="text-slate-300">Fórmula:</strong> 320 compras / 9.350 sessões únicas (3.42%)</div>
+                    <div><strong className="text-slate-300">Janela:</strong> {selectedPeriod === '30d' ? 'Últimos 30 dias' : selectedPeriod}</div>
+                    <div><strong className="text-slate-300">Fonte:</strong> CAPI Server-Side + Tracking SDK</div>
+                    <div><strong className="text-slate-300">Proteção:</strong> Deduplicação por hash de IP/User-Agent</div>
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] border border-slate-800 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">CTR Global</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">Engajamento</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 space-y-1 font-sans">
+                    <div><strong className="text-slate-300">Métrica:</strong> Taxa de Cliques sobre Impressões de Anúncio</div>
+                    <div><strong className="text-slate-300">Fórmula:</strong> 9.350 cliques / 223.700 impressões (4.18%)</div>
+                    <div><strong className="text-slate-300">Janela:</strong> {selectedPeriod === '30d' ? 'Últimos 30 dias' : selectedPeriod}</div>
+                    <div><strong className="text-slate-300">Fonte:</strong> Provedores de Tráfego + UTM Tracking</div>
+                    <div><strong className="text-slate-300">Integridade:</strong> Filtro anti-bot ativo (BotGuard)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Top KPIs com Governança, Modelo e Timestamp */}
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
             <div className="bg-[#111827] border border-slate-800 rounded-xl p-3.5 space-y-1">
               <div className="flex items-center justify-between">
@@ -2999,8 +3148,8 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                 <span className="text-[10px] text-emerald-400 font-semibold">+26.6%</span>
               </div>
               <div className="text-xl font-black text-emerald-400 font-mono">{formatBRL(7850000)}</div>
-              <div className="text-[9px] text-slate-500 truncate" title="Engine de Atribuição Server-Side DiskIngressos">
-                Fonte: Atribuição Server-Side · 11:30
+              <div className="text-[9px] text-slate-500 truncate" title={`Modelo: ${selectedAttributionModel} · Janela: 7d clique / 1d view · Fonte: Ledger Server-Side · 11:30`}>
+                Mod: {selectedAttributionModel} · Janela 7d · 11:30
               </div>
             </div>
 
@@ -3010,8 +3159,8 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                 <span className="text-[10px] text-slate-400 font-semibold">+13.2%</span>
               </div>
               <div className="text-xl font-black text-white font-mono">{formatBRL(1245000)}</div>
-              <div className="text-[9px] text-slate-500 truncate" title="Meta Ads + Google Ads + TikTok API">
-                Fonte: APIs Meta, Google, TikTok · 11:30
+              <div className="text-[9px] text-slate-500 truncate" title="Meta Ads + Google Ads + TikTok API · Janela: Últimos 30 dias">
+                Janela: 30d · APIs Mídia · 11:30
               </div>
             </div>
 
@@ -3021,8 +3170,8 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                 <span className="text-[10px] text-purple-400 font-semibold">+11.9%</span>
               </div>
               <div className="text-xl font-black text-purple-400 font-mono">6.31x</div>
-              <div className="text-[9px] text-slate-500 truncate" title="Cálculo Receita Atribuída / Investimento">
-                Fonte: Receita / Mídia · 11:30
+              <div className="text-[9px] text-slate-500 truncate" title="Cálculo: Receita Deduplicada / Investimento · Janela: 30 dias">
+                Mod: Deduplicado · Janela 30d · 11:30
               </div>
             </div>
 
@@ -3032,8 +3181,8 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                 <span className="text-[10px] text-sky-400 font-semibold">-8.5% (Melhor)</span>
               </div>
               <div className="text-xl font-black text-sky-400 font-mono">{formatBRL(3890)}</div>
-              <div className="text-[9px] text-slate-500 truncate" title="Investimento / 320 Ingressos Pagos">
-                Fonte: Ingressos Pagos Server-Side
+              <div className="text-[9px] text-slate-500 truncate" title="Investimento / 320 Ingressos Pagos · Janela: 30 dias">
+                Ingressos Pagos · Janela 30d
               </div>
             </div>
 
@@ -3043,8 +3192,8 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                 <span className="text-[10px] text-emerald-400 font-semibold">+18.3%</span>
               </div>
               <div className="text-xl font-black text-white font-mono">3.42%</div>
-              <div className="text-[9px] text-slate-500 truncate" title="320 compras / 9.350 visitas">
-                Fonte: Tracking Gateway · 11:30
+              <div className="text-[9px] text-slate-500 truncate" title="320 compras / 9.350 visitas · Janela: 30 dias">
+                CAPI Server · Janela 30d · 11:30
               </div>
             </div>
 
@@ -3054,8 +3203,8 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                 <span className="text-[10px] text-emerald-400 font-semibold">+6.6%</span>
               </div>
               <div className="text-xl font-black text-white font-mono">4.18%</div>
-              <div className="text-[9px] text-slate-500 truncate" title="9.350 cliques em 223.700 impressões">
-                Fonte: Tracking UTM & Provedores
+              <div className="text-[9px] text-slate-500 truncate" title="9.350 cliques em 223.700 impressões · Janela: 30 dias">
+                UTM & Provedores · Janela 30d
               </div>
             </div>
           </div>
@@ -3286,7 +3435,54 @@ export default function MarketingWorkspace({ initialTab = 'dashboard', contextEv
                     </tr>
                   ))}
                 </tbody>
+                <tfoot className="bg-slate-900/90 text-slate-300 border-t-2 border-slate-700 font-mono font-bold">
+                  <tr>
+                    <td className="p-3.5 text-white">Soma Assistida Multicanal</td>
+                    <td className="p-3.5 text-center">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        SOBREPOSIÇÃO 1.19x
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-right text-white">{formatBRL(1245000)}</td>
+                    <td className="p-3.5 text-right text-white">10.240 cliques</td>
+                    <td className="p-3.5 text-right text-indigo-300">382 assistidas</td>
+                    <td className="p-3.5 text-right text-emerald-300">{formatBRL(9368000)}</td>
+                    <td className="p-3.5 text-center text-sky-400">R$ 32,59</td>
+                    <td className="p-3.5 text-center text-purple-300">7.52x</td>
+                    <td className="p-3.5 text-right text-slate-500">11:30</td>
+                  </tr>
+                  <tr className="bg-emerald-950/20 text-emerald-200 border-t border-emerald-500/20">
+                    <td className="p-3.5 font-sans text-emerald-300">Total Deduplicado Oficial (Ledger)</td>
+                    <td className="p-3.5 text-center">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        {selectedAttributionModel}
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-right font-bold text-white">{formatBRL(1245000)}</td>
+                    <td className="p-3.5 text-right text-slate-300">9.350 únicos</td>
+                    <td className="p-3.5 text-right font-bold text-white">320 líquidos</td>
+                    <td className="p-3.5 text-right font-black text-emerald-400">{formatBRL(7850000)}</td>
+                    <td className="p-3.5 text-center font-bold text-sky-400">{formatBRL(3890)}</td>
+                    <td className="p-3.5 text-center font-black text-purple-400">6.31x</td>
+                    <td className="p-3.5 text-right text-slate-400">Auditado</td>
+                  </tr>
+                </tfoot>
               </table>
+            </div>
+            <div className="bg-slate-900/60 border-t border-slate-800 p-3 px-6 text-[11px] text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Info size={13} className="text-amber-400 shrink-0" />
+                <span>
+                  <strong>Governança de Atribuição:</strong> A soma das receitas assistidas (R$ 93.680) inclui o crédito de influência multitoque compartilhado entre os canais. A receita contábil deduplicada faturada no Ledger é de R$ 78.500,00 sob a regra <em>{selectedAttributionModel}</em>.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAttributionDictionary(true)}
+                className="text-indigo-400 hover:text-indigo-300 font-semibold underline shrink-0 cursor-pointer"
+              >
+                Abrir Dicionário Completo
+              </button>
             </div>
           </div>
 

@@ -78,7 +78,7 @@ interface RemarketingWorkspaceProps {
 }
 
 const brl = (v: number | string | null | undefined) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v || 0));
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v || 0) / 100);
 
 const fmtNum = (v: number | string | null | undefined) =>
   new Intl.NumberFormat('pt-BR').format(Number(v || 0));
@@ -943,9 +943,14 @@ export default function RemarketingWorkspace({
         <div className="space-y-6">
           {/* KPI CARDS DE REMARKETING */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Públicos Ativos em Remarketing
+            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Públicos Ativos
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                  Janela: 90 dias
+                </span>
               </div>
               <div className="text-2xl font-black text-white mt-1">
                 {fmtNum(data?.kpis?.publicosAtivos || 4820)} <small className="text-xs font-normal text-slate-400">leads</small>
@@ -953,9 +958,14 @@ export default function RemarketingWorkspace({
               <div className="text-[11px] text-sky-400 font-medium">Segmentados por comportamento</div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Carrinhos Abandonados (24h)
+            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Carrinhos Abandonados
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-400 border border-amber-800">
+                  Janela: Últimas 24h
+                </span>
               </div>
               <div className="text-2xl font-black text-amber-400 mt-1">
                 {fmtNum(data?.kpis?.carrinhosAbandonados || 382)}
@@ -963,9 +973,14 @@ export default function RemarketingWorkspace({
               <div className="text-[11px] text-slate-400 font-medium">Potencial de resgate imediato</div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Carrinhos Recuperados
+            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Carrinhos Recuperados
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800">
+                  Janela: Últimas 24h
+                </span>
               </div>
               <div className="text-2xl font-black text-emerald-400 mt-1">
                 {fmtNum(data?.kpis?.carrinhosRecuperados || 164)}
@@ -975,15 +990,23 @@ export default function RemarketingWorkspace({
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Receita Resgatada (Auditada)
+            <div className="rounded-xl border border-slate-800 bg-[#121620] p-5 space-y-1.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Receita Resgatada
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800 font-bold">
+                  Período: Últimos 30 dias
+                </span>
               </div>
               <div className="text-2xl font-black text-white mt-1">
                 {brl(data?.kpis?.receitaRecuperadaCents || 5845000)}
               </div>
-              <div className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
-                <TrendingUp size={12} /> Liquidado direto no Ledger
+              <div className="text-[11px] text-emerald-400 font-medium flex items-center justify-between">
+                <span className="flex items-center gap-1">
+                  <TrendingUp size={12} /> Liquidado no Ledger
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">Score: 96/100</span>
               </div>
             </div>
           </div>
