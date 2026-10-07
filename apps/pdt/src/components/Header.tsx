@@ -11,6 +11,7 @@ import {
   Building2,
   Users,
   Menu,
+  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useProducerEvent } from './ProducerEventContext';
@@ -28,6 +29,18 @@ export function Header() {
     isAdmin,
   } = useAuthSession();
   const { toggleMobileMenu } = useMobileNav();
+  const [rhMenuOpen, setRhMenuOpen] = React.useState(false);
+  const rhMenuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (rhMenuRef.current && !rhMenuRef.current.contains(e.target as Node)) {
+        setRhMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleVisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -144,16 +157,62 @@ export function Header() {
 
       {/* Lado Direito: Atalho RH, Notificações, Atalho Usuários e Perfil */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        <Link
-          href="/rh"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition shadow-sm"
-          title="Recursos Humanos & Disk Ponto (Portaria 671 MTE)"
-        >
-          <Users size={14} className="text-emerald-400 shrink-0" />
-          <span className="hidden sm:inline font-bold">
-            {isAdmin ? 'RH & Ponto' : 'Equipes & Escalas'}
-          </span>
-        </Link>
+        {/* Atalho RH com Menu Rápido Dropdown */}
+        <div ref={rhMenuRef} className="relative">
+          <div className="flex items-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition shadow-sm">
+            <Link
+              href="/rh"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-emerald-400"
+              title="Recursos Humanos & Disk Ponto (Portaria 671 MTE)"
+            >
+              <Users size={14} className="text-emerald-400 shrink-0" />
+              <span className="font-bold">
+                {isAdmin ? 'RH Disk' : 'RH & Equipes'}
+              </span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setRhMenuOpen(!rhMenuOpen)}
+              className="px-1.5 py-1.5 text-emerald-400 hover:text-white border-l border-emerald-500/30 transition cursor-pointer"
+              title="Menu dos 10 Módulos de RH"
+              aria-label="Abrir menu de RH"
+            >
+              <ChevronDown size={12} className={`transition-transform duration-200 ${rhMenuOpen ? 'rotate-180 text-emerald-300' : 'text-emerald-400'}`} />
+            </button>
+          </div>
+
+          {rhMenuOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-[#111827] border border-slate-700 rounded-xl shadow-2xl py-2 z-50 text-xs animate-in fade-in">
+              <div className="px-3 py-1.5 border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                <span>Módulos de RH Disk</span>
+                <span className="text-emerald-400 font-mono text-[9px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30">10 Grupos</span>
+              </div>
+              <div className="max-h-72 overflow-y-auto py-1">
+                {[
+                  { tab: 'visao', label: '1. Visão Geral RH' },
+                  { tab: 'aprovacoes', label: '2. Central de Aprovações (SoD)' },
+                  { tab: 'pessoas', label: '3. Pessoas e Estrutura' },
+                  { tab: 'dp', label: '4. Dep. Pessoal & Caju' },
+                  { tab: 'ponto', label: '5. Ponto REP-P (Portaria 671)' },
+                  { tab: 'talentos', label: '6. Talentos & Treinamento' },
+                  { tab: 'seguranca', label: '7. Saúde & Segurança SST' },
+                  { tab: 'eventos', label: '8. Eventos e Custos (DRE)' },
+                  { tab: 'portais', label: '9. Portais do Colaborador' },
+                  { tab: 'administracao', label: '10. Administração & Regras' },
+                ].map((item) => (
+                  <Link
+                    key={item.tab}
+                    href={`/rh?tab=${item.tab}`}
+                    onClick={() => setRhMenuOpen(false)}
+                    className="block px-3 py-1.5 text-slate-300 hover:text-emerald-400 hover:bg-slate-800/80 transition"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         <Link
           href="/usuarios"

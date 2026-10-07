@@ -54,6 +54,22 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
+    label: 'Recursos Humanos',
+    producerLabel: 'RH & Equipes',
+    href: '/rh',
+    icon: Users,
+    badge: 'RH DISK',
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
+    label: 'Todos os Eventos',
+    producerLabel: 'Meus Eventos',
+    href: '/eventos',
+    icon: Calendar,
+    badge: null,
+    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
+  },
+  {
     label: 'Central de Operações',
     href: '/operacao',
     icon: Activity,
@@ -82,27 +98,11 @@ const rawMenuItems: MenuItemConfig[] = [
     scopes: ['DISKINGRESSOS'],
   },
   {
-    label: 'Todos os Eventos',
-    producerLabel: 'Meus Eventos',
-    href: '/eventos',
-    icon: Calendar,
-    badge: null,
-    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
-  },
-  {
     label: 'Financeiro Geral',
     href: '/financeiro',
     icon: Wallet,
     badge: 'Livro-Razão',
     scopes: ['DISKINGRESSOS'],
-  },
-  {
-    label: 'Recursos Humanos',
-    producerLabel: 'RH & Equipes',
-    href: '/rh',
-    icon: Users,
-    badge: 'RH DISK',
-    scopes: ['DISKINGRESSOS', 'PRODUTOR'],
   },
   {
     label: 'Tesouraria & Bancos',
@@ -256,18 +256,29 @@ export function Sidebar() {
   const currentEventId = activeEventId || eventoId || 'evento-operacao';
 
   const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>(() => {
+    let savedObj: Record<string, boolean> = {};
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('sidebar_expanded_menus');
-        if (saved) return JSON.parse(saved);
+        if (saved) savedObj = JSON.parse(saved);
       } catch (e) {}
     }
     return {
-      '/rh': pathname.startsWith('/rh'),
-      '/operacao': pathname.startsWith('/operacao'),
-      '/eventos': pathname.startsWith('/eventos') || Boolean(activeEventId),
+      '/rh': savedObj['/rh'] !== undefined ? savedObj['/rh'] : true,
+      '/operacao': savedObj['/operacao'] !== undefined ? savedObj['/operacao'] : pathname.startsWith('/operacao'),
+      '/eventos': savedObj['/eventos'] !== undefined ? savedObj['/eventos'] : (pathname.startsWith('/eventos') || Boolean(activeEventId)),
     };
   });
+
+  const [currentRhTab, setCurrentRhTab] = React.useState<string>('visao');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      const tab = sp.get('tab') || 'visao';
+      setCurrentRhTab(tab);
+    }
+  }, [pathname]);
 
   React.useEffect(() => {
     if (pathname.startsWith('/rh')) {
@@ -434,7 +445,10 @@ export function Sidebar() {
                   >
                     <Link
                       href={item.href}
-                      onClick={closeMobileMenu}
+                      onClick={() => {
+                        setExpandedMenus((prev) => ({ ...prev, [item.href]: true }));
+                        closeMobileMenu();
+                      }}
                       className="flex items-center gap-2.5 min-w-0 flex-1 truncate"
                     >
                       <Icon
@@ -492,79 +506,41 @@ export function Sidebar() {
 
                 {/* Sub-itens do RH Disk V2.1 (Menu Hierárquico dos 10 Grupos Oficiais) */}
                 {item.href === '/rh' && isExpanded && (
-                  <div className="ml-7 mt-0.5 mb-1.5 space-y-0.5 border-l border-emerald-900/60 pl-2">
-                    <Link
-                      href="/rh?tab=visao"
-                      onClick={closeMobileMenu}
-                      className={`block px-2 py-1 text-[11px] rounded transition ${
-                        pathname === '/rh' ? 'text-emerald-400 font-bold bg-emerald-950/30' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      • Visão Geral RH
-                    </Link>
-                    <Link
-                      href="/rh?tab=aprovacoes"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Central de Aprovações
-                    </Link>
-                    <Link
-                      href="/rh?tab=pessoas"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Pessoas e Estrutura
-                    </Link>
-                    <Link
-                      href="/rh?tab=dp"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Departamento Pessoal
-                    </Link>
-                    <Link
-                      href="/rh?tab=ponto"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Ponto e Jornada
-                    </Link>
-                    <Link
-                      href="/rh?tab=talentos"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Talentos e Desenvolvimento
-                    </Link>
-                    <Link
-                      href="/rh?tab=seguranca"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Saúde e Segurança
-                    </Link>
-                    <Link
-                      href="/rh?tab=eventos"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Eventos e Custos
-                    </Link>
-                    <Link
-                      href="/rh?tab=portais"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Portais e Gestão
-                    </Link>
-                    <Link
-                      href="/rh?tab=administracao"
-                      onClick={closeMobileMenu}
-                      className="block px-2 py-1 text-[11px] rounded transition text-slate-400 hover:text-white"
-                    >
-                      • Administração do RH
-                    </Link>
+                  <div className="ml-5 mt-0.5 mb-1.5 space-y-0.5 border-l-2 border-emerald-900/60 pl-2">
+                    {[
+                      { tab: 'visao', label: '1. Visão Geral RH' },
+                      { tab: 'aprovacoes', label: '2. Central de Aprovações (SoD)' },
+                      { tab: 'pessoas', label: '3. Pessoas e Estrutura' },
+                      { tab: 'dp', label: '4. Dep. Pessoal & Caju' },
+                      { tab: 'ponto', label: '5. Ponto REP-P (Portaria 671)' },
+                      { tab: 'talentos', label: '6. Talentos & Treinamento' },
+                      { tab: 'seguranca', label: '7. Saúde & Segurança SST' },
+                      { tab: 'eventos', label: '8. Eventos e Custos (DRE)' },
+                      { tab: 'portais', label: '9. Portais do Colaborador' },
+                      { tab: 'administracao', label: '10. Administração & Regras' },
+                    ].map((sub) => {
+                      const isSubActive =
+                        pathname === '/rh' &&
+                        (currentRhTab === sub.tab || (!currentRhTab && sub.tab === 'visao'));
+
+                      return (
+                        <Link
+                          key={sub.tab}
+                          href={`/rh?tab=${sub.tab}`}
+                          onClick={() => {
+                            setCurrentRhTab(sub.tab);
+                            closeMobileMenu();
+                          }}
+                          className={`block px-2 py-1 text-[11px] rounded transition ${
+                            isSubActive
+                              ? 'text-emerald-400 font-bold bg-emerald-950/40 border-l-2 border-emerald-400 pl-1.5 shadow-sm'
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                          }`}
+                        >
+                          &bull; {sub.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
 

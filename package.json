@@ -18,7 +18,8 @@
     "preflight": "node scripts/preflight-go-live.mjs",
     "check:architecture": "node scripts/check-modules-sync.mjs",
     "audit:data": "node scripts/audit-production-data.mjs",
-    "audit:production": "node scripts/audit-production.mjs"
+    "audit:production": "node scripts/audit-production.mjs",
+    "backup": "node scripts/generate-general-backup.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.7.0",

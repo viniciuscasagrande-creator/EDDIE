@@ -617,6 +617,7 @@ export default function RecursosHumanosPage() {
 
   // Tab ativa inicial (sem quebrar SSR)
   const [activeTab, setActiveTab] = useState<RHTab>('visao');
+  const [showMobileHierarchicalMenu, setShowMobileHierarchicalMenu] = useState(false);
 
   // Recupera e sincroniza tab a partir da URL no cliente
   useEffect(() => {
@@ -1161,10 +1162,36 @@ export default function RecursosHumanosPage() {
       />
 
       {/* 4. LAYOUT PRINCIPAL: MENU HIERÁRQUICO EXPANSÍVEL (V2.1) + CONTEÚDO ATIVO */}
+      {/* Botão de Alternância no Mobile */}
+      <div className="lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileHierarchicalMenu((prev) => !prev)}
+          className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#111827] border border-slate-800 text-xs font-bold text-slate-200 hover:border-emerald-500/40 transition shadow-md cursor-pointer mb-2"
+        >
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-emerald-400" />
+            <span>Menu Hierárquico dos 10 Grupos RH</span>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              Aba: {activeTab.toUpperCase()}
+            </span>
+          </div>
+          <ChevronDown
+            size={16}
+            className={`transition-transform duration-200 ${
+              showMobileHierarchicalMenu ? 'rotate-180 text-emerald-400' : 'text-slate-400'
+            }`}
+          />
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
         {/* COLUNA ESQUERDA: MENU HIERÁRQUICO EXPANSÍVEL (CONFORME RH_DISK_V2_1_MENU_HIERARQUICO.md) */}
-        <aside className="lg:col-span-4 bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+        <aside
+          className={`bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3 lg:col-span-4 ${
+            showMobileHierarchicalMenu ? 'block' : 'hidden lg:block'
+          }`}
+        >
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-emerald-400" />
@@ -1249,7 +1276,7 @@ export default function RecursosHumanosPage() {
         </aside>
 
         {/* COLUNA DIREITA: CONTEÚDO ATIVO DA TELA SELECIONADA */}
-        <main className="lg:col-span-8 space-y-6">
+        <section className="lg:col-span-8 space-y-6">
 
           {/* -------------------------------------------------------- */}
           {/* TAB 1: 1. VISÃO GERAL RH                                 */}
@@ -2435,7 +2462,7 @@ export default function RecursosHumanosPage() {
             </div>
           )}
 
-        </main>
+        </section>
       </div>
 
       {/* ======================================================== */}
