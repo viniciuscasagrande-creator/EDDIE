@@ -45,6 +45,8 @@ import {
   Copy,
   Sliders,
   Ticket,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 import { useAuthSession } from '../../components/AuthSessionContext';
@@ -619,6 +621,47 @@ export default function RecursosHumanosPage() {
   const [activeTab, setActiveTab] = useState<RHTab>('visao');
   const [showMobileHierarchicalMenu, setShowMobileHierarchicalMenu] = useState(false);
 
+  // Tema Claro Corporativo (Padrão) vs Modo Escuro
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('eddie_theme_mode') || localStorage.getItem('rh_theme_mode');
+        if (saved === 'dark' || saved === 'light') {
+          setThemeMode(saved);
+        } else {
+          setThemeMode('light');
+          localStorage.setItem('rh_theme_mode', 'light');
+        }
+      } catch (e) {}
+    }
+    const handleThemeChange = () => {
+      try {
+        const saved = localStorage.getItem('eddie_theme_mode') || localStorage.getItem('rh_theme_mode');
+        if (saved === 'dark' || saved === 'light') {
+          setThemeMode(saved);
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('eddie_theme_changed', handleThemeChange);
+    return () => window.removeEventListener('eddie_theme_changed', handleThemeChange);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = themeMode === 'light' ? 'dark' : 'light';
+    setThemeMode(next);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('rh_theme_mode', next);
+        localStorage.setItem('eddie_theme_mode', next);
+        window.dispatchEvent(new Event('eddie_theme_changed'));
+      } catch (e) {}
+    }
+  };
+
+  const isLight = themeMode === 'light';
+
   // Recupera e sincroniza tab a partir da URL no cliente
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -757,6 +800,413 @@ export default function RecursosHumanosPage() {
   const [competenciaBeneficio, setCompetenciaBeneficio] = useState('10/2026');
   const [diasUteisBeneficio, setDiasUteisBeneficio] = useState(21);
   const [deduzirFaltasPonto, setDeduzirFaltasPonto] = useState(true);
+
+  // Sub-tabs da Suíte de Benefícios (Fases 1 a 5 - SEEK V1.9)
+  type SubTabBeneficios =
+    | 'BOLSOS_CAJU'
+    | 'SIMULADOR_COMPRA'
+    | 'CONFERENCIA'
+    | 'HISTORICO'
+    | 'CUSTOS'
+    | 'DEPARTAMENTOS'
+    | 'COMPARATIVO';
+
+  const [subTabBeneficios, setSubTabBeneficios] = useState<SubTabBeneficios>('BOLSOS_CAJU');
+  const [filtroHistoricoColab, setFiltroHistoricoColab] = useState<string>('TODOS');
+
+  // Dados da Fase 5 (SEEK V1.9) — Conferência, Histórico Imutável, Custos, Departamentos e Comparativo
+  const [conferenciaItens, setConferenciaItens] = useState([
+    {
+      colaboradorId: 'colab-001',
+      nome: 'Karine Santos',
+      matricula: 'DK-1042',
+      departamento: 'Controladoria & RH',
+      beneficio: 'VT / VA / VR',
+      operadora: 'Caju Benefícios S.A.',
+      diasEfetivos: 21,
+      diasUteis: 21,
+      valorFinalEmpresa: 1650.0,
+      divergencia: null as string | null,
+      status: 'CONFERIDO' as 'CONFERIDO' | 'PENDENTE',
+    },
+    {
+      colaboradorId: 'colab-002',
+      nome: 'Lucas Ferreira dos Santos',
+      matricula: 'DK-1088',
+      departamento: 'Operações & Portaria',
+      beneficio: 'VT / VA / VR / Combustível',
+      operadora: 'Caju + Ticket Combustível',
+      diasEfetivos: 20,
+      diasUteis: 21,
+      valorFinalEmpresa: 1650.0,
+      divergencia: 'Atenção: 1 falta deduzida no REP-P e inclusão de auxílio combustível.',
+      status: 'PENDENTE' as 'CONFERIDO' | 'PENDENTE',
+    },
+    {
+      colaboradorId: 'colab-003',
+      nome: 'Mariana Duarte Souza',
+      matricula: 'DK-1102',
+      departamento: 'Bilheteria & SAC',
+      beneficio: 'VT / VA / VR',
+      operadora: 'Caju Benefícios S.A.',
+      diasEfetivos: 21,
+      diasUteis: 21,
+      valorFinalEmpresa: 1200.0,
+      divergencia: null as string | null,
+      status: 'CONFERIDO' as 'CONFERIDO' | 'PENDENTE',
+    },
+    {
+      colaboradorId: 'colab-004',
+      nome: 'Rafael Albuquerque Lima',
+      matricula: 'DK-2015',
+      departamento: 'Staff de Eventos',
+      beneficio: 'VT / VA / VR',
+      operadora: 'Caju Benefícios S.A.',
+      diasEfetivos: 19,
+      diasUteis: 21,
+      valorFinalEmpresa: 1100.0,
+      divergencia: null as string | null,
+      status: 'CONFERIDO' as 'CONFERIDO' | 'PENDENTE',
+    },
+  ]);
+
+  const handleConferirTodosSemDivergencia = () => {
+    setConferenciaItens((prev) =>
+      prev.map((i) => (!i.divergencia ? { ...i, status: 'CONFERIDO' } : i))
+    );
+    showToast('Itens sem divergência conferidos com sucesso pelo RH!');
+  };
+
+  const handleConferirItem = (colabId: string) => {
+    setConferenciaItens((prev) =>
+      prev.map((i) => (i.colaboradorId === colabId ? { ...i, status: 'CONFERIDO' } : i))
+    );
+    showToast('Item individual validado e conferido pelo RH!');
+  };
+
+  // Histórico Imutável de Fechamentos (Snapshot de competências gravadas)
+  const historicoFechamentosSnapshots = [
+    {
+      periodo: '10/2026',
+      colaboradorId: 'colab-001',
+      nome: 'Karine Santos',
+      matricula: 'DK-1042',
+      departamento: 'Controladoria & RH',
+      vt: 300.0,
+      va: 500.0,
+      vr: 850.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 21,
+      diasUteis: 21,
+      descontoColab: 504.0,
+      custoEmpresa: 1650.0,
+      statusCredito: 'DISPONIBILIZADO',
+    },
+    {
+      periodo: '10/2026',
+      colaboradorId: 'colab-002',
+      nome: 'Lucas Ferreira dos Santos',
+      matricula: 'DK-1088',
+      departamento: 'Operações & Portaria',
+      vt: 300.0,
+      va: 400.0,
+      vr: 700.0,
+      combustivel: 250.0,
+      operadora: 'Caju + Ticket',
+      diasElegiveis: 20,
+      diasUteis: 21,
+      descontoColab: 372.0,
+      custoEmpresa: 1650.0,
+      statusCredito: 'EM_PROCESSAMENTO',
+    },
+    {
+      periodo: '10/2026',
+      colaboradorId: 'colab-003',
+      nome: 'Mariana Duarte Souza',
+      matricula: 'DK-1102',
+      departamento: 'Bilheteria & SAC',
+      vt: 200.0,
+      va: 400.0,
+      vr: 600.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 21,
+      diasUteis: 21,
+      descontoColab: 288.0,
+      custoEmpresa: 1200.0,
+      statusCredito: 'DISPONIBILIZADO',
+    },
+    {
+      periodo: '10/2026',
+      colaboradorId: 'colab-004',
+      nome: 'Rafael Albuquerque Lima',
+      matricula: 'DK-2015',
+      departamento: 'Staff de Eventos',
+      vt: 200.0,
+      va: 350.0,
+      vr: 550.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 19,
+      diasUteis: 21,
+      descontoColab: 234.0,
+      custoEmpresa: 1100.0,
+      statusCredito: 'DISPONIBILIZADO',
+    },
+    // Competência 09/2026 (Imutável)
+    {
+      periodo: '09/2026',
+      colaboradorId: 'colab-001',
+      nome: 'Karine Santos',
+      matricula: 'DK-1042',
+      departamento: 'Controladoria & RH',
+      vt: 300.0,
+      va: 500.0,
+      vr: 850.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 22,
+      diasUteis: 22,
+      descontoColab: 504.0,
+      custoEmpresa: 1650.0,
+      statusCredito: 'CREDITADO_CONCLUIDO',
+    },
+    {
+      periodo: '09/2026',
+      colaboradorId: 'colab-002',
+      nome: 'Lucas Ferreira dos Santos',
+      matricula: 'DK-1088',
+      departamento: 'Operações & Portaria',
+      vt: 300.0,
+      va: 400.0,
+      vr: 700.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 22,
+      diasUteis: 22,
+      descontoColab: 372.0,
+      custoEmpresa: 1400.0,
+      statusCredito: 'CREDITADO_CONCLUIDO',
+    },
+    {
+      periodo: '09/2026',
+      colaboradorId: 'colab-003',
+      nome: 'Mariana Duarte Souza',
+      matricula: 'DK-1102',
+      departamento: 'Bilheteria & SAC',
+      vt: 200.0,
+      va: 400.0,
+      vr: 600.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 22,
+      diasUteis: 22,
+      descontoColab: 288.0,
+      custoEmpresa: 1200.0,
+      statusCredito: 'CREDITADO_CONCLUIDO',
+    },
+    {
+      periodo: '09/2026',
+      colaboradorId: 'colab-004',
+      nome: 'Rafael Albuquerque Lima',
+      matricula: 'DK-2015',
+      departamento: 'Staff de Eventos',
+      vt: 200.0,
+      va: 350.0,
+      vr: 550.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 22,
+      diasUteis: 22,
+      descontoColab: 234.0,
+      custoEmpresa: 1100.0,
+      statusCredito: 'CREDITADO_CONCLUIDO',
+    },
+    // Competência 08/2026 (Imutável)
+    {
+      periodo: '08/2026',
+      colaboradorId: 'colab-001',
+      nome: 'Karine Santos',
+      matricula: 'DK-1042',
+      departamento: 'Controladoria & RH',
+      vt: 300.0,
+      va: 500.0,
+      vr: 850.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 21,
+      diasUteis: 21,
+      descontoColab: 504.0,
+      custoEmpresa: 1650.0,
+      statusCredito: 'CREDITADO_CONCLUIDO',
+    },
+    {
+      periodo: '08/2026',
+      colaboradorId: 'colab-002',
+      nome: 'Lucas Ferreira dos Santos',
+      matricula: 'DK-1088',
+      departamento: 'Operações & Portaria',
+      vt: 300.0,
+      va: 400.0,
+      vr: 700.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 21,
+      diasUteis: 21,
+      descontoColab: 372.0,
+      custoEmpresa: 1400.0,
+      statusCredito: 'CREDITADO_CONCLUIDO',
+    },
+    {
+      periodo: '08/2026',
+      colaboradorId: 'colab-003',
+      nome: 'Mariana Duarte Souza',
+      matricula: 'DK-1102',
+      departamento: 'Bilheteria & SAC',
+      vt: 200.0,
+      va: 400.0,
+      vr: 600.0,
+      combustivel: 0.0,
+      operadora: 'Caju Benefícios',
+      diasElegiveis: 21,
+      diasUteis: 21,
+      descontoColab: 288.0,
+      custoEmpresa: 1200.0,
+      statusCredito: 'CREDITADO_CONCLUIDO',
+    },
+  ];
+
+  // Custos e Evolução Mensal (Fase 5)
+  const custosEvolucaoMensal = [
+    {
+      periodo: '10/2026',
+      vt: 1000.0,
+      va: 1650.0,
+      vr: 2700.0,
+      combustivel: 250.0,
+      totalEmpresa: 5600.0,
+      descontoColaboradores: 1398.0,
+      vidas: 4,
+      status: 'EM_PROCESSAMENTO',
+    },
+    {
+      periodo: '09/2026',
+      vt: 1000.0,
+      va: 1650.0,
+      vr: 2700.0,
+      combustivel: 0.0,
+      totalEmpresa: 5350.0,
+      descontoColaboradores: 1398.0,
+      vidas: 4,
+      status: 'CONCLUIDO_CREDITADO',
+    },
+    {
+      periodo: '08/2026',
+      vt: 800.0,
+      va: 1300.0,
+      vr: 2150.0,
+      combustivel: 0.0,
+      totalEmpresa: 4250.0,
+      descontoColaboradores: 1164.0,
+      vidas: 3,
+      status: 'CONCLUIDO_CREDITADO',
+    },
+    {
+      periodo: '07/2026',
+      vt: 800.0,
+      va: 1300.0,
+      vr: 2150.0,
+      combustivel: 0.0,
+      totalEmpresa: 4250.0,
+      descontoColaboradores: 1164.0,
+      vidas: 3,
+      status: 'CONCLUIDO_CREDITADO',
+    },
+  ];
+
+  // Visão Departamental de Custos (Fase 5)
+  const departamentosCustos = [
+    {
+      departamento: 'Operações & Portaria',
+      vidas: 1,
+      vt: 300.0,
+      va: 400.0,
+      vr: 700.0,
+      combustivel: 250.0,
+      total: 1650.0,
+      percentual: 29.5,
+    },
+    {
+      departamento: 'Controladoria & RH',
+      vidas: 1,
+      vt: 300.0,
+      va: 500.0,
+      vr: 850.0,
+      combustivel: 0.0,
+      total: 1650.0,
+      percentual: 29.5,
+    },
+    {
+      departamento: 'Bilheteria & SAC',
+      vidas: 1,
+      vt: 200.0,
+      va: 400.0,
+      vr: 600.0,
+      combustivel: 0.0,
+      total: 1200.0,
+      percentual: 21.4,
+    },
+    {
+      departamento: 'Staff de Eventos',
+      vidas: 1,
+      vt: 200.0,
+      va: 350.0,
+      vr: 550.0,
+      combustivel: 0.0,
+      total: 1100.0,
+      percentual: 19.6,
+    },
+  ];
+
+  // Comparativo Automático Mês a Mês (10/2026 vs 09/2026) (Fase 5)
+  const comparativoDeltas = [
+    {
+      tipo: 'Vale-Transporte (VT)',
+      atual: 1000.0,
+      anterior: 1000.0,
+      deltaValor: 0.0,
+      deltaPercent: 0.0,
+    },
+    {
+      tipo: 'Vale-Alimentação (VA)',
+      atual: 1650.0,
+      anterior: 1650.0,
+      deltaValor: 0.0,
+      deltaPercent: 0.0,
+    },
+    {
+      tipo: 'Vale-Refeição (VR)',
+      atual: 2700.0,
+      anterior: 2700.0,
+      deltaValor: 0.0,
+      deltaPercent: 0.0,
+    },
+    {
+      tipo: 'Auxílio Combustível',
+      atual: 250.0,
+      anterior: 0.0,
+      deltaValor: 250.0,
+      deltaPercent: 100.0,
+    },
+    {
+      tipo: 'Custo Total Líquido Empresa',
+      atual: 5600.0,
+      anterior: 5350.0,
+      deltaValor: 250.0,
+      deltaPercent: 4.67,
+    },
+  ];
 
   const [modalConfigCaju, setModalConfigCaju] = useState(false);
   const [cajuEditForm, setCajuEditForm] = useState({
@@ -1043,28 +1493,60 @@ export default function RecursosHumanosPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className={`space-y-6 max-w-7xl mx-auto pb-16 ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>
       {/* 1. HERO HEADER DO MÓDULO OFICIAL */}
-      <div className="bg-gradient-to-r from-emerald-950/70 via-slate-900 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 lg:p-8 relative overflow-hidden shadow-2xl">
+      <div
+        className={`rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all ${
+          isLight
+            ? 'bg-white border border-slate-200 shadow-sm'
+            : 'bg-gradient-to-r from-emerald-950/70 via-slate-900 to-slate-900 border border-emerald-500/20 shadow-2xl'
+        }`}
+      >
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-2xl space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-                <Users className="w-3.5 h-3.5 text-emerald-400" />
-                <span>RH Disk V2.1 • Módulo Oficial</span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                  isLight
+                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                    : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                }`}
+              >
+                <Users className={`w-3.5 h-3.5 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`} />
+                <span>RH Disk V2.3 • Módulo Oficial</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold">
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                  isLight
+                    ? 'bg-sky-50 border border-sky-200 text-sky-800'
+                    : 'bg-sky-500/10 border border-sky-500/30 text-sky-400'
+                }`}
+              >
                 Portaria 671 MTE (REP-P)
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-semibold">
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                  isLight
+                    ? 'bg-purple-50 border border-purple-200 text-purple-800'
+                    : 'bg-purple-500/10 border border-purple-500/30 text-purple-400'
+                }`}
+              >
                 Integrado ao Módulo Financeiro
               </span>
             </div>
 
-            <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight">
+            <h1
+              className={`text-2xl lg:text-3xl font-black tracking-tight ${
+                isLight ? 'text-slate-900' : 'text-white'
+              }`}
+            >
               Recursos Humanos, Ponto &amp; Equipes
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p
+              className={`text-sm leading-relaxed ${
+                isLight ? 'text-slate-600' : 'text-slate-300'
+              }`}
+            >
               Gestão completa de colaboradores, ponto eletrônico com validação por cerca virtual em arenas, folha de pagamento integrada à Tesouraria e apropriação direta de custos de pessoal no DRE dos Eventos.
             </p>
           </div>
@@ -1073,7 +1555,11 @@ export default function RecursosHumanosPage() {
             <button
               type="button"
               onClick={() => setModalPontoAberto(true)}
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 transition flex items-center gap-2 cursor-pointer"
+              className={`px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 cursor-pointer shadow-sm ${
+                isLight
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20 shadow-lg'
+              }`}
             >
               <Smartphone className="w-4 h-4" />
               <span>Bater Ponto (Simulador MTE)</span>
@@ -1082,7 +1568,11 @@ export default function RecursosHumanosPage() {
             <button
               type="button"
               onClick={() => setModalNovoColaborador(true)}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition flex items-center gap-2 cursor-pointer"
+              className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition flex items-center gap-2 cursor-pointer shadow-sm ${
+                isLight
+                  ? 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-800'
+                  : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
+              }`}
             >
               <UserPlus className="w-4 h-4 text-emerald-400" />
               <span>+ Novo Colaborador</span>
@@ -1091,9 +1581,13 @@ export default function RecursosHumanosPage() {
             <button
               type="button"
               onClick={() => setModalNovaGeofence(true)}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition flex items-center gap-2 cursor-pointer"
+              className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition flex items-center gap-2 cursor-pointer shadow-xs ${
+                isLight
+                  ? 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300'
+                  : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
+              }`}
             >
-              <MapPin className="w-4 h-4 text-sky-400" />
+              <MapPin className={`w-4 h-4 ${isLight ? 'text-sky-600' : 'text-sky-400'}`} />
               <span>+ Nova Cerca Virtual</span>
             </button>
           </div>
@@ -1102,53 +1596,77 @@ export default function RecursosHumanosPage() {
 
       {/* 2. KPIS GLOBAIS DE RH & FOLHA */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 hover:border-emerald-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div
+          className={`rounded-xl p-5 border transition ${
+            isLight
+              ? 'bg-white border-slate-200 border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md'
+              : 'bg-[#111827] border-slate-800 hover:border-emerald-500/40'
+          }`}
+        >
+          <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="text-xs font-semibold uppercase tracking-wider">Colaboradores Ativos</span>
-            <Users className="w-4 h-4 text-emerald-400" />
+            <Users className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} />
           </div>
-          <div className="text-2xl font-black text-white">{colaboradores.length}</div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+          <div className={`text-2xl font-black ${isLight ? 'text-slate-900' : 'text-white'}`}>{colaboradores.length}</div>
+          <div className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
             <span>{colaboradores.filter((c) => c.tipoContrato === 'CLT').length} CLT &bull; {colaboradores.filter((c) => c.tipoContrato !== 'CLT').length} Outros</span>
-            <span className="text-emerald-400 font-bold">100% Homologado</span>
+            <span className={`font-bold ${isLight ? 'text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' : 'text-emerald-400'}`}>100% Homologado</span>
           </div>
         </div>
 
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 hover:border-sky-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div
+          className={`rounded-xl p-5 border transition ${
+            isLight
+              ? 'bg-white border-slate-200 border-l-4 border-l-sky-500 shadow-sm hover:shadow-md'
+              : 'bg-[#111827] border-slate-800 hover:border-sky-500/40'
+          }`}
+        >
+          <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="text-xs font-semibold uppercase tracking-wider">Batidas no REP-P</span>
-            <Clock className="w-4 h-4 text-sky-400" />
+            <Clock className={`w-4 h-4 ${isLight ? 'text-sky-600' : 'text-sky-400'}`} />
           </div>
-          <div className="text-2xl font-black text-sky-400">{registrosPonto.length}</div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+          <div className={`text-2xl font-black ${isLight ? 'text-sky-700' : 'text-sky-400'}`}>{registrosPonto.length}</div>
+          <div className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
             <span>Geofence validado</span>
-            <span className="text-sky-400 font-bold">Portaria 671</span>
+            <span className={`font-bold ${isLight ? 'text-sky-800 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200' : 'text-sky-400'}`}>Portaria 671</span>
           </div>
         </div>
 
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 hover:border-amber-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div
+          className={`rounded-xl p-5 border transition ${
+            isLight
+              ? 'bg-white border-slate-200 border-l-4 border-l-amber-500 shadow-sm hover:shadow-md'
+              : 'bg-[#111827] border-slate-800 hover:border-amber-500/40'
+          }`}
+        >
+          <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="text-xs font-semibold uppercase tracking-wider">Aprovações Pendentes</span>
-            <CheckCircle2 className="w-4 h-4 text-amber-400" />
+            <CheckCircle2 className={`w-4 h-4 ${isLight ? 'text-amber-600' : 'text-amber-400'}`} />
           </div>
-          <div className="text-2xl font-black text-amber-400">{pendentesAprovacao}</div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+          <div className={`text-2xl font-black ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>{pendentesAprovacao}</div>
+          <div className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
             <span>Segregação de Funções</span>
-            <span className="text-amber-400 font-bold">SoD Ativo</span>
+            <span className={`font-bold ${isLight ? 'text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200' : 'text-amber-400'}`}>SoD Ativo</span>
           </div>
         </div>
 
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 hover:border-purple-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div
+          className={`rounded-xl p-5 border transition ${
+            isLight
+              ? 'bg-white border-slate-200 border-l-4 border-l-purple-500 shadow-sm hover:shadow-md'
+              : 'bg-[#111827] border-slate-800 hover:border-purple-500/40'
+          }`}
+        >
+          <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="text-xs font-semibold uppercase tracking-wider">Staff Eventos (DRE)</span>
-            <DollarSign className="w-4 h-4 text-purple-400" />
+            <DollarSign className={`w-4 h-4 ${isLight ? 'text-purple-600' : 'text-purple-400'}`} />
           </div>
-          <div className="text-2xl font-black text-purple-400">
+          <div className={`text-2xl font-black ${isLight ? 'text-purple-700' : 'text-purple-400'}`}>
             R$ {staffEventos.reduce((a, b) => a + b.custoTotalPessoal, 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+          <div className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
             <span>Apropriado no Ledger</span>
-            <span className="text-purple-400 font-bold">{staffEventos.length} Eventos</span>
+            <span className={`font-bold ${isLight ? 'text-purple-800 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200' : 'text-purple-400'}`}>{staffEventos.length} Eventos</span>
           </div>
         </div>
       </div>
@@ -1167,19 +1685,31 @@ export default function RecursosHumanosPage() {
         <button
           type="button"
           onClick={() => setShowMobileHierarchicalMenu((prev) => !prev)}
-          className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#111827] border border-slate-800 text-xs font-bold text-slate-200 hover:border-emerald-500/40 transition shadow-md cursor-pointer mb-2"
+          className={`w-full flex items-center justify-between p-3.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer mb-2 ${
+            isLight
+              ? 'bg-white border border-slate-200 text-slate-800 hover:border-emerald-500/60'
+              : 'bg-[#111827] border border-slate-800 text-slate-200 hover:border-emerald-500/40'
+          }`}
         >
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-emerald-400" />
+            <Layers className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} />
             <span>Menu Hierárquico dos 10 Grupos RH</span>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded font-bold ${
+                isLight
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+              }`}
+            >
               Aba: {activeTab.toUpperCase()}
             </span>
           </div>
           <ChevronDown
             size={16}
             className={`transition-transform duration-200 ${
-              showMobileHierarchicalMenu ? 'rotate-180 text-emerald-400' : 'text-slate-400'
+              showMobileHierarchicalMenu
+                ? isLight ? 'rotate-180 text-emerald-600' : 'rotate-180 text-emerald-400'
+                : 'text-slate-400'
             }`}
           />
         </button>
@@ -1188,18 +1718,26 @@ export default function RecursosHumanosPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* COLUNA ESQUERDA: MENU HIERÁRQUICO EXPANSÍVEL (CONFORME RH_DISK_V2_1_MENU_HIERARQUICO.md) */}
         <aside
-          className={`bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3 lg:col-span-4 ${
-            showMobileHierarchicalMenu ? 'block' : 'hidden lg:block'
-          }`}
+          className={`rounded-2xl p-4 space-y-3 lg:col-span-4 transition-all ${
+            isLight
+              ? 'bg-white border border-slate-200 shadow-sm'
+              : 'bg-[#111827] border border-slate-800 shadow-xl'
+          } ${showMobileHierarchicalMenu ? 'block' : 'hidden lg:block'}`}
         >
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className={`flex items-center justify-between pb-3 border-b ${isLight ? 'border-slate-100' : 'border-slate-800'}`}>
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-emerald-400" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                Menu Hierárquico RH V2.1
+              <Layers className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} />
+              <h2 className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
+                Menu Hierárquico RH V2.3
               </h2>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span
+              className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                isLight
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+              }`}
+            >
               10 Grupos
             </span>
           </div>
@@ -1217,29 +1755,49 @@ export default function RecursosHumanosPage() {
                     onClick={() => handleSelectTab(group.id)}
                     className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
                       isSelected
-                        ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                        ? isLight
+                          ? 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs'
+                          : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                        : isLight
+                          ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isSelected ? (isLight ? 'text-emerald-700' : 'text-emerald-400') : 'text-slate-400'}`} />
                       <span className="truncate">{group.label}</span>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded border ${
+                          isLight
+                            ? isSelected
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                              : 'bg-slate-100 text-slate-600 border-slate-200'
+                            : 'bg-slate-800 text-slate-300 border-slate-700'
+                        }`}
+                      >
                         {group.badge}
                       </span>
                       <button
                         type="button"
                         onClick={(e) => toggleGroup(group.id, e)}
-                        className="p-1 text-slate-400 hover:text-white hover:bg-slate-700/60 rounded transition cursor-pointer"
+                        className={`p-1 rounded transition cursor-pointer ${
+                          isLight
+                            ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-700/60'
+                        }`}
                         title={isExpanded ? 'Recolher grupo' : 'Expandir grupo'}
                         aria-label={isExpanded ? 'Recolher grupo' : 'Expandir grupo'}
                       >
                         <ChevronDown
                           size={13}
-                          className={`transition-transform duration-200 ${isExpanded ? 'rotate-0 text-emerald-400' : '-rotate-90 text-slate-400'}`}
+                          className={`transition-transform duration-200 ${
+                            isExpanded
+                              ? isLight ? 'rotate-0 text-emerald-600' : 'rotate-0 text-emerald-400'
+                              : '-rotate-90 text-slate-400'
+                          }`}
                         />
                       </button>
                     </div>
@@ -1247,17 +1805,23 @@ export default function RecursosHumanosPage() {
 
                   {/* Sub-itens do Grupo (Exibidos se isExpanded for true) */}
                   {isExpanded && (
-                    <div className="ml-6 pl-2.5 my-1 space-y-1 border-l border-emerald-900/60">
+                    <div className={`ml-6 pl-2.5 my-1 space-y-1 border-l ${isLight ? 'border-emerald-200' : 'border-emerald-900/60'}`}>
                       {group.subItems.map((sub, idx) => (
                         <div
                           key={idx}
                           onClick={() => handleSelectTab(group.id)}
-                          className="group flex flex-col p-1.5 rounded-lg hover:bg-slate-800/40 transition cursor-pointer"
+                          className={`group flex flex-col p-1.5 rounded-lg transition cursor-pointer ${
+                            isLight ? 'hover:bg-slate-50' : 'hover:bg-slate-800/40'
+                          }`}
                         >
-                          <span className={`text-[11px] font-medium transition ${isSelected ? 'text-emerald-400 font-semibold' : 'text-slate-400 group-hover:text-white'}`}>
+                          <span className={`text-[11px] font-medium transition ${
+                            isSelected
+                              ? isLight ? 'text-emerald-700 font-semibold' : 'text-emerald-400 font-semibold'
+                              : isLight ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-400 group-hover:text-white'
+                          }`}>
                             &bull; {sub.label}
                           </span>
-                          <span className="text-[10px] text-slate-400 group-hover:text-slate-300 pl-2">
+                          <span className={`text-[10px] pl-2 ${isLight ? 'text-slate-400 group-hover:text-slate-600' : 'text-slate-400 group-hover:text-slate-300'}`}>
                             {sub.actionDesc}
                           </span>
                         </div>
@@ -1269,9 +1833,9 @@ export default function RecursosHumanosPage() {
             })}
           </nav>
 
-          <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className={`pt-3 border-t text-[11px] flex items-center justify-between ${isLight ? 'border-slate-100 text-slate-500' : 'border-slate-800 text-slate-400'}`}>
             <span>Persistência no navegador</span>
-            <span className="text-emerald-400 font-mono">Ativo (Local)</span>
+            <span className={`font-mono font-bold ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>Ativo (Local)</span>
           </div>
         </aside>
 
@@ -1283,58 +1847,58 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'visao' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className={`rounded-2xl border p-6 space-y-4 transition ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#111827] border-slate-800'}`}>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <BadgeCheck className="w-5 h-5 text-emerald-400" />
+                  <h3 className={`text-base font-bold flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    <BadgeCheck className={`w-5 h-5 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} />
                     <span>Jornada Operacional do Colaborador</span>
                   </h3>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isLight ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'}`}>
                     Fluxo Integrado
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                   Fluxo ponta a ponta: Admissão Digital &rarr; Cerca Virtual em Arena &rarr; Registro REP-P &rarr; DRE do Evento &rarr; Remessa PIX Tesouraria.
                 </p>
 
                 <div className="space-y-3 pt-2">
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                  <div className={`p-4 rounded-xl border flex items-center justify-between transition ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
                     <div>
-                      <div className="text-xs font-bold text-white">Admissões &amp; Onboarding Digital</div>
-                      <div className="text-[11px] text-slate-400">2 contratos aguardando assinatura eletrônica com SHA-256</div>
+                      <div className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Admissões &amp; Onboarding Digital</div>
+                      <div className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>2 contratos aguardando assinatura eletrônica com SHA-256</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleSelectTab('pessoas')}
-                      className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                      className={`text-xs font-semibold flex items-center gap-1 cursor-pointer ${isLight ? 'text-emerald-700 hover:text-emerald-800' : 'text-emerald-400 hover:text-emerald-300'}`}
                     >
                       <span>Ver Equipe</span> &rarr;
                     </button>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                  <div className={`p-4 rounded-xl border flex items-center justify-between transition ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
                     <div>
-                      <div className="text-xs font-bold text-white">Ponto Eletrônico em Arenas (REP-P 671 MTE)</div>
-                      <div className="text-[11px] text-slate-400">4 cercas ativas com tolerância de geolocalização e geração de NSR</div>
+                      <div className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Ponto Eletrônico em Arenas (REP-P 671 MTE)</div>
+                      <div className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>4 cercas ativas com tolerância de geolocalização e geração de NSR</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleSelectTab('ponto')}
-                      className="text-xs font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1"
+                      className={`text-xs font-semibold flex items-center gap-1 cursor-pointer ${isLight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-400 hover:text-sky-300'}`}
                     >
                       <span>Ver Ponto</span> &rarr;
                     </button>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                  <div className={`p-4 rounded-xl border flex items-center justify-between transition ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
                     <div>
-                      <div className="text-xs font-bold text-white">Apropriação Contábil de Staff no DRE</div>
-                      <div className="text-[11px] text-slate-400">R$ 84.500,00 apropriados nos eventos do Ledger Financeiro</div>
+                      <div className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Apropriação Contábil de Staff no DRE</div>
+                      <div className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>R$ 84.500,00 apropriados nos eventos do Ledger Financeiro</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleSelectTab('eventos')}
-                      className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                      className={`text-xs font-semibold flex items-center gap-1 cursor-pointer ${isLight ? 'text-purple-700 hover:text-purple-800' : 'text-purple-400 hover:text-purple-300'}`}
                     >
                       <span>Ver DRE</span> &rarr;
                     </button>
@@ -1343,40 +1907,52 @@ export default function RecursosHumanosPage() {
               </div>
 
               {/* Central de Ações Rápidas */}
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-emerald-400" />
+              <div className={`rounded-2xl border p-6 space-y-4 transition ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#111827] border-slate-800'}`}>
+                <h3 className={`text-sm font-bold uppercase tracking-wider flex items-center gap-2 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                  <Settings className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} />
                   <span>Ações Rápidas do RH Disk</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
                     type="button"
                     onClick={() => setModalPontoAberto(true)}
-                    className="p-3.5 rounded-xl border border-slate-800 bg-slate-900 hover:border-emerald-500/50 hover:bg-emerald-950/20 text-left transition cursor-pointer"
+                    className={`p-4 rounded-xl border text-left transition cursor-pointer shadow-xs ${
+                      isLight
+                        ? 'bg-slate-50 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50'
+                        : 'bg-slate-900 border-slate-800 hover:border-emerald-500/50 hover:bg-emerald-950/20'
+                    }`}
                   >
-                    <Smartphone className="w-5 h-5 text-emerald-400 mb-2" />
-                    <div className="text-xs font-bold text-white">Simulador REP-P</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Testar batida com GPS</div>
+                    <Smartphone className={`w-5 h-5 mb-2 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} />
+                    <div className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Simulador REP-P</div>
+                    <div className={`text-[10px] mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Testar batida com GPS</div>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setModalNovoColaborador(true)}
-                    className="p-3.5 rounded-xl border border-slate-800 bg-slate-900 hover:border-sky-500/50 hover:bg-sky-950/20 text-left transition cursor-pointer"
+                    className={`p-4 rounded-xl border text-left transition cursor-pointer shadow-xs ${
+                      isLight
+                        ? 'bg-slate-50 border-slate-200 hover:border-sky-500 hover:bg-sky-50/50'
+                        : 'bg-slate-900 border-slate-800 hover:border-sky-500/50 hover:bg-sky-950/20'
+                    }`}
                   >
-                    <UserPlus className="w-5 h-5 text-sky-400 mb-2" />
-                    <div className="text-xs font-bold text-white">Admissão Digital</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Cadastrar novo staff</div>
+                    <UserPlus className={`w-5 h-5 mb-2 ${isLight ? 'text-sky-600' : 'text-sky-400'}`} />
+                    <div className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Admissão Digital</div>
+                    <div className={`text-[10px] mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Cadastrar novo staff</div>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setModalNovaGeofence(true)}
-                    className="p-3.5 rounded-xl border border-slate-800 bg-slate-900 hover:border-purple-500/50 hover:bg-purple-950/20 text-left transition cursor-pointer"
+                    className={`p-4 rounded-xl border text-left transition cursor-pointer shadow-xs ${
+                      isLight
+                        ? 'bg-slate-50 border-slate-200 hover:border-purple-500 hover:bg-purple-50/50'
+                        : 'bg-slate-900 border-slate-800 hover:border-purple-500/50 hover:bg-purple-950/20'
+                    }`}
                   >
-                    <MapPin className="w-5 h-5 text-purple-400 mb-2" />
-                    <div className="text-xs font-bold text-white">Cerca Virtual</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Nova arena/local</div>
+                    <MapPin className={`w-5 h-5 mb-2 ${isLight ? 'text-purple-600' : 'text-purple-400'}`} />
+                    <div className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Cerca Virtual</div>
+                    <div className={`text-[10px] mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Nova arena/local</div>
                   </button>
                 </div>
               </div>
@@ -1388,18 +1964,18 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'aprovacoes' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className={`rounded-2xl border p-6 space-y-4 transition ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#111827] border-slate-800'}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-amber-400" />
+                    <h3 className={`text-base font-bold flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      <CheckCircle2 className={`w-5 h-5 ${isLight ? 'text-amber-600' : 'text-amber-400'}`} />
                       <span>Central de Aprovações e Alçadas (SoD)</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className={`text-xs mt-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                       Segregação de funções: Solicitações de horas extras, férias e ajustes de batidas requerem aprovação formal da supervisão antes de impactar a folha.
                     </p>
                   </div>
-                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                  <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full ${isLight ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`}>
                     {pendentesAprovacao} Pendentes
                   </span>
                 </div>
@@ -1408,39 +1984,41 @@ export default function RecursosHumanosPage() {
                   {solicitacoes.map((sol) => (
                     <div
                       key={sol.id}
-                      className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                      className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition ${
+                        isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900 border-slate-800'
+                      }`}
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-white">{sol.colaborador}</span>
+                          <span className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{sol.colaborador}</span>
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                               sol.tipo === 'HORA_EXTRA'
-                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                ? isLight ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                                 : sol.tipo === 'FERIAS'
-                                ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
-                                : 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                                ? isLight ? 'bg-sky-50 text-sky-800 border-sky-200' : 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+                                : isLight ? 'bg-purple-50 text-purple-800 border-purple-200' : 'bg-purple-500/10 text-purple-400 border-purple-500/30'
                             }`}
                           >
                             {sol.tipo}
                           </span>
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                               sol.status === 'APROVADO'
-                                ? 'bg-emerald-500/10 text-emerald-400'
+                                ? isLight ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/10 text-emerald-400'
                                 : sol.status === 'REJEITADO'
-                                ? 'bg-rose-500/10 text-rose-400'
-                                : 'bg-slate-800 text-slate-300'
+                                ? isLight ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-rose-500/10 text-rose-400'
+                                : isLight ? 'bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-800 text-slate-300'
                             }`}
                           >
                             {sol.status}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-300">{sol.descricao}</p>
-                        <div className="text-[11px] text-slate-400 flex items-center gap-3">
+                        <p className={`text-xs ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>{sol.descricao}</p>
+                        <div className={`text-[11px] flex items-center gap-3 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                           <span>Solicitante: {sol.solicitante}</span>
                           <span>&bull;</span>
-                          <span className="font-mono text-emerald-400">{sol.valorOuHoras}</span>
+                          <span className={`font-mono font-bold ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>{sol.valorOuHoras}</span>
                         </div>
                       </div>
 
@@ -1449,14 +2027,18 @@ export default function RecursosHumanosPage() {
                           <button
                             type="button"
                             onClick={() => handleAprovarSolicitacao(sol.id, 'APROVADO')}
-                            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
                           >
                             Aprovar
                           </button>
                           <button
                             type="button"
                             onClick={() => handleAprovarSolicitacao(sol.id, 'REJEITADO')}
-                            className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 hover:text-rose-300 text-xs font-bold transition cursor-pointer"
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                              isLight
+                                ? 'bg-white hover:bg-rose-50 text-rose-600 border-slate-300'
+                                : 'bg-slate-800 hover:bg-slate-700 text-rose-400 hover:text-rose-300 border-slate-700'
+                            }`}
                           >
                             Rejeitar
                           </button>
@@ -1474,21 +2056,23 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'pessoas' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className={`rounded-2xl border p-6 space-y-4 transition ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#111827] border-slate-800'}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <Users className="w-5 h-5 text-emerald-400" />
+                    <h3 className={`text-base font-bold flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      <Users className={`w-5 h-5 ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`} />
                       <span>Colaboradores &amp; Estrutura Organizacional</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                       {colaboradoresFiltrados.length} colaboradores listados no quadro
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalNovoColaborador(true)}
-                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                    className={`px-4 py-2 rounded-xl font-bold text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto ${
+                      isLight ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-black'
+                    }`}
                   >
                     <Plus className="w-4 h-4" />
                     <span>Novo Colaborador</span>
@@ -1498,19 +2082,27 @@ export default function RecursosHumanosPage() {
                 {/* Filtro e Busca */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
                   <div className="relative flex-1 w-full">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Search className={`w-4 h-4 absolute left-3 top-2.5 ${isLight ? 'text-slate-400' : 'text-slate-400'}`} />
                     <input
                       type="text"
                       placeholder="Buscar por nome, matrícula ou cargo..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl text-xs outline-none shadow-xs ${
+                        isLight
+                          ? 'bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:border-emerald-500'
+                          : 'bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:border-emerald-500'
+                      }`}
                     />
                   </div>
                   <select
                     value={filtroDepto}
                     onChange={(e) => setFiltroDepto(e.target.value)}
-                    className="w-full sm:w-56 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white outline-none cursor-pointer"
+                    className={`w-full sm:w-56 px-3 py-2 rounded-xl text-xs outline-none cursor-pointer shadow-xs ${
+                      isLight
+                        ? 'bg-white border border-slate-300 text-slate-800'
+                        : 'bg-slate-900 border border-slate-700 text-white'
+                    }`}
                   >
                     <option value="ALL">Todos os Departamentos</option>
                     <option value="Controladoria">Controladoria &amp; RH</option>
@@ -1522,9 +2114,9 @@ export default function RecursosHumanosPage() {
                 </div>
 
                 {/* Tabela de Colaboradores */}
-                <div className="overflow-x-auto border border-slate-800 rounded-xl">
+                <div className={`overflow-x-auto rounded-xl border ${isLight ? 'border-slate-200 bg-white shadow-xs' : 'border-slate-800 bg-[#111827]'}`}>
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900/80 text-slate-400 font-semibold border-b border-slate-800">
+                    <thead className={`font-semibold border-b ${isLight ? 'bg-slate-50 text-slate-600 border-slate-200' : 'bg-slate-900/80 text-slate-400 border-slate-800'}`}>
                       <tr>
                         <th className="p-3">Colaborador</th>
                         <th className="p-3">Cargo / Depto</th>
@@ -1534,40 +2126,52 @@ export default function RecursosHumanosPage() {
                         <th className="p-3">Ações</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800 text-slate-300">
+                    <tbody className={`divide-y ${isLight ? 'divide-slate-100 text-slate-700' : 'divide-slate-800 text-slate-300'}`}>
                       {colaboradoresFiltrados.map((colab) => (
-                        <tr key={colab.id} className="hover:bg-slate-900/50 transition">
+                        <tr key={colab.id} className={`transition ${isLight ? 'hover:bg-slate-50/80' : 'hover:bg-slate-900/50'}`}>
                           <td className="p-3">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 font-bold flex items-center justify-center text-xs">
+                              <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center text-xs ${
+                                isLight
+                                  ? 'bg-emerald-50 border border-emerald-300 text-emerald-800'
+                                  : 'bg-emerald-950 border border-emerald-500/40 text-emerald-400'
+                              }`}>
                                 {colab.avatar}
                               </div>
                               <div>
-                                <div className="font-bold text-white">{colab.nome}</div>
-                                <div className="text-[10px] text-slate-400 font-mono">{colab.matricula}</div>
+                                <div className={`font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{colab.nome}</div>
+                                <div className={`text-[10px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{colab.matricula}</div>
                               </div>
                             </div>
                           </td>
                           <td className="p-3">
-                            <div className="font-medium text-slate-200">{colab.cargo}</div>
-                            <div className="text-[10px] text-slate-400">{colab.departamento}</div>
+                            <div className={`font-medium ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>{colab.cargo}</div>
+                            <div className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{colab.departamento}</div>
                           </td>
                           <td className="p-3">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              isLight
+                                ? 'bg-slate-100 text-slate-700 border-slate-200'
+                                : 'bg-slate-800 text-slate-300 border-slate-700'
+                            }`}>
                               {colab.tipoContrato}
                             </span>
                           </td>
-                          <td className="p-3 font-mono text-emerald-400 font-semibold">
+                          <td className={`p-3 font-mono font-bold ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
                             R$ {colab.salario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </td>
-                          <td className="p-3 text-[11px] text-slate-300">
+                          <td className={`p-3 text-[11px] ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                             {colab.geofenceAutorizada}
                           </td>
                           <td className="p-3">
                             <button
                               type="button"
                               onClick={() => setColaboradorDossie(colab)}
-                              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 text-[11px] font-semibold transition cursor-pointer"
+                              className={`px-2.5 py-1 rounded text-[11px] font-semibold transition cursor-pointer border ${
+                                isLight
+                                  ? 'bg-white hover:bg-slate-50 text-emerald-700 border-slate-300 shadow-xs'
+                                  : 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border-transparent'
+                              }`}
                             >
                               Dossiê
                             </button>
@@ -1586,21 +2190,21 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'dp' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-emerald-400" />
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-emerald-600" />
                       <span>Folha de Pagamento &amp; Remessas PIX Tesouraria</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Competência 10/2026 &bull; Total bruto: R$ 164.820,00 &bull; Integração direta com a Tesouraria (EDDIE 11.25)
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalRemessaPix(true)}
-                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                   >
                     <Send className="w-4 h-4" />
                     <span>Enviar Remessa PIX Tesouraria</span>
@@ -1608,46 +2212,46 @@ export default function RecursosHumanosPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <div className="text-[10px] uppercase font-bold text-slate-400">Total Proventos CLT</div>
-                    <div className="text-lg font-black text-white mt-1">R$ 138.420,00</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">34 colaboradores CLT</div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="text-[10px] uppercase font-bold text-slate-500">Total Proventos CLT</div>
+                    <div className="text-lg font-black text-slate-900 mt-1">R$ 138.420,00</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">34 colaboradores CLT</div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <div className="text-[10px] uppercase font-bold text-slate-400">Staff Temporário de Arenas</div>
-                    <div className="text-lg font-black text-sky-400 mt-1">R$ 26.400,00</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">8 colaboradores temporários</div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="text-[10px] uppercase font-bold text-slate-500">Staff Temporário de Arenas</div>
+                    <div className="text-lg font-black text-sky-600 mt-1">R$ 26.400,00</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">8 colaboradores temporários</div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <div className="text-[10px] uppercase font-bold text-slate-400">Status Remessa Bancária</div>
-                    <div className="text-lg font-black text-emerald-400 mt-1">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="text-[10px] uppercase font-bold text-slate-500">Status Remessa Bancária</div>
+                    <div className="text-lg font-black text-emerald-600 mt-1">
                       {remessaPixStatus === 'ENVIADO' ? 'Enviada (PIX)' : 'Aguardando Disparo'}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Tesouraria EDDIE 11.25</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Tesouraria EDDIE 11.25</div>
                   </div>
                 </div>
 
                 {/* ======================================================== */}
                 {/* SUÍTE DE GESTÃO E COMPRA DE BENEFÍCIOS (EDDIE 11.39)      */}
                 {/* ======================================================== */}
-                <div className="pt-6 border-t border-slate-800 space-y-6">
+                <div className="pt-6 border-t border-slate-200 space-y-6">
                   {/* Header da Seção de Benefícios */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-[#E63888]/20 text-[#E63888] flex items-center justify-center font-black text-xs border border-[#E63888]/30">
+                        <div className="w-6 h-6 rounded-lg bg-[#E63888] text-white flex items-center justify-center font-black text-xs shadow-xs">
                           C
                         </div>
-                        <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                           <span>Gestão de Benefícios Flexíveis &amp; Caju Wallets</span>
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E63888]/10 text-[#E63888] border border-[#E63888]/30 font-semibold normal-case">
                             Multi-Bolsos PAT/CLT
                           </span>
                         </h4>
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                         Calibração de bolsos com validação matemática em tempo real, dedução de faltas do Disk Ponto e faturamento direto com a Tesouraria (EDDIE 11.25).
                       </p>
                     </div>
@@ -1656,7 +2260,7 @@ export default function RecursosHumanosPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenEditCaju(selectedCajuColabId)}
-                        className="px-3.5 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#E63888]/20 cursor-pointer"
+                        className="px-3.5 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
                       >
                         <Sliders className="w-3.5 h-3.5" />
                         <span>Configurar Bolsos Caju</span>
@@ -1664,437 +2268,1078 @@ export default function RecursosHumanosPage() {
                     </div>
                   </div>
 
-                  {/* 1. PAINEL INTERATIVO DE BOLSOS CAJU (CAJU WALLETS OS) */}
-                  <div className="p-5 rounded-2xl bg-gradient-to-b from-[#171f33] to-[#0f172a] border border-slate-700/70 shadow-xl space-y-5">
-                    {/* Seletor de Colaborador */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4 text-[#E63888]" />
-                        <span className="text-xs font-bold text-slate-200">Colaborador em Análise:</span>
-                        <div className="flex flex-wrap gap-1.5 ml-2">
-                          {cajuConfigs.map((colab) => (
+                  {/* Sub-navegação em Abas da Suíte de Benefícios (Fases 1 a 5 - SEEK V1.9) */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setSubTabBeneficios('BOLSOS_CAJU')}
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                        subTabBeneficios === 'BOLSOS_CAJU'
+                          ? 'bg-[#E63888] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Caju Wallets OS</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubTabBeneficios('SIMULADOR_COMPRA')}
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                        subTabBeneficios === 'SIMULADOR_COMPRA'
+                          ? 'bg-[#E63888] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Simulador &amp; Faltas Ponto</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubTabBeneficios('CONFERENCIA')}
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                        subTabBeneficios === 'CONFERENCIA'
+                          ? 'bg-[#E63888] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Conferência &amp; Auditoria</span>
+                      {conferenciaItens.filter((i) => i.status === 'PENDENTE').length > 0 && (
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubTabBeneficios('HISTORICO')}
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                        subTabBeneficios === 'HISTORICO'
+                          ? 'bg-[#E63888] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Histórico Mensal</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubTabBeneficios('CUSTOS')}
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                        subTabBeneficios === 'CUSTOS'
+                          ? 'bg-[#E63888] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Relatório de Custos</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubTabBeneficios('DEPARTAMENTOS')}
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                        subTabBeneficios === 'DEPARTAMENTOS'
+                          ? 'bg-[#E63888] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      <Building className="w-3.5 h-3.5" />
+                      <span>Departamentos</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubTabBeneficios('COMPARATIVO')}
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                        subTabBeneficios === 'COMPARATIVO'
+                          ? 'bg-[#E63888] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      <span>Comparativo Mês a Mês</span>
+                    </button>
+                  </div>
+
+                  {/* 1. SUB-TAB: PAINEL INTERATIVO DE BOLSOS CAJU (CAJU WALLETS OS) */}
+                  {subTabBeneficios === 'BOLSOS_CAJU' && (
+                    <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
+                      {/* Seletor de Colaborador */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CreditCard className="w-4 h-4 text-[#E63888]" />
+                          <span className="text-xs font-bold text-slate-700">Colaborador em Análise:</span>
+                          <div className="flex flex-wrap gap-1.5 ml-1">
+                            {cajuConfigs.map((colab) => (
+                              <button
+                                key={colab.colaboradorId}
+                                type="button"
+                                onClick={() => setSelectedCajuColabId(colab.colaboradorId)}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                                  selectedCajuColabId === colab.colaboradorId
+                                    ? 'bg-[#E63888] text-white font-bold shadow-xs'
+                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                                }`}
+                              >
+                                <span>{colab.nome.split(' ')[0]}</span>
+                                <span className="text-[10px] opacity-70">({colab.matricula})</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-slate-500">Verba Mensal Total:</span>
+                          <span className="text-sm font-black text-slate-900 font-mono">
+                            R$ {currentCajuConfig.verbaTotalMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
+                            100% Subsidiado
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Os 5 Bolsos Caju */}
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        {/* Bolso Refeição */}
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#E63888] transition group shadow-2xs">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                              <Utensils className="w-3.5 h-3.5 text-[#E63888]" />
+                              <span>Refeição (PAT)</span>
+                            </span>
+                          </div>
+                          <div className="text-base font-black text-slate-900 font-mono">
+                            R$ {currentCajuConfig.saldoRefeicao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            Restaurantes e praças de alimentação (Isento de encargos)
+                          </div>
+                        </div>
+
+                        {/* Bolso Alimentação */}
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-orange-400 transition group shadow-2xs">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                              <ShoppingCart className="w-3.5 h-3.5 text-orange-500" />
+                              <span>Alimentação (PAT)</span>
+                            </span>
+                          </div>
+                          <div className="text-base font-black text-slate-900 font-mono">
+                            R$ {currentCajuConfig.saldoAlimentacao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            Supermercados, hortifrutis e padarias (Isento PAT)
+                          </div>
+                        </div>
+
+                        {/* Bolso Mobilidade */}
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-sky-400 transition group shadow-2xs">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                              <Car className="w-3.5 h-3.5 text-sky-500" />
+                              <span>Mobilidade (VT)</span>
+                            </span>
+                          </div>
+                          <div className="text-base font-black text-slate-900 font-mono">
+                            R$ {currentCajuConfig.saldoMobilidade.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            Transporte e apps (Desconto CLT até teto 6%)
+                          </div>
+                        </div>
+
+                        {/* Bolso Cultura */}
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-purple-400 transition group shadow-2xs">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                              <Ticket className="w-3.5 h-3.5 text-purple-600" />
+                              <span>Cultura</span>
+                            </span>
+                          </div>
+                          <div className="text-base font-black text-slate-900 font-mono">
+                            R$ {currentCajuConfig.saldoCultura.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            Livrarias, cinemas, teatros e shows DiskIngressos
+                          </div>
+                        </div>
+
+                        {/* Bolso Livre */}
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-emerald-400 transition group shadow-2xs">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                              <Award className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Livre (Premiações)</span>
+                            </span>
+                          </div>
+                          <div className="text-base font-black text-slate-900 font-mono">
+                            R$ {currentCajuConfig.saldoLivre.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            Bonificações corporativas (Incide IRRF eSocial)
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Barra de Distribuição Visual Proporcional dos Bolsos */}
+                      <div className="space-y-2 pt-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-500 font-medium">Distribuição Proporcional da Verba Caju:</span>
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center gap-1 text-[#E63888] font-semibold">
+                              <span className="w-2 h-2 rounded-full bg-[#E63888]" />
+                              <span>Refeição {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoRefeicao / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
+                            </span>
+                            <span className="flex items-center gap-1 text-orange-500 font-semibold">
+                              <span className="w-2 h-2 rounded-full bg-orange-500" />
+                              <span>Alimentação {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoAlimentacao / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
+                            </span>
+                            <span className="flex items-center gap-1 text-sky-500 font-semibold">
+                              <span className="w-2 h-2 rounded-full bg-sky-500" />
+                              <span>Mobilidade {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoMobilidade / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="w-full h-3 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex">
+                          <div
+                            style={{
+                              width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoRefeicao / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                            }}
+                            className="bg-[#E63888] h-full transition-all"
+                            title="Refeição"
+                          />
+                          <div
+                            style={{
+                              width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoAlimentacao / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                            }}
+                            className="bg-orange-400 h-full transition-all"
+                            title="Alimentação"
+                          />
+                          <div
+                            style={{
+                              width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoMobilidade / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                            }}
+                            className="bg-sky-400 h-full transition-all"
+                            title="Mobilidade"
+                          />
+                          <div
+                            style={{
+                              width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoCultura / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                            }}
+                            className="bg-purple-400 h-full transition-all"
+                            title="Cultura"
+                          />
+                          <div
+                            style={{
+                              width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoLivre / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                            }}
+                            className="bg-emerald-400 h-full transition-all"
+                            title="Livre"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] pt-1">
+                          <div className="flex items-center gap-1.5">
+                            {difCurrent === 0 ? (
+                              <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Validação Matemática Perfeita (Soma dos bolsos = R$ {somaBolsosCurrent.toFixed(2)})</span>
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-rose-600 font-semibold">
+                                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                <span>Divergência de R$ {difCurrent.toFixed(2)} entre a soma e a verba!</span>
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500 font-mono text-[10px]">
+                              Caju ID: {currentCajuConfig.cajuEmployeeId}
+                            </span>
                             <button
-                              key={colab.colaboradorId}
                               type="button"
-                              onClick={() => setSelectedCajuColabId(colab.colaboradorId)}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                                selectedCajuColabId === colab.colaboradorId
-                                  ? 'bg-[#E63888] text-white font-bold shadow-md shadow-[#E63888]/30'
-                                  : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300'
-                              }`}
+                              onClick={() => handleOpenEditCaju(currentCajuConfig.colaboradorId)}
+                              className="text-[#E63888] hover:underline font-bold text-xs cursor-pointer"
                             >
-                              <span>{colab.nome.split(' ')[0]}</span>
-                              <span className="text-[10px] opacity-70">({colab.matricula})</span>
+                              Editar bolsos deste colaborador &rarr;
                             </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="text-slate-400">Verba Mensal Total:</span>
-                        <span className="text-sm font-black text-white font-mono">
-                          R$ {currentCajuConfig.verbaTotalMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-                          100% Subsidiado
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Os 5 Bolsos Caju */}
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {/* Bolso Refeição */}
-                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-[#E63888]/50 transition group">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                            <Utensils className="w-3.5 h-3.5 text-[#E63888]" />
-                            <span>Refeição (PAT)</span>
-                          </span>
-                        </div>
-                        <div className="text-base font-black text-white font-mono">
-                          R$ {currentCajuConfig.saldoRefeicao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1">
-                          Restaurantes e praças de alimentação (Isento de encargos)
-                        </div>
-                      </div>
-
-                      {/* Bolso Alimentação */}
-                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-orange-500/50 transition">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                            <ShoppingCart className="w-3.5 h-3.5 text-orange-400" />
-                            <span>Alimentação (PAT)</span>
-                          </span>
-                        </div>
-                        <div className="text-base font-black text-white font-mono">
-                          R$ {currentCajuConfig.saldoAlimentacao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1">
-                          Supermercados, hortifrutis e padarias (Isento PAT)
-                        </div>
-                      </div>
-
-                      {/* Bolso Mobilidade */}
-                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/50 transition">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                            <Car className="w-3.5 h-3.5 text-sky-400" />
-                            <span>Mobilidade (VT)</span>
-                          </span>
-                        </div>
-                        <div className="text-base font-black text-white font-mono">
-                          R$ {currentCajuConfig.saldoMobilidade.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1">
-                          Transporte e apps (Desconto CLT até teto 6%)
-                        </div>
-                      </div>
-
-                      {/* Bolso Cultura */}
-                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-purple-500/50 transition">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                            <Ticket className="w-3.5 h-3.5 text-purple-400" />
-                            <span>Cultura</span>
-                          </span>
-                        </div>
-                        <div className="text-base font-black text-white font-mono">
-                          R$ {currentCajuConfig.saldoCultura.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1">
-                          Livrarias, cinemas, teatros e shows DiskIngressos
-                        </div>
-                      </div>
-
-                      {/* Bolso Livre */}
-                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-emerald-500/50 transition">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                            <Award className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Livre (Premiações)</span>
-                          </span>
-                        </div>
-                        <div className="text-base font-black text-white font-mono">
-                          R$ {currentCajuConfig.saldoLivre.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1">
-                          Bonificações corporativas (Incide IRRF eSocial)
+                          </div>
                         </div>
                       </div>
                     </div>
+                  )}
 
-                    {/* Barra de Distribuição Visual Proporcional dos Bolsos */}
-                    <div className="space-y-2 pt-1">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-400">Distribuição Proporcional da Verba Caju:</span>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1 text-[#E63888]">
-                            <span className="w-2 h-2 rounded-full bg-[#E63888]" />
-                            <span>Refeição {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoRefeicao / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
-                          </span>
-                          <span className="flex items-center gap-1 text-orange-400">
-                            <span className="w-2 h-2 rounded-full bg-orange-400" />
-                            <span>Alimentação {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoAlimentacao / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
-                          </span>
-                          <span className="flex items-center gap-1 text-sky-400">
-                            <span className="w-2 h-2 rounded-full bg-sky-400" />
-                            <span>Mobilidade {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoMobilidade / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
-                          </span>
+                  {/* 2. SUB-TAB: SIMULADOR DE COMPRA & PONTO (REP-P DEDUCTION) */}
+                  {subTabBeneficios === 'SIMULADOR_COMPRA' && (
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-sky-600" />
+                            <span>Simulador de Compra Mensal &amp; Dedução do Disk Ponto</span>
+                          </h4>
+                          <p className="text-xs text-slate-500">
+                            O motor subtrai automaticamente faltas não justificadas registradas no REP-P e aplica o teto legal de 6% do VT CLT.
+                          </p>
+                        </div>
+
+                        {/* Controles de Simulação */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 px-3 py-1.5 rounded-xl text-xs">
+                            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                            <span className="text-slate-500">Comp:</span>
+                            <input
+                              type="text"
+                              value={competenciaBeneficio}
+                              onChange={(e) => setCompetenciaBeneficio(e.target.value)}
+                              className="bg-transparent text-slate-900 font-mono font-bold w-16 outline-none"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 px-3 py-1.5 rounded-xl text-xs">
+                            <span className="text-slate-500">Dias Úteis:</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="31"
+                              value={diasUteisBeneficio}
+                              onChange={(e) => setDiasUteisBeneficio(Number(e.target.value) || 21)}
+                              className="bg-transparent text-slate-900 font-mono font-bold w-10 outline-none"
+                            />
+                          </div>
+
+                          <label className="flex items-center gap-2 bg-slate-50 border border-slate-300 px-3 py-1.5 rounded-xl text-xs text-slate-700 cursor-pointer hover:border-slate-400 transition">
+                            <input
+                              type="checkbox"
+                              checked={deduzirFaltasPonto}
+                              onChange={(e) => setDeduzirFaltasPonto(e.target.checked)}
+                              className="rounded border-slate-300 text-[#E63888] focus:ring-[#E63888] cursor-pointer"
+                            />
+                            <span className="font-semibold text-slate-800">Deduzir Faltas do Ponto</span>
+                          </label>
                         </div>
                       </div>
 
-                      <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex">
-                        <div
-                          style={{
-                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoRefeicao / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
-                          }}
-                          className="bg-[#E63888] h-full transition-all"
-                          title="Refeição"
-                        />
-                        <div
-                          style={{
-                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoAlimentacao / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
-                          }}
-                          className="bg-orange-400 h-full transition-all"
-                          title="Alimentação"
-                        />
-                        <div
-                          style={{
-                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoMobilidade / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
-                          }}
-                          className="bg-sky-400 h-full transition-all"
-                          title="Mobilidade"
-                        />
-                        <div
-                          style={{
-                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoCultura / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
-                          }}
-                          className="bg-purple-400 h-full transition-all"
-                          title="Cultura"
-                        />
-                        <div
-                          style={{
-                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoLivre / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
-                          }}
-                          className="bg-emerald-400 h-full transition-all"
-                          title="Livre"
-                        />
+                      {/* Resumo Consolidado do Lote de Benefícios */}
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Vidas Ativas no Lote</div>
+                          <div className="text-lg font-black text-slate-900 mt-1">4 Beneficiários</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Colaboradores CLT Ativos</div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Recarga Bruta Total</div>
+                          <div className="text-lg font-black text-[#E63888] font-mono mt-1">
+                            R$ {totalGeralRecargas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Caju (Flex) + SulAmérica</div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Descontos em Folha CLT</div>
+                          <div className="text-lg font-black text-amber-700 font-mono mt-1">
+                            R$ {totalGeralDescontos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Teto 6% VT + Coparticipação Saúde</div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Custo Líquido Empresa</div>
+                          <div className="text-lg font-black text-emerald-700 font-mono mt-1">
+                            R$ {totalGeralCustoEmpresa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Lançamento DRE Operacional</div>
+                        </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] pt-1">
-                        <div className="flex items-center gap-1.5">
-                          {difCurrent === 0 ? (
-                            <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Validação Matemática Perfeita (Soma dos bolsos = R$ {somaBolsosCurrent.toFixed(2)})</span>
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-rose-400 font-medium">
-                              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
-                              <span>Divergência de R$ {difCurrent.toFixed(2)} entre a soma e a verba!</span>
-                            </span>
-                          )}
+                      {/* Tabela de Cálculo por Colaborador */}
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="p-3">Colaborador / Matrícula</th>
+                              <th className="p-3">Salário Base</th>
+                              <th className="p-3">Dias Efetivos (REP-P)</th>
+                              <th className="p-3">Recarga Caju Bruta</th>
+                              <th className="p-3">Desconto VT (Teto 6%)</th>
+                              <th className="p-3">Plano SulAmérica</th>
+                              <th className="p-3">Custo Líquido Empresa</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 text-slate-700">
+                            {itensCalculoBeneficios.map((item) => (
+                              <tr key={item.colaboradorId} className="hover:bg-slate-50 transition">
+                                <td className="p-3">
+                                  <div className="font-bold text-slate-900">{item.nome}</div>
+                                  <div className="text-[10px] text-slate-500 font-mono">{item.matricula} &bull; {item.tipoContrato}</div>
+                                </td>
+                                <td className="p-3 font-mono text-slate-800">
+                                  R$ {item.salario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </td>
+                                <td className="p-3">
+                                  <div className="font-bold text-slate-900">
+                                    {item.diasEfetivos} de {diasUteisBeneficio} dias
+                                  </div>
+                                  {item.faltas > 0 ? (
+                                    <div className="text-[10px] text-rose-600 font-semibold flex items-center gap-0.5">
+                                      <AlertTriangle className="w-3 h-3" />
+                                      <span>-{item.faltas} falta(s) deduzida(s) no ponto</span>
+                                    </div>
+                                  ) : (
+                                    <div className="text-[10px] text-emerald-700 font-medium">100% de assiduidade</div>
+                                  )}
+                                </td>
+                                <td className="p-3 font-mono font-bold text-[#E63888]">
+                                  R$ {item.recargaCaju.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </td>
+                                <td className="p-3 font-mono text-amber-700 font-medium">
+                                  -R$ {item.descontoVT.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  <span className="block text-[9px] text-slate-400 font-sans">
+                                    (teto 6%: R$ {(item.salario * 0.06).toFixed(2)})
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <div className="font-mono text-slate-900 font-medium">R$ 480,00</div>
+                                  <div className="text-[10px] text-slate-500">Desc: R$ 48,00 (10%)</div>
+                                </td>
+                                <td className="p-3 font-mono font-bold text-emerald-700">
+                                  R$ {(item.custoEmpresaCaju + item.saudeCustoEmpresa).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Cards de Pedidos para Operadoras (Caju & SulAmérica) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        {pedidosBeneficios.map((pedido) => (
+                          <div
+                            key={pedido.id}
+                            className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3 relative overflow-hidden"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {pedido.fornecedorNome.includes('Caju') ? (
+                                  <div className="w-8 h-8 rounded-xl bg-[#E63888] text-white font-black text-sm flex items-center justify-center shadow-xs">
+                                    C
+                                  </div>
+                                ) : (
+                                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-xs">
+                                    S
+                                  </div>
+                                )}
+                                <div>
+                                  <h5 className="text-xs font-bold text-slate-900">{pedido.fornecedorNome}</h5>
+                                  <p className="text-[10px] text-slate-500 font-mono">CNPJ: {pedido.cnpj}</p>
+                                </div>
+                              </div>
+
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  pedido.status === 'APROVADO_FINANCEIRO'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                                }`}
+                              >
+                                {pedido.status === 'APROVADO_FINANCEIRO'
+                                  ? '✓ Aprovado Financeiro'
+                                  : 'Aguardando Aprovação'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1">
+                              <div>
+                                <div className="text-[10px] text-slate-500">Total do Lote:</div>
+                                <div className="text-base font-black text-slate-900 font-mono">
+                                  R$ {pedido.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-[10px] text-slate-500">Integração:</div>
+                                <div className="text-xs font-semibold text-slate-700">{pedido.tipoIntegracao}</div>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setModalDossieBeneficio(pedido)}
+                                className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer flex items-center gap-1 border border-slate-200"
+                              >
+                                <FileCheck className="w-3.5 h-3.5 text-[#E63888]" />
+                                <span>Ver Fatura / PIX</span>
+                              </button>
+
+                              {pedido.status !== 'APROVADO_FINANCEIRO' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleAprovarPedidoBeneficio(pedido.id)}
+                                  className="px-3.5 py-1.5 rounded-lg bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1 shadow-sm cursor-pointer"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <span>Aprovar Lote Financeiro</span>
+                                </button>
+                              ) : (
+                                <div className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                                  <BadgeCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Integrado à Tesouraria</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. SUB-TAB: CONFERÊNCIA & AUDITORIA PRÉ-FECHAMENTO (FASE 4) */}
+                  {subTabBeneficios === 'CONFERENCIA' && (
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span>Conferência Pré-Fechamento &amp; Auditoria Cadastral</span>
+                          </h4>
+                          <p className="text-xs text-slate-500">
+                            Checagem nominal prévia para cruzamento de dias úteis, assiduidade do REP-P e validação de operadoras antes do envio para a Tesouraria.
+                          </p>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-slate-400 font-mono text-[10px]">
-                            Caju ID: {currentCajuConfig.cajuEmployeeId}
-                          </span>
                           <button
                             type="button"
-                            onClick={() => handleOpenEditCaju(currentCajuConfig.colaboradorId)}
-                            className="text-[#E63888] hover:underline font-bold text-xs cursor-pointer"
+                            onClick={handleConferirTodosSemDivergencia}
+                            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer"
                           >
-                            Editar bolsos deste colaborador &rarr;
+                            <BadgeCheck className="w-4 h-4" />
+                            <span>Conferir itens sem divergência</span>
                           </button>
                         </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* 2. CENTRAL DE COMPRA MENSAL & DEDUÇÃO DE FALTAS DO PONTO */}
-                  <div className="space-y-4 pt-2">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      {/* KPIs da Conferência */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Total de Registros</div>
+                          <div className="text-lg font-black text-slate-900 mt-1">{conferenciaItens.length} Colaboradores</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Competência {competenciaBeneficio}</div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Conferidos pelo RH</div>
+                          <div className="text-lg font-black text-emerald-600 mt-1">
+                            {conferenciaItens.filter((i) => i.status === 'CONFERIDO').length} de {conferenciaItens.length}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Prontos para aprovação</div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Pendentes de Validação</div>
+                          <div className="text-lg font-black text-amber-600 mt-1">
+                            {conferenciaItens.filter((i) => i.status === 'PENDENTE').length} registro(s)
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Aguardando auditoria RH</div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Avisos / Alertas</div>
+                          <div className="text-lg font-black text-rose-600 mt-1">
+                            {conferenciaItens.filter((i) => i.divergencia).length} atenção(ões)
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Ponto / Combustível</div>
+                        </div>
+                      </div>
+
+                      {/* Tabela de Conferência */}
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="p-3">Colaborador / Matrícula</th>
+                              <th className="p-3">Departamento</th>
+                              <th className="p-3">Benefício</th>
+                              <th className="p-3">Operadora</th>
+                              <th className="p-3">Dias Efetivos</th>
+                              <th className="p-3">Custo Final Empresa</th>
+                              <th className="p-3">Auditoria / Alerta</th>
+                              <th className="p-3">Status</th>
+                              <th className="p-3 text-right">Ação</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 text-slate-700">
+                            {conferenciaItens.map((item) => (
+                              <tr key={item.colaboradorId} className="hover:bg-slate-50 transition">
+                                <td className="p-3">
+                                  <div className="font-bold text-slate-900">{item.nome}</div>
+                                  <div className="text-[10px] text-slate-500 font-mono">{item.matricula}</div>
+                                </td>
+                                <td className="p-3 font-medium text-slate-700">{item.departamento}</td>
+                                <td className="p-3 font-semibold text-slate-800">{item.beneficio}</td>
+                                <td className="p-3 text-slate-600">{item.operadora}</td>
+                                <td className="p-3">
+                                  <span className="font-bold text-slate-900">{item.diasEfetivos}</span>
+                                  <span className="text-slate-400">/{item.diasUteis}d</span>
+                                </td>
+                                <td className="p-3 font-mono font-bold text-emerald-700">
+                                  R$ {item.valorFinalEmpresa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </td>
+                                <td className="p-3">
+                                  {item.divergencia ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg font-medium">
+                                      <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
+                                      <span>{item.divergencia}</span>
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg font-medium">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                                      <span>Parâmetros 100% conformes</span>
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                      item.status === 'CONFERIDO'
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}
+                                  >
+                                    {item.status === 'CONFERIDO' ? '✓ Conferido' : 'Pendente'}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-right">
+                                  {item.status === 'PENDENTE' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleConferirItem(item.colaboradorId)}
+                                      className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-[11px] font-bold transition cursor-pointer"
+                                    >
+                                      Conferir
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. SUB-TAB: HISTÓRICO MENSAL POR COLABORADOR (FASE 5) */}
+                  {subTabBeneficios === 'HISTORICO' && (
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-[#E63888]" />
+                            <span>Histórico Mensal por Colaborador &amp; Snapshots Imutáveis</span>
+                          </h4>
+                          <p className="text-xs text-slate-500">
+                            Consulta detalhada competência a competência, com valores e departamentos congelados no fechamento.
+                          </p>
+                        </div>
+
+                        {/* Filtro de Colaborador */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500 font-medium">Filtrar:</span>
+                          <select
+                            value={filtroHistoricoColab}
+                            onChange={(e) => setFiltroHistoricoColab(e.target.value)}
+                            className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-semibold focus:outline-none focus:ring-1 focus:ring-[#E63888] cursor-pointer"
+                          >
+                            <option value="TODOS">Todos os Colaboradores (Snapshots Consolidados)</option>
+                            {colaboradoresIniciais.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.nome} ({c.matricula})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Alerta de Integridade Histórica Inviolável */}
+                      <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 flex items-start gap-2.5 text-xs text-sky-900">
+                        <ShieldCheck className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold">Regra Inviolável de Auditoria:</span> Os relatórios de competências encerradas utilizam os dados gravados no momento do fechamento (`benefit_order_items`) e <strong>nunca recalculam o passado</strong> com base no salário, departamento ou cadastro atual do colaborador.
+                        </div>
+                      </div>
+
+                      {/* Tabela do Histórico */}
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="p-3">Competência</th>
+                              <th className="p-3">Colaborador / Matrícula</th>
+                              <th className="p-3">Departamento (Snapshot)</th>
+                              <th className="p-3">VT</th>
+                              <th className="p-3">VA</th>
+                              <th className="p-3">VR</th>
+                              <th className="p-3">Combustível</th>
+                              <th className="p-3">Operadora</th>
+                              <th className="p-3">Dias (Eleg./Úteis)</th>
+                              <th className="p-3">Desc. Colab</th>
+                              <th className="p-3">Custo Empresa</th>
+                              <th className="p-3">Status Crédito</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 text-slate-700">
+                            {historicoFechamentosSnapshots
+                              .filter((s) => filtroHistoricoColab === 'TODOS' || s.colaboradorId === filtroHistoricoColab)
+                              .map((snap, idx) => (
+                                <tr key={`${snap.periodo}-${snap.colaboradorId}-${idx}`} className="hover:bg-slate-50 transition">
+                                  <td className="p-3 font-mono font-bold text-slate-900">{snap.periodo}</td>
+                                  <td className="p-3">
+                                    <div className="font-bold text-slate-900">{snap.nome}</div>
+                                    <div className="text-[10px] text-slate-500 font-mono">{snap.matricula}</div>
+                                  </td>
+                                  <td className="p-3 font-medium text-slate-600">{snap.departamento}</td>
+                                  <td className="p-3 font-mono">R$ {snap.vt.toFixed(2)}</td>
+                                  <td className="p-3 font-mono">R$ {snap.va.toFixed(2)}</td>
+                                  <td className="p-3 font-mono">R$ {snap.vr.toFixed(2)}</td>
+                                  <td className="p-3 font-mono font-semibold text-slate-800">
+                                    {snap.combustivel > 0 ? `R$ ${snap.combustivel.toFixed(2)}` : '—'}
+                                  </td>
+                                  <td className="p-3 text-slate-600">{snap.operadora}</td>
+                                  <td className="p-3 font-medium">
+                                    {snap.diasElegiveis}/{snap.diasUteis}d
+                                  </td>
+                                  <td className="p-3 font-mono text-amber-700">
+                                    -R$ {snap.descontoColab.toFixed(2)}
+                                  </td>
+                                  <td className="p-3 font-mono font-bold text-emerald-700">
+                                    R$ {snap.custoEmpresa.toFixed(2)}
+                                  </td>
+                                  <td className="p-3">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                        snap.statusCredito === 'CREDITADO_CONCLUIDO' || snap.statusCredito === 'DISPONIBILIZADO'
+                                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                                      }`}
+                                    >
+                                      {snap.statusCredito === 'CREDITADO_CONCLUIDO'
+                                        ? '✓ Creditado'
+                                        : snap.statusCredito === 'DISPONIBILIZADO'
+                                        ? 'Disponibilizado'
+                                        : 'Processando'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 5. SUB-TAB: RELATÓRIO DE CUSTOS (FASE 5) */}
+                  {subTabBeneficios === 'CUSTOS' && (
+                    <div className="space-y-5">
                       <div>
-                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-sky-400" />
-                          <span>Simulador de Compra Mensal &amp; Dedução do Disk Ponto</span>
+                        <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-emerald-600" />
+                          <span>Relatório Gerencial de Custos de Benefícios</span>
                         </h4>
-                        <p className="text-xs text-slate-400">
-                          O motor subtrai automaticamente faltas não justificadas registradas no REP-P e aplica o teto legal de 6% do VT CLT.
+                        <p className="text-xs text-slate-500">
+                          Totalização por modalidade de benefício da competência ativa ({competenciaBeneficio}) e evolução histórica das últimas competências.
                         </p>
                       </div>
 
-                      {/* Controles de Simulação */}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl text-xs">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="text-slate-400">Comp:</span>
-                          <input
-                            type="text"
-                            value={competenciaBeneficio}
-                            onChange={(e) => setCompetenciaBeneficio(e.target.value)}
-                            className="bg-transparent text-white font-mono font-bold w-16 outline-none"
-                          />
+                      {/* 5 Cards de Custo da Competência Ativa */}
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Vale-Transporte (VT)</div>
+                          <div className="text-lg font-black text-slate-900 font-mono mt-1">R$ 1.000,00</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">4 colaboradores elegíveis</div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl text-xs">
-                          <span className="text-slate-400">Dias Úteis:</span>
-                          <input
-                            type="number"
-                            min="1"
-                            max="31"
-                            value={diasUteisBeneficio}
-                            onChange={(e) => setDiasUteisBeneficio(Number(e.target.value) || 21)}
-                            className="bg-transparent text-white font-mono font-bold w-10 outline-none"
-                          />
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Vale-Alimentação (VA)</div>
+                          <div className="text-lg font-black text-orange-600 font-mono mt-1">R$ 1.650,00</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">4 colaboradores elegíveis</div>
                         </div>
 
-                        <label className="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs text-slate-200 cursor-pointer hover:border-slate-600 transition">
-                          <input
-                            type="checkbox"
-                            checked={deduzirFaltasPonto}
-                            onChange={(e) => setDeduzirFaltasPonto(e.target.checked)}
-                            className="rounded border-slate-700 text-[#E63888] focus:ring-[#E63888] cursor-pointer"
-                          />
-                          <span className="font-semibold text-sky-400">Deduzir Faltas do Ponto</span>
-                        </label>
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Vale-Refeição (VR)</div>
+                          <div className="text-lg font-black text-[#E63888] font-mono mt-1">R$ 2.700,00</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">4 colaboradores elegíveis</div>
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Auxílio Combustível</div>
+                          <div className="text-lg font-black text-sky-600 font-mono mt-1">R$ 250,00</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">1 colaborador (Arenas)</div>
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200">
+                          <div className="text-[10px] uppercase font-bold text-emerald-800">Custo Total Empresa</div>
+                          <div className="text-lg font-black text-emerald-700 font-mono mt-1">R$ 5.600,00</div>
+                          <div className="text-[10px] text-emerald-700 mt-0.5">Desc. Colab: R$ 1.398,00</div>
+                        </div>
+                      </div>
+
+                      {/* Tabela de Evolução Histórica dos Custos */}
+                      <div className="space-y-2">
+                        <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <TrendingUp className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Evolução Mensal dos Custos (Últimas Competências Fechadas)</span>
+                        </div>
+
+                        <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                              <tr>
+                                <th className="p-3">Competência</th>
+                                <th className="p-3">Vidas</th>
+                                <th className="p-3">VT</th>
+                                <th className="p-3">VA</th>
+                                <th className="p-3">VR</th>
+                                <th className="p-3">Combustível</th>
+                                <th className="p-3">Custo Total Empresa</th>
+                                <th className="p-3">Descontos em Folha</th>
+                                <th className="p-3">Status do Lote</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 text-slate-700">
+                              {custosEvolucaoMensal.map((c) => (
+                                <tr key={c.periodo} className="hover:bg-slate-50 transition">
+                                  <td className="p-3 font-mono font-bold text-slate-900">{c.periodo}</td>
+                                  <td className="p-3 font-semibold text-slate-700">{c.vidas} beneficiários</td>
+                                  <td className="p-3 font-mono">R$ {c.vt.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                  <td className="p-3 font-mono">R$ {c.va.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                  <td className="p-3 font-mono">R$ {c.vr.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                  <td className="p-3 font-mono">
+                                    {c.combustivel > 0 ? `R$ ${c.combustivel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}
+                                  </td>
+                                  <td className="p-3 font-mono font-bold text-emerald-700">
+                                    R$ {c.totalEmpresa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </td>
+                                  <td className="p-3 font-mono text-amber-700">
+                                    -R$ {c.descontoColaboradores.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </td>
+                                  <td className="p-3">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                        c.status === 'CONCLUIDO_CREDITADO'
+                                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                                      }`}
+                                    >
+                                      {c.status === 'CONCLUIDO_CREDITADO' ? '✓ Concluído' : 'Em processamento'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
+                  )}
 
-                    {/* Resumo Consolidado do Lote de Benefícios */}
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <div className="text-[10px] uppercase font-bold text-slate-400">Vidas Ativas no Lote</div>
-                        <div className="text-lg font-black text-white mt-1">4 Beneficiários</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Colaboradores CLT Ativos</div>
+                  {/* 6. SUB-TAB: VISÃO POR DEPARTAMENTOS (FASE 5) */}
+                  {subTabBeneficios === 'DEPARTAMENTOS' && (
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                          <Building className="w-4 h-4 text-sky-600" />
+                          <span>Distribuição de Custos de Benefícios por Departamento</span>
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Apropriação dos benefícios por área da empresa para competência {competenciaBeneficio}, com cálculo da participação percentual.
+                        </p>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <div className="text-[10px] uppercase font-bold text-slate-400">Recarga Bruta Total</div>
-                        <div className="text-lg font-black text-[#E63888] font-mono mt-1">
-                          R$ {totalGeralRecargas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Caju (Flex) + SulAmérica</div>
-                      </div>
-
-                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <div className="text-[10px] uppercase font-bold text-slate-400">Descontos em Folha CLT</div>
-                        <div className="text-lg font-black text-amber-400 font-mono mt-1">
-                          R$ {totalGeralDescontos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Teto 6% VT + Coparticipação Saúde</div>
-                      </div>
-
-                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <div className="text-[10px] uppercase font-bold text-slate-400">Custo Líquido Empresa</div>
-                        <div className="text-lg font-black text-emerald-400 font-mono mt-1">
-                          R$ {totalGeralCustoEmpresa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Lançamento DRE Operacional</div>
-                      </div>
-                    </div>
-
-                    {/* Tabela de Cálculo por Colaborador */}
-                    <div className="overflow-x-auto border border-slate-800 rounded-xl">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-900/90 text-slate-400 font-semibold border-b border-slate-800">
-                          <tr>
-                            <th className="p-3">Colaborador / Matrícula</th>
-                            <th className="p-3">Salário Base</th>
-                            <th className="p-3">Dias Efetivos (REP-P)</th>
-                            <th className="p-3">Recarga Caju Bruta</th>
-                            <th className="p-3">Desconto VT (Teto 6%)</th>
-                            <th className="p-3">Plano SulAmérica</th>
-                            <th className="p-3">Custo Líquido Empresa</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800 text-slate-300">
-                          {itensCalculoBeneficios.map((item) => (
-                            <tr key={item.colaboradorId} className="hover:bg-slate-900/50 transition">
-                              <td className="p-3">
-                                <div className="font-bold text-white">{item.nome}</div>
-                                <div className="text-[10px] text-slate-400 font-mono">{item.matricula} &bull; {item.tipoContrato}</div>
-                              </td>
-                              <td className="p-3 font-mono text-slate-300">
-                                R$ {item.salario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                              </td>
-                              <td className="p-3">
-                                <div className="font-bold text-white">
-                                  {item.diasEfetivos} de {diasUteisBeneficio} dias
-                                </div>
-                                {item.faltas > 0 ? (
-                                  <div className="text-[10px] text-rose-400 font-semibold flex items-center gap-0.5">
-                                    <AlertTriangle className="w-3 h-3" />
-                                    <span>-{item.faltas} falta(s) deduzida(s) no ponto</span>
-                                  </div>
-                                ) : (
-                                  <div className="text-[10px] text-emerald-400 font-medium">100% de assiduidade</div>
-                                )}
-                              </td>
-                              <td className="p-3 font-mono font-bold text-[#E63888]">
-                                R$ {item.recargaCaju.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                              </td>
-                              <td className="p-3 font-mono text-amber-400 font-medium">
-                                -R$ {item.descontoVT.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                <span className="block text-[9px] text-slate-500 font-sans">
-                                  (teto 6%: R$ {(item.salario * 0.06).toFixed(2)})
-                                </span>
-                              </td>
-                              <td className="p-3">
-                                <div className="font-mono text-white">R$ 480,00</div>
-                                <div className="text-[10px] text-slate-400">Desc: R$ 48,00 (10%)</div>
-                              </td>
-                              <td className="p-3 font-mono font-bold text-emerald-400">
-                                R$ {(item.custoEmpresaCaju + item.saudeCustoEmpresa).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                              </td>
+                      {/* Tabela de Departamentos */}
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="p-3">Departamento</th>
+                              <th className="p-3">Vidas</th>
+                              <th className="p-3">VT</th>
+                              <th className="p-3">VA</th>
+                              <th className="p-3">VR</th>
+                              <th className="p-3">Combustível</th>
+                              <th className="p-3">Custo Total</th>
+                              <th className="p-3 w-56">Participação no Orçamento</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 text-slate-700">
+                            {departamentosCustos.map((d) => (
+                              <tr key={d.departamento} className="hover:bg-slate-50 transition">
+                                <td className="p-3 font-bold text-slate-900">{d.departamento}</td>
+                                <td className="p-3 font-semibold text-slate-600">{d.vidas}</td>
+                                <td className="p-3 font-mono">R$ {d.vt.toFixed(2)}</td>
+                                <td className="p-3 font-mono">R$ {d.va.toFixed(2)}</td>
+                                <td className="p-3 font-mono">R$ {d.vr.toFixed(2)}</td>
+                                <td className="p-3 font-mono">
+                                  {d.combustivel > 0 ? `R$ ${d.combustivel.toFixed(2)}` : '—'}
+                                </td>
+                                <td className="p-3 font-mono font-bold text-slate-900">
+                                  R$ {d.total.toFixed(2)}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+                                      <div
+                                        style={{ width: `${d.percentual}%` }}
+                                        className="h-full bg-[#E63888] rounded-full"
+                                      />
+                                    </div>
+                                    <span className="font-mono font-bold text-slate-800 text-[11px] w-12 text-right">
+                                      {d.percentual}%
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
+                  )}
 
-                    {/* Cards de Pedidos para Operadoras (Caju & SulAmérica) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                      {pedidosBeneficios.map((pedido) => (
-                        <div
-                          key={pedido.id}
-                          className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 relative overflow-hidden"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {pedido.fornecedorNome.includes('Caju') ? (
-                                <div className="w-8 h-8 rounded-xl bg-[#E63888]/20 text-[#E63888] font-black text-sm flex items-center justify-center border border-[#E63888]/30">
-                                  C
-                                </div>
-                              ) : (
-                                <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 font-black text-sm flex items-center justify-center border border-blue-500/30">
-                                  S
-                                </div>
-                              )}
-                              <div>
-                                <h5 className="text-xs font-bold text-white">{pedido.fornecedorNome}</h5>
-                                <p className="text-[10px] text-slate-400 font-mono">CNPJ: {pedido.cnpj}</p>
-                              </div>
+                  {/* 7. SUB-TAB: COMPARATIVO MÊS A MÊS (FASE 5) */}
+                  {subTabBeneficios === 'COMPARATIVO' && (
+                    <div className="space-y-5">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-purple-600" />
+                          <span>Comparativo Automático entre Competências (10/2026 vs 09/2026)</span>
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Cruzamento automático da competência selecionada em relação ao período imediatamente anterior, detalhando deltas nominais e variações percentuais.
+                        </p>
+                      </div>
+
+                      {/* Cards de Comparação */}
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        {comparativoDeltas.map((item) => (
+                          <div
+                            key={item.tipo}
+                            className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1"
+                          >
+                            <div className="text-[10px] uppercase font-bold text-slate-500 truncate" title={item.tipo}>
+                              {item.tipo}
                             </div>
+                            <div className="text-base font-black text-slate-900 font-mono">
+                              R$ {item.atual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] pt-1 border-t border-slate-200">
+                              <span className="text-slate-400">Ant: R$ {item.anterior.toFixed(0)}</span>
+                              <span
+                                className={`font-bold flex items-center ${
+                                  item.deltaValor > 0
+                                    ? 'text-amber-600'
+                                    : item.deltaValor < 0
+                                    ? 'text-emerald-600'
+                                    : 'text-slate-500'
+                                }`}
+                              >
+                                {item.deltaValor > 0 ? `+R$ ${item.deltaValor.toFixed(2)} (+${item.deltaPercent}%)` : 'Estável (0%)'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
 
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                pedido.status === 'APROVADO_FINANCEIRO'
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                              }`}
-                            >
-                              {pedido.status === 'APROVADO_FINANCEIRO'
-                                ? '✓ Aprovado Financeiro'
-                                : 'Aguardando Aprovação'}
+                      {/* Tabela Analítica de Variação */}
+                      <div className="space-y-2">
+                        <div className="text-xs font-bold text-slate-800">Detalhamento das Variações por Categoria</div>
+                        <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                              <tr>
+                                <th className="p-3">Benefício</th>
+                                <th className="p-3">Competência 10/2026</th>
+                                <th className="p-3">Competência 09/2026</th>
+                                <th className="p-3">Diferença em R$ (Delta)</th>
+                                <th className="p-3">Variação %</th>
+                                <th className="p-3">Diagnóstico Operacional</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 text-slate-700">
+                              {comparativoDeltas.map((c) => (
+                                <tr key={c.tipo} className="hover:bg-slate-50 transition">
+                                  <td className="p-3 font-bold text-slate-900">{c.tipo}</td>
+                                  <td className="p-3 font-mono font-semibold text-slate-800">
+                                    R$ {c.atual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </td>
+                                  <td className="p-3 font-mono text-slate-600">
+                                    R$ {c.anterior.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </td>
+                                  <td className="p-3 font-mono font-bold">
+                                    <span
+                                      className={
+                                        c.deltaValor > 0
+                                          ? 'text-amber-600'
+                                          : c.deltaValor < 0
+                                          ? 'text-emerald-600'
+                                          : 'text-slate-500'
+                                      }
+                                    >
+                                      {c.deltaValor > 0 ? `+R$ ${c.deltaValor.toFixed(2)}` : 'R$ 0,00'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 font-mono font-bold">
+                                    <span
+                                      className={
+                                        c.deltaPercent > 0
+                                          ? 'text-amber-600'
+                                          : c.deltaPercent < 0
+                                          ? 'text-emerald-600'
+                                          : 'text-slate-500'
+                                      }
+                                    >
+                                      {c.deltaPercent > 0 ? `+${c.deltaPercent}%` : '0.0%'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-slate-600">
+                                    {c.deltaValor > 0
+                                      ? 'Inclusão de auxílio combustível para coordenador de campo na Arena da Baixada.'
+                                      : 'Padrão estável entre as duas competências fechadas.'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Detalhamento Nominal dos Colaboradores das Duas Competências */}
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                        <div className="text-xs font-bold text-slate-900">Cruzamento Nominal de Colaboradores:</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                            <span className="font-bold text-slate-800">Lucas Ferreira dos Santos:</span>
+                            <span className="text-slate-600 ml-1">
+                              Acrescentado R$ 250,00 (Ticket Combustível) em 10/2026. Custo subiu de R$ 1.400,00 para R$ 1.650,00.
                             </span>
                           </div>
-
-                          <div className="flex items-center justify-between pt-1">
-                            <div>
-                              <div className="text-[10px] text-slate-400">Total do Lote:</div>
-                              <div className="text-base font-black text-white font-mono">
-                                R$ {pedido.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-[10px] text-slate-400">Integração:</div>
-                              <div className="text-xs font-semibold text-slate-300">{pedido.tipoIntegracao}</div>
-                            </div>
-                          </div>
-
-                          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setModalDossieBeneficio(pedido)}
-                              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer flex items-center gap-1"
-                            >
-                              <FileCheck className="w-3.5 h-3.5 text-[#E63888]" />
-                              <span>Ver Fatura / PIX</span>
-                            </button>
-
-                            {pedido.status !== 'APROVADO_FINANCEIRO' ? (
-                              <button
-                                type="button"
-                                onClick={() => handleAprovarPedidoBeneficio(pedido.id)}
-                                className="px-3.5 py-1.5 rounded-lg bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1 shadow-md shadow-[#E63888]/20 cursor-pointer"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                <span>Aprovar Lote Financeiro</span>
-                              </button>
-                            ) : (
-                              <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                                <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                <span>Integrado à Tesouraria</span>
-                              </div>
-                            )}
+                          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                            <span className="font-bold text-slate-800">Karine Santos, Mariana Duarte, Rafael Albuquerque:</span>
+                            <span className="text-slate-600 ml-1">
+                              Sem alterações de perfil, bolsos ou custo líquido entre as competências 09/2026 e 10/2026.
+                            </span>
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2106,21 +3351,21 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'ponto' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-sky-400" />
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-sky-600" />
                       <span>Disk Ponto Eletrônico (REP-P Portaria 671 MTE)</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Registro de Ponto Eletrônico em Programa (REP-P) com comprovante assinado digitalmente com SHA-256 e validação por cerca virtual.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalPontoAberto(true)}
-                    className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                    className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                   >
                     <Smartphone className="w-4 h-4" />
                     <span>Abrir Simulador REP-P</span>
@@ -2128,9 +3373,9 @@ export default function RecursosHumanosPage() {
                 </div>
 
                 {/* Tabela de Batidas */}
-                <div className="overflow-x-auto border border-slate-800 rounded-xl">
+                <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900/80 text-slate-400 font-semibold border-b border-slate-800">
+                    <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
                       <tr>
                         <th className="p-3">NSR / Horário</th>
                         <th className="p-3">Colaborador</th>
@@ -2139,32 +3384,32 @@ export default function RecursosHumanosPage() {
                         <th className="p-3">Assinatura SHA-256</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800 text-slate-300">
+                    <tbody className="divide-y divide-slate-200 text-slate-700">
                       {registrosPonto.map((reg) => (
-                        <tr key={reg.id} className="hover:bg-slate-900/50 transition">
+                        <tr key={reg.id} className="hover:bg-slate-50 transition">
                           <td className="p-3">
-                            <div className="font-mono font-bold text-sky-400">NSR #{reg.nsr}</div>
-                            <div className="text-[10px] text-slate-400">{reg.timestamp}</div>
+                            <div className="font-mono font-bold text-sky-700">NSR #{reg.nsr}</div>
+                            <div className="text-[10px] text-slate-500">{reg.timestamp}</div>
                           </td>
                           <td className="p-3">
-                            <div className="font-bold text-white">{reg.colaborador}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">{reg.matricula}</div>
+                            <div className="font-bold text-slate-900">{reg.colaborador}</div>
+                            <div className="text-[10px] text-slate-500 font-mono">{reg.matricula}</div>
                           </td>
                           <td className="p-3">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-emerald-400 border border-slate-700">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-emerald-800 border border-slate-200">
                               {reg.tipo}
                             </span>
                           </td>
                           <td className="p-3">
-                            <div className="text-white flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-emerald-400" />
+                            <div className="text-slate-900 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-emerald-600" />
                               <span>{reg.localizacao}</span>
                             </div>
-                            <div className="text-[10px] text-emerald-400">
+                            <div className="text-[10px] text-emerald-700">
                               Dentro da cerca ({reg.distanciaMetros}m do centro)
                             </div>
                           </td>
-                          <td className="p-3 font-mono text-[10px] text-slate-400 max-w-[140px] truncate" title={reg.hashSHA256}>
+                          <td className="p-3 font-mono text-[10px] text-slate-500 max-w-[140px] truncate" title={reg.hashSHA256}>
                             {reg.hashSHA256}
                           </td>
                         </tr>
@@ -2174,16 +3419,16 @@ export default function RecursosHumanosPage() {
                 </div>
 
                 {/* Seção de Cercas Virtuais */}
-                <div className="pt-4 border-t border-slate-800 space-y-3">
+                <div className="pt-4 border-t border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-emerald-600" />
                       <span>Cercas Virtuais Cadastradas ({geofences.length})</span>
                     </h4>
                     <button
                       type="button"
                       onClick={() => setModalNovaGeofence(true)}
-                      className="text-xs text-sky-400 hover:text-sky-300 font-semibold"
+                      className="text-xs text-sky-600 hover:text-sky-700 font-semibold"
                     >
                       + Nova Cerca
                     </button>
@@ -2191,16 +3436,16 @@ export default function RecursosHumanosPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {geofences.map((geo) => (
-                      <div key={geo.id} className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                      <div key={geo.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white">{geo.nome}</span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                          <span className="text-xs font-bold text-slate-900">{geo.nome}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                             {geo.raioMetros}m tolerância
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-400">{geo.endereco}</div>
+                        <div className="text-[11px] text-slate-500">{geo.endereco}</div>
                         {geo.eventoVinculado && (
-                          <div className="text-[10px] text-purple-400 font-semibold pt-1">
+                          <div className="text-[10px] text-purple-700 font-semibold pt-1">
                             Vinculado: {geo.eventoVinculado}
                           </div>
                         )}
@@ -2217,37 +3462,37 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'talentos' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-emerald-400" />
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-emerald-600" />
                     <span>Talentos, Treinamentos &amp; Desenvolvimento</span>
                   </h3>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                     Ciclo 2026/2
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Matriz de capacitação para arenas, segurança de portaria, prevenção a fraudes de bilhetagem e planos de carreira internos.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <div className="text-xs font-bold text-white">Treinamento Portaria &amp; Catracas</div>
-                    <div className="text-[11px] text-slate-400 mt-1">Conformidade e resolução de ingressos com QR Code dinâmico</div>
-                    <div className="text-xs font-bold text-emerald-400 mt-3">100% Concluído (42 staffs)</div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="text-xs font-bold text-slate-900">Treinamento Portaria &amp; Catracas</div>
+                    <div className="text-[11px] text-slate-600 mt-1">Conformidade e resolução de ingressos com QR Code dinâmico</div>
+                    <div className="text-xs font-bold text-emerald-700 mt-3">100% Concluído (42 staffs)</div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <div className="text-xs font-bold text-white">Prevenção a Fraudes &amp; Antifraude</div>
-                    <div className="text-[11px] text-slate-400 mt-1">Protocolo operacional EDDIE 11.34 e identificação de repasses</div>
-                    <div className="text-xs font-bold text-sky-400 mt-3">95% Concluído (40 staffs)</div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="text-xs font-bold text-slate-900">Prevenção a Fraudes &amp; Antifraude</div>
+                    <div className="text-[11px] text-slate-600 mt-1">Protocolo operacional EDDIE 11.34 e identificação de repasses</div>
+                    <div className="text-xs font-bold text-sky-700 mt-3">95% Concluído (40 staffs)</div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <div className="text-xs font-bold text-white">Atendimento SAC &amp; Resolução VIP</div>
-                    <div className="text-[11px] text-slate-400 mt-1">Boas práticas de acolhimento em camarotes e pista premium</div>
-                    <div className="text-xs font-bold text-purple-400 mt-3">88% Concluído (37 staffs)</div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="text-xs font-bold text-slate-900">Atendimento SAC &amp; Resolução VIP</div>
+                    <div className="text-[11px] text-slate-600 mt-1">Boas práticas de acolhimento em camarotes e pista premium</div>
+                    <div className="text-xs font-bold text-purple-700 mt-3">88% Concluído (37 staffs)</div>
                   </div>
                 </div>
               </div>
@@ -2259,27 +3504,27 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'seguranca' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <HeartPulse className="w-5 h-5 text-rose-400" />
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <HeartPulse className="w-5 h-5 text-rose-600" />
                     <span>Saúde Ocupacional &amp; Segurança do Trabalho</span>
                   </h3>
-                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-rose-50 text-rose-700 border border-rose-200">
                     100% ASO Vigente
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Conformidade obrigatória com as NRs do Ministério do Trabalho: PCMSO (NR-7), Ficha de Entrega de EPIs para montagem e desmontagem de arenas (NR-6) e CIPA.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <HardHat className="w-4 h-4 text-amber-400" />
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                      <HardHat className="w-4 h-4 text-amber-600" />
                       <span>EPIs de Operação em Arenas</span>
                     </div>
-                    <ul className="text-xs text-slate-300 space-y-1.5 pt-1">
+                    <ul className="text-xs text-slate-700 space-y-1.5 pt-1">
                       <li>&bull; Protetor auricular tipo concha com redução de ruído (pista/palco)</li>
                       <li>&bull; Colete refletivo de identificação operacional DiskIngressos</li>
                       <li>&bull; Rádio comunicador profissional homologado pela Anatel</li>
@@ -2287,15 +3532,15 @@ export default function RecursosHumanosPage() {
                     </ul>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <FileCheck className="w-4 h-4 text-emerald-400" />
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                      <FileCheck className="w-4 h-4 text-emerald-600" />
                       <span>Controle de Exames (ASO NR-7)</span>
                     </div>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-slate-700">
                       Todos os 42 colaboradores possuem ASO admissional/periódico vigente e apto para trabalho diurno e noturno em grandes eventos.
                     </p>
-                    <div className="text-[11px] text-emerald-400 font-semibold pt-1">
+                    <div className="text-[11px] text-emerald-700 font-semibold pt-1">
                       Próxima renovação em lote: Novembro/2026
                     </div>
                   </div>
@@ -2309,21 +3554,21 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'eventos' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <Briefcase className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-purple-600" />
                       <span>Equipes por Evento &amp; Apropriação Contábil no DRE</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Alocação de coordenadores e staffs de arena com débito automático no centro de custos do evento.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalExportarDre(true)}
-                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                   >
                     <DollarSign className="w-4 h-4" />
                     <span>Apropriar Custos no DRE</span>
@@ -2332,22 +3577,22 @@ export default function RecursosHumanosPage() {
 
                 <div className="space-y-3 pt-2">
                   {staffEventos.map((ev) => (
-                    <div key={ev.id} className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div key={ev.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <div className="text-sm font-bold text-white">{ev.evento}</div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-sm font-bold text-slate-900">{ev.evento}</div>
+                        <div className="text-xs text-slate-500">
                           {ev.data} &bull; {ev.local} &bull; Coordenação: {ev.coordenador}
                         </div>
-                        <div className="text-[11px] text-slate-400 mt-1">
+                        <div className="text-[11px] text-slate-500 mt-1">
                           {ev.totalColaboradores} colaboradores escalados
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="text-base font-black text-purple-400 font-mono">
+                        <div className="text-base font-black text-purple-700 font-mono">
                           R$ {ev.custoTotalPessoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                           {ev.statusDRE}
                         </span>
                       </div>
@@ -2363,47 +3608,47 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'portais' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Smartphone className="w-5 h-5 text-sky-400" />
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Smartphone className="w-5 h-5 text-sky-600" />
                     <span>Portais de Autoatendimento &amp; Gestão Móvel</span>
                   </h3>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded bg-sky-50 text-sky-700 border border-sky-200">
                     PWA Ativo
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Canais de acesso móvel: Portal do Colaborador (espelho de ponto e comprovantes assinados) e Totem de Ponto em Arenas.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <SmartphoneNfc className="w-4 h-4 text-emerald-400" />
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                      <SmartphoneNfc className="w-4 h-4 text-emerald-600" />
                       <span>App Colaborador DiskIngressos</span>
                     </div>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-slate-700">
                       Disponível em PWA e APK com suporte a geolocalização offline, registro com biometria facial e espelho em tempo real.
                     </p>
                     <button
                       type="button"
                       onClick={() => setModalPontoAberto(true)}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold transition mt-2 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition mt-2 cursor-pointer"
                     >
                       Abrir Simulador do App
                     </button>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <QrCode className="w-4 h-4 text-sky-400" />
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                      <QrCode className="w-4 h-4 text-sky-600" />
                       <span>Totem Fixo REP-P de Arena</span>
                     </div>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-slate-700">
                       Totem instalado nos portões de acesso de staff da Ligga Arena e Pedreira Paulo Leminski para batidas de alta velocidade.
                     </p>
-                    <div className="text-[11px] text-sky-400 font-mono pt-1">
+                    <div className="text-[11px] text-sky-700 font-mono pt-1">
                       Conexão: 5G Redundante com Fallback Offline
                     </div>
                   </div>
@@ -2417,45 +3662,45 @@ export default function RecursosHumanosPage() {
           {/* -------------------------------------------------------- */}
           {activeTab === 'administracao' && (
             <div className="space-y-6">
-              <div className="bg-[#111827] rounded-xl border border-slate-800 p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-emerald-600" />
                     <span>Administração Legal, Parâmetros REP-P &amp; LGPD</span>
                   </h3>
-                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                     Portaria 671 MTE
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Parâmetros de conformidade trabalhista, geração de comprovantes imutáveis com SHA-256 e trilha de auditoria para o Ministério do Trabalho e eSocial.
                 </p>
 
                 <div className="space-y-3 pt-2">
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-bold text-white">Número Sequencial de Registro (NSR)</div>
-                      <div className="text-[11px] text-slate-400">Contador estritamente crescente e inviolável por empresa</div>
+                      <div className="text-xs font-bold text-slate-900">Número Sequencial de Registro (NSR)</div>
+                      <div className="text-[11px] text-slate-500">Contador estritamente crescente e inviolável por empresa</div>
                     </div>
-                    <span className="font-mono text-xs font-bold text-emerald-400">
+                    <span className="font-mono text-xs font-bold text-emerald-700">
                       NSR #{registrosPonto.length > 0 ? Math.max(...registrosPonto.map((r) => r.nsr)) : 48924}
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-bold text-white">Assinatura Digital dos Registros</div>
-                      <div className="text-[11px] text-slate-400">Algoritmo SHA-256 aplicado a cada evento de entrada e saída</div>
+                      <div className="text-xs font-bold text-slate-900">Assinatura Digital dos Registros</div>
+                      <div className="text-[11px] text-slate-500">Algoritmo SHA-256 aplicado a cada evento de entrada e saída</div>
                     </div>
-                    <span className="font-mono text-xs font-bold text-sky-400">SHA-256 Ativo</span>
+                    <span className="font-mono text-xs font-bold text-sky-700">SHA-256 Ativo</span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-bold text-white">Conformidade LGPD &amp; Retenção</div>
-                      <div className="text-[11px] text-slate-400">Dados biométricos e de GPS retidos sob estrita finalidade trabalhista</div>
+                      <div className="text-xs font-bold text-slate-900">Conformidade LGPD &amp; Retenção</div>
+                      <div className="text-[11px] text-slate-500">Dados biométricos e de GPS retidos sob estrita finalidade trabalhista</div>
                     </div>
-                    <span className="font-mono text-xs font-bold text-purple-400">Auditoria OK</span>
+                    <span className="font-mono text-xs font-bold text-purple-700">Auditoria OK</span>
                   </div>
                 </div>
               </div>
@@ -2469,37 +3714,37 @@ export default function RecursosHumanosPage() {
       {/* MODAL 1: SIMULADOR DISK PONTO (REP-P 671 MTE)            */}
       {/* ======================================================== */}
       {modalPontoAberto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Simulador REP-P 671 MTE</h3>
+                <Smartphone className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-sm font-bold text-slate-900">Simulador REP-P 671 MTE</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalPontoAberto(false)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {sucessoPonto ? (
-              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-400" />
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold text-center space-y-2">
+                <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-600" />
                 <p>{sucessoPonto}</p>
               </div>
             ) : (
               <div className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
                     Selecione o Colaborador
                   </label>
                   <select
                     value={pontoColaboradorId}
                     onChange={(e) => setPontoColaboradorId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none cursor-pointer"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none cursor-pointer focus:bg-white focus:border-emerald-500"
                   >
                     {colaboradores.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -2509,15 +3754,15 @@ export default function RecursosHumanosPage() {
                   </select>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <div className="flex items-center justify-between text-slate-600 text-[11px]">
                     <span>Status do GPS:</span>
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
+                    <span className="text-emerald-700 font-bold flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-emerald-600" />
                       Dentro da Cerca Autorizada
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-[10px] text-slate-500">
                     Tolerância máxima: 300m &bull; Precisão do GPS: &plusmn;4m
                   </div>
                 </div>
@@ -2526,28 +3771,28 @@ export default function RecursosHumanosPage() {
                   <button
                     type="button"
                     onClick={() => handleRegistrarBatida('ENTRADA')}
-                    className="p-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition cursor-pointer"
+                    className="p-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-xs"
                   >
                     Entrada
                   </button>
                   <button
                     type="button"
                     onClick={() => handleRegistrarBatida('INICIO_INTERVALO')}
-                    className="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs transition cursor-pointer"
+                    className="p-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold text-xs transition cursor-pointer"
                   >
                     Início Intervalo
                   </button>
                   <button
                     type="button"
                     onClick={() => handleRegistrarBatida('FIM_INTERVALO')}
-                    className="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold text-xs transition cursor-pointer"
+                    className="p-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold text-xs transition cursor-pointer"
                   >
                     Retorno Intervalo
                   </button>
                   <button
                     type="button"
                     onClick={() => handleRegistrarBatida('SAIDA')}
-                    className="p-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition cursor-pointer"
+                    className="p-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition cursor-pointer shadow-xs"
                   >
                     Saída
                   </button>
@@ -2562,17 +3807,17 @@ export default function RecursosHumanosPage() {
       {/* MODAL 2: ADMISSÃO DIGITAL (+ NOVO COLABORADOR)           */}
       {/* ======================================================== */}
       {modalNovoColaborador && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Admissão Digital de Colaborador</h3>
+                <UserPlus className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-sm font-bold text-slate-900">Admissão Digital de Colaborador</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalNovoColaborador(false)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2580,36 +3825,36 @@ export default function RecursosHumanosPage() {
 
             <form onSubmit={handleSalvarNovoColaborador} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1">Nome Completo</label>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Nome Completo</label>
                 <input
                   type="text"
                   required
                   placeholder="Ex: João da Silva Santos"
                   value={novoColabForm.nome}
                   onChange={(e) => setNovoColabForm({ ...novoColabForm, nome: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:border-emerald-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none focus:bg-white focus:border-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Cargo</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Cargo</label>
                   <input
                     type="text"
                     required
                     placeholder="Ex: Coordenador de Portaria"
                     value={novoColabForm.cargo}
                     onChange={(e) => setNovoColabForm({ ...novoColabForm, cargo: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none focus:bg-white focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Departamento</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Departamento</label>
                   <select
                     value={novoColabForm.departamento}
                     onChange={(e) => setNovoColabForm({ ...novoColabForm, departamento: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none cursor-pointer"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none cursor-pointer focus:bg-white focus:border-emerald-500"
                   >
                     <option value="Staff de Eventos">Staff de Eventos</option>
                     <option value="Operações & Portaria">Operações &amp; Portaria</option>
@@ -2622,11 +3867,11 @@ export default function RecursosHumanosPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Tipo de Contrato</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Tipo de Contrato</label>
                   <select
                     value={novoColabForm.tipoContrato}
                     onChange={(e) => setNovoColabForm({ ...novoColabForm, tipoContrato: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none cursor-pointer"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none cursor-pointer focus:bg-white focus:border-emerald-500"
                   >
                     <option value="CLT">CLT (Mensalista)</option>
                     <option value="TEMPORARIO">Temporário (Arena)</option>
@@ -2636,23 +3881,23 @@ export default function RecursosHumanosPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Salário / Diária (R$)</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Salário / Diária (R$)</label>
                   <input
                     type="number"
                     placeholder="3200.00"
                     value={novoColabForm.salario}
                     onChange={(e) => setNovoColabForm({ ...novoColabForm, salario: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none focus:bg-white focus:border-emerald-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1">Cerca Virtual de Ponto</label>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Cerca Virtual de Ponto</label>
                 <select
                   value={novoColabForm.geofenceAutorizada}
                   onChange={(e) => setNovoColabForm({ ...novoColabForm, geofenceAutorizada: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none cursor-pointer focus:bg-white focus:border-emerald-500"
                 >
                   <option value="Ligga Arena (Arena da Baixada)">Ligga Arena (Arena da Baixada)</option>
                   <option value="Sede DiskIngressos Curitiba (150m)">Sede DiskIngressos Curitiba</option>
@@ -2661,17 +3906,17 @@ export default function RecursosHumanosPage() {
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setModalNovoColaborador(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition cursor-pointer shadow-xs"
                 >
                   Salvar Colaborador
                 </button>
@@ -2685,17 +3930,17 @@ export default function RecursosHumanosPage() {
       {/* MODAL 3: NOVA CERCA VIRTUAL (GEOFENCE)                   */}
       {/* ======================================================== */}
       {modalNovaGeofence && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-sky-400" />
-                <h3 className="text-sm font-bold text-white">Nova Cerca Virtual para Arenas</h3>
+                <MapPin className="w-5 h-5 text-sky-600" />
+                <h3 className="text-sm font-bold text-slate-900">Nova Cerca Virtual para Arenas</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalNovaGeofence(false)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2703,35 +3948,35 @@ export default function RecursosHumanosPage() {
 
             <form onSubmit={handleSalvarNovaGeofence} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1">Nome do Local</label>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Nome do Local</label>
                 <input
                   type="text"
                   required
                   placeholder="Ex: Estádio Couto Pereira"
                   value={novaGeofenceForm.nome}
                   onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, nome: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:border-sky-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none focus:bg-white focus:border-sky-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1">Endereço Completo</label>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Endereço Completo</label>
                 <input
                   type="text"
                   placeholder="Ex: Rua Ubaldino do Amaral, 37 - Curitiba, PR"
                   value={novaGeofenceForm.endereco}
                   onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, endereco: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:border-sky-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none focus:bg-white focus:border-sky-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Tipo de Local</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Tipo de Local</label>
                   <select
                     value={novaGeofenceForm.tipo}
                     onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, tipo: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none cursor-pointer"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none cursor-pointer focus:bg-white focus:border-sky-500"
                   >
                     <option value="ARENA">Arena / Estádio</option>
                     <option value="ESPACO_ABERTO">Espaço Aberto / Parque</option>
@@ -2741,27 +3986,27 @@ export default function RecursosHumanosPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Raio de Tolerância (m)</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Raio de Tolerância (m)</label>
                   <input
                     type="number"
                     value={novaGeofenceForm.raioMetros}
                     onChange={(e) => setNovaGeofenceForm({ ...novaGeofenceForm, raioMetros: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:border-sky-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none focus:bg-white focus:border-sky-500"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setModalNovaGeofence(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-bold transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold transition cursor-pointer shadow-xs"
                 >
                   Criar Cerca Virtual
                 </button>
@@ -2775,67 +4020,67 @@ export default function RecursosHumanosPage() {
       {/* MODAL 4: DOSSIÊ DO COLABORADOR                           */}
       {/* ======================================================== */}
       {colaboradorDossie && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Dossiê Digital do Colaborador</h3>
+                <FileText className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-sm font-bold text-slate-900">Dossiê Digital do Colaborador</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setColaboradorDossie(null)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 font-bold flex items-center justify-center text-sm">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold flex items-center justify-center text-sm">
                   {colaboradorDossie.avatar}
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white">{colaboradorDossie.nome}</div>
-                  <div className="text-[11px] text-slate-400 font-mono">
+                  <div className="text-sm font-bold text-slate-900">{colaboradorDossie.nome}</div>
+                  <div className="text-[11px] text-slate-500 font-mono">
                     Matrícula: {colaboradorDossie.matricula} &bull; Admissão: {colaboradorDossie.admissao}
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 uppercase font-bold">Cargo &amp; Depto</div>
-                  <div className="font-semibold text-white mt-0.5">{colaboradorDossie.cargo}</div>
-                  <div className="text-[10px] text-emerald-400">{colaboradorDossie.departamento}</div>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-[10px] text-slate-500 uppercase font-bold">Cargo &amp; Depto</div>
+                  <div className="font-semibold text-slate-900 mt-0.5">{colaboradorDossie.cargo}</div>
+                  <div className="text-[10px] text-emerald-700 font-medium">{colaboradorDossie.departamento}</div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 uppercase font-bold">Salário &amp; Contrato</div>
-                  <div className="font-mono font-bold text-emerald-400 mt-0.5">
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-[10px] text-slate-500 uppercase font-bold">Salário &amp; Contrato</div>
+                  <div className="font-mono font-bold text-emerald-700 mt-0.5">
                     R$ {colaboradorDossie.salario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </div>
-                  <div className="text-[10px] text-slate-400">{colaboradorDossie.tipoContrato}</div>
+                  <div className="text-[10px] text-slate-500">{colaboradorDossie.tipoContrato}</div>
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                <div className="text-[10px] text-slate-400 uppercase font-bold">Assinatura Digital do Contrato</div>
-                <div className="font-mono text-[10px] text-slate-300 break-all">
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+                <div className="text-[10px] text-slate-500 uppercase font-bold">Assinatura Digital do Contrato</div>
+                <div className="font-mono text-[10px] text-slate-600 break-all">
                   SHA-256: 8f4a3c2e1b0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f
                 </div>
-                <div className="text-[10px] text-emerald-400 font-semibold pt-1">
+                <div className="text-[10px] text-emerald-700 font-semibold pt-1">
                   Validade ASO: {colaboradorDossie.asoValidade} &bull; Banco de Horas: {colaboradorDossie.bancoHoras}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end pt-2 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setColaboradorDossie(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium transition cursor-pointer"
               >
                 Fechar
               </button>
@@ -2848,48 +4093,48 @@ export default function RecursosHumanosPage() {
       {/* MODAL 5: REMESSA PIX FOLHA TESOURARIA                    */}
       {/* ======================================================== */}
       {modalRemessaPix && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <Send className="w-5 h-5 text-purple-400" />
-                <h3 className="text-sm font-bold text-white">Disparar Remessa PIX Tesouraria</h3>
+                <Send className="w-5 h-5 text-purple-600" />
+                <h3 className="text-sm font-bold text-slate-900">Disparar Remessa PIX Tesouraria</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalRemessaPix(false)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <p className="text-slate-300">
+              <p className="text-slate-600">
                 A remessa da folha será enviada para o módulo de <strong>Tesouraria &amp; Bancos (EDDIE 11.25)</strong> para liquidação instantânea via PIX Direto nos bancos cadastrados.
               </p>
 
-              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5 font-mono">
-                <div className="flex items-center justify-between text-slate-400">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 font-mono">
+                <div className="flex items-center justify-between text-slate-500">
                   <span>Colaboradores:</span>
-                  <span className="text-white">42 beneficiários</span>
+                  <span className="text-slate-900 font-semibold">42 beneficiários</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-400">
+                <div className="flex items-center justify-between text-slate-500">
                   <span>Competência:</span>
-                  <span className="text-white">10/2026</span>
+                  <span className="text-slate-900 font-semibold">10/2026</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-400 pt-1 border-t border-slate-800 text-sm font-bold">
-                  <span className="text-white">Total Líquido:</span>
-                  <span className="text-emerald-400">R$ 164.820,00</span>
+                <div className="flex items-center justify-between text-slate-500 pt-1 border-t border-slate-200 text-sm font-bold">
+                  <span className="text-slate-900">Total Líquido:</span>
+                  <span className="text-emerald-700">R$ 164.820,00</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setModalRemessaPix(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium transition cursor-pointer"
               >
                 Cancelar
               </button>
@@ -2900,7 +4145,7 @@ export default function RecursosHumanosPage() {
                   setModalRemessaPix(false);
                   showToast('Remessa de R$ 164.820,00 enviada para Tesouraria via PIX Direto!');
                 }}
-                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-purple-600/20 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <Send className="w-4 h-4" />
                 <span>Confirmar Envio</span>
@@ -2914,50 +4159,50 @@ export default function RecursosHumanosPage() {
       {/* MODAL 6: APROPRIAÇÃO CONTÁBIL DRE                        */}
       {/* ======================================================== */}
       {modalExportarDre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-purple-400" />
-                <h3 className="text-sm font-bold text-white">Apropriar Custos no DRE do Evento</h3>
+                <Briefcase className="w-5 h-5 text-purple-600" />
+                <h3 className="text-sm font-bold text-slate-900">Apropriar Custos no DRE do Evento</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalExportarDre(false)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <p className="text-slate-300">
+              <p className="text-slate-600">
                 Esta ação lançará automaticamente os custos operacionais de pessoal nas contas contábeis do <strong>Módulo Contabilidade (EDDIE 11.21)</strong> e no Ledger Imutável.
               </p>
 
-              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                 {staffEventos.map((s) => (
                   <div key={s.id} className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300">{s.evento}:</span>
-                    <span className="text-purple-400 font-bold font-mono">
+                    <span className="text-slate-700">{s.evento}:</span>
+                    <span className="text-purple-700 font-bold font-mono">
                       R$ {s.custoTotalPessoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 ))}
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-sm font-bold">
-                  <span className="text-white">Total Apropriado:</span>
-                  <span className="text-emerald-400 font-black">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-sm font-bold">
+                  <span className="text-slate-900">Total Apropriado:</span>
+                  <span className="text-emerald-700 font-black">
                     R$ {staffEventos.reduce((a, b) => a + b.custoTotalPessoal, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setModalExportarDre(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium transition cursor-pointer"
               >
                 Cancelar
               </button>
@@ -2969,7 +4214,7 @@ export default function RecursosHumanosPage() {
                   setModalExportarDre(false);
                   showToast('Custos de pessoal apropriados com sucesso no DRE dos Eventos!');
                 }}
-                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-purple-600/20 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Confirmar no Ledger DRE</span>
@@ -2983,22 +4228,22 @@ export default function RecursosHumanosPage() {
       {/* MODAL 7: CONFIGURAÇÃO DE BOLSOS CAJU (CAJU WALLETS)       */}
       {/* ======================================================== */}
       {modalConfigCaju && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#E63888] text-white flex items-center justify-center font-bold text-xs">
+                <div className="w-6 h-6 rounded-lg bg-[#E63888] text-white flex items-center justify-center font-bold text-xs shadow-xs">
                   C
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Configurar Bolsos Caju Benefícios</h3>
-                  <p className="text-[10px] text-slate-400">Validação matemática e compliance PAT / Lei do Vale-Transporte</p>
+                  <h3 className="text-sm font-bold text-slate-900">Configurar Bolsos Caju Benefícios</h3>
+                  <p className="text-[10px] text-slate-500">Validação matemática e compliance PAT / Lei do Vale-Transporte</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setModalConfigCaju(false)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3006,7 +4251,7 @@ export default function RecursosHumanosPage() {
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1">Colaborador</label>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Colaborador</label>
                 <select
                   value={cajuEditForm.colaboradorId}
                   onChange={(e) => {
@@ -3023,7 +4268,7 @@ export default function RecursosHumanosPage() {
                       });
                     }
                   }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 outline-none cursor-pointer focus:bg-white focus:border-[#E63888]"
                 >
                   {cajuConfigs.map((col) => (
                     <option key={col.colaboradorId} value={col.colaboradorId}>
@@ -3034,7 +4279,7 @@ export default function RecursosHumanosPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
                   Verba Total Mensal Disponibilizada (R$)
                 </label>
                 <input
@@ -3047,13 +4292,13 @@ export default function RecursosHumanosPage() {
                       verbaTotalMensal: Number(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold outline-none focus:border-[#E63888]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-mono font-bold outline-none focus:bg-white focus:border-[#E63888]"
                 />
               </div>
 
               {/* 5 Bolsos */}
-              <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
-                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
                   <span>Alocação por Bolsos</span>
                   <span className="text-[#E63888] font-normal normal-case text-[10px]">
                     Multi-Bolsos Cartão Elo
@@ -3062,7 +4307,7 @@ export default function RecursosHumanosPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
                       <Utensils className="w-3 h-3 text-[#E63888]" />
                       <span>Refeição (PAT)</span>
                     </label>
@@ -3076,13 +4321,13 @@ export default function RecursosHumanosPage() {
                           saldoRefeicao: Number(e.target.value) || 0,
                         })
                       }
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-[#E63888]"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 font-mono outline-none focus:border-[#E63888]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                      <ShoppingCart className="w-3 h-3 text-orange-400" />
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                      <ShoppingCart className="w-3 h-3 text-orange-500" />
                       <span>Alimentação (PAT)</span>
                     </label>
                     <input
@@ -3095,15 +4340,15 @@ export default function RecursosHumanosPage() {
                           saldoAlimentacao: Number(e.target.value) || 0,
                         })
                       }
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-orange-500"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 font-mono outline-none focus:border-orange-500"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                      <Car className="w-3 h-3 text-sky-400" />
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                      <Car className="w-3 h-3 text-sky-500" />
                       <span>Mobilidade (VT)</span>
                     </label>
                     <input
@@ -3116,13 +4361,13 @@ export default function RecursosHumanosPage() {
                           saldoMobilidade: Number(e.target.value) || 0,
                         })
                       }
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-sky-500"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 font-mono outline-none focus:border-sky-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                      <Ticket className="w-3 h-3 text-purple-400" />
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                      <Ticket className="w-3 h-3 text-purple-600" />
                       <span>Cultura</span>
                     </label>
                     <input
@@ -3135,14 +4380,14 @@ export default function RecursosHumanosPage() {
                           saldoCultura: Number(e.target.value) || 0,
                         })
                       }
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-purple-500"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 font-mono outline-none focus:border-purple-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                    <Award className="w-3 h-3 text-emerald-400" />
+                  <label className="block text-[10px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                    <Award className="w-3 h-3 text-emerald-600" />
                     <span>Livre / Premiações (Incide IRRF)</span>
                   </label>
                   <input
@@ -3155,7 +4400,7 @@ export default function RecursosHumanosPage() {
                         saldoLivre: Number(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-emerald-500"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 font-mono outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -3175,14 +4420,14 @@ export default function RecursosHumanosPage() {
                   <div
                     className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
                       valido
-                        ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
-                        : 'bg-rose-950/40 border-rose-500/40 text-rose-300'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                        : 'bg-rose-50 border-rose-300 text-rose-900'
                     }`}
                   >
                     {valido ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                     ) : (
-                      <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                     )}
                     <div className="space-y-1">
                       <div className="font-bold">
@@ -3199,18 +4444,18 @@ export default function RecursosHumanosPage() {
               })()}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setModalConfigCaju(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium transition cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={handleSaveCajuBolsos}
-                className="px-4 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#E63888]/20 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Salvar Bolsos Caju</span>
@@ -3224,16 +4469,16 @@ export default function RecursosHumanosPage() {
       {/* MODAL 8: FATURA E DOSSIÊ FINANCEIRO DO PEDIDO DE BENEFÍCIOS */}
       {/* ======================================================== */}
       {modalDossieBeneficio && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111827] border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <FileCheck className="w-5 h-5 text-[#E63888]" />
                 <div>
-                  <h3 className="text-sm font-bold text-white">
+                  <h3 className="text-sm font-bold text-slate-900">
                     Fatura &amp; Dossiê de Recarga de Benefícios
                   </h3>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-slate-500">
                     {modalDossieBeneficio.fornecedorNome} &bull; Competência {competenciaBeneficio}
                   </p>
                 </div>
@@ -3241,32 +4486,32 @@ export default function RecursosHumanosPage() {
               <button
                 type="button"
                 onClick={() => setModalDossieBeneficio(null)}
-                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between text-slate-400 text-xs">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between text-slate-500 text-xs">
                   <span>Fornecedor:</span>
-                  <span className="font-bold text-white">{modalDossieBeneficio.fornecedorNome}</span>
+                  <span className="font-bold text-slate-900">{modalDossieBeneficio.fornecedorNome}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-400 text-xs">
+                <div className="flex items-center justify-between text-slate-500 text-xs">
                   <span>CNPJ da Operadora:</span>
-                  <span className="font-mono text-slate-300">{modalDossieBeneficio.cnpj}</span>
+                  <span className="font-mono text-slate-700">{modalDossieBeneficio.cnpj}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-400 text-xs">
+                <div className="flex items-center justify-between text-slate-500 text-xs">
                   <span>Qtd de Vidas Recarregadas:</span>
-                  <span className="font-bold text-white">{modalDossieBeneficio.qtdVidas} colaboradores</span>
+                  <span className="font-bold text-slate-900">{modalDossieBeneficio.qtdVidas} colaboradores</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-400 text-xs">
+                <div className="flex items-center justify-between text-slate-500 text-xs">
                   <span>Chave de Idempotência:</span>
-                  <span className="font-mono text-[10px] text-sky-400">{modalDossieBeneficio.idempotencyKey}</span>
+                  <span className="font-mono text-[10px] text-sky-700">{modalDossieBeneficio.idempotencyKey}</span>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-sm font-bold">
-                  <span className="text-white">Valor Total Faturado:</span>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-sm font-bold">
+                  <span className="text-slate-900">Valor Total Faturado:</span>
                   <span className="text-lg font-black text-[#E63888] font-mono">
                     R$ {modalDossieBeneficio.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
@@ -3274,10 +4519,10 @@ export default function RecursosHumanosPage() {
               </div>
 
               {/* PIX Copia e Cola */}
-              <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
-                    <QrCode className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[11px] font-bold text-slate-900 flex items-center gap-1.5">
+                    <QrCode className="w-3.5 h-3.5 text-emerald-600" />
                     <span>PIX Copia e Cola (Banco Central)</span>
                   </span>
                   <button
@@ -3288,22 +4533,22 @@ export default function RecursosHumanosPage() {
                         showToast('Código PIX Copia e Cola copiado para a área de transferência!');
                       }
                     }}
-                    className="text-[10px] text-emerald-400 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] text-emerald-700 hover:underline font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <Copy className="w-3 h-3" />
                     <span>Copiar PIX</span>
                   </button>
                 </div>
-                <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[10px] text-slate-400 break-all select-all">
+                <div className="p-2.5 rounded-lg bg-white border border-slate-300 font-mono text-[10px] text-slate-700 break-all select-all">
                   {modalDossieBeneficio.codigoPix}
                 </div>
               </div>
 
               {/* Código de Barras Boleto */}
-              <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
-                    <DollarSign className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="text-[11px] font-bold text-slate-900 flex items-center gap-1.5">
+                    <DollarSign className="w-3.5 h-3.5 text-sky-600" />
                     <span>Linha Digitável do Boleto Bancário</span>
                   </span>
                   <button
@@ -3314,27 +4559,27 @@ export default function RecursosHumanosPage() {
                         showToast('Código de Barras copiado!');
                       }
                     }}
-                    className="text-[10px] text-sky-400 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] text-sky-700 hover:underline font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <Copy className="w-3 h-3" />
                     <span>Copiar</span>
                   </button>
                 </div>
-                <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300 break-all select-all">
+                <div className="p-2.5 rounded-lg bg-white border border-slate-300 font-mono text-[11px] text-slate-800 break-all select-all">
                   {modalDossieBeneficio.codigoBarras}
                 </div>
               </div>
 
               {/* Status do Pedido */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                <span className="text-slate-400 text-xs">Status da Integração:</span>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <span className="text-slate-600 text-xs">Status da Integração:</span>
                 {modalDossieBeneficio.status === 'APROVADO_FINANCEIRO' ? (
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Aprovado Financeiro ({modalDossieBeneficio.aprovadoPor || 'Tesouraria'})</span>
                   </span>
                 ) : (
-                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold text-xs flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold text-xs flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
                     <span>Aguardando Aprovação Financeira</span>
                   </span>
@@ -3342,11 +4587,11 @@ export default function RecursosHumanosPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setModalDossieBeneficio(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium transition cursor-pointer"
               >
                 Fechar
               </button>
@@ -3354,7 +4599,7 @@ export default function RecursosHumanosPage() {
                 <button
                   type="button"
                   onClick={() => handleAprovarPedidoBeneficio(modalDossieBeneficio.id)}
-                  className="px-4 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#E63888]/20 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Aprovar e Integrar à Tesouraria</span>

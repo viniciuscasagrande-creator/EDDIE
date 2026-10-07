@@ -351,21 +351,21 @@ export function Sidebar() {
           - Mobile / Tablet (<lg): Gaveta deslizante off-canvas (w-72 max-w-[85vw], fixed inset-y-0 left-0) controlada por isMobileMenuOpen
       */}
       <aside
-        className={`bg-[#0d1322] border-r border-[#1e293b] flex flex-col shrink-0 min-h-screen z-50 transition-transform duration-300 ease-in-out fixed inset-y-0 left-0 w-72 max-w-[85vw] lg:static lg:translate-x-0 lg:w-64 lg:h-screen lg:sticky lg:top-0 lg:max-w-none ${
+        className={`bg-white dark:bg-[#0d1322] border-r border-slate-200 dark:border-[#1e293b] flex flex-col shrink-0 min-h-screen z-50 transition-transform duration-300 ease-in-out fixed inset-y-0 left-0 w-72 max-w-[85vw] lg:static lg:translate-x-0 lg:w-64 lg:h-screen lg:sticky lg:top-0 lg:max-w-none shadow-xs ${
           isMobileMenuOpen
             ? 'translate-x-0 shadow-2xl'
             : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-4 justify-between border-b border-[#1e293b] shrink-0">
+        <div className="h-16 flex items-center px-4 justify-between border-b border-slate-200 dark:border-[#1e293b] bg-slate-50/50 dark:bg-transparent shrink-0">
           <Link
             href="/"
             onClick={closeMobileMenu}
             className="flex items-center gap-3 overflow-hidden"
           >
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-black text-base shadow-lg shrink-0 ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-black text-base shadow-sm shrink-0 ${
                 isAdmin
                   ? 'bg-gradient-to-tr from-green-500 to-emerald-400 shadow-green-500/20'
                   : 'bg-gradient-to-tr from-sky-400 to-indigo-500 shadow-sky-500/20 text-white'
@@ -375,20 +375,20 @@ export function Sidebar() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h1 className="font-bold text-white text-sm leading-tight tracking-tight truncate">
+                <h1 className="font-bold text-slate-900 dark:text-white text-sm leading-tight tracking-tight truncate">
                   {isAdmin ? 'DiskIngressos' : selectedProducer?.nome?.split(' ')[0] || 'Produtor'}
                 </h1>
                 <span
                   className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border shrink-0 ${
                     isAdmin
-                      ? 'bg-sky-500/20 text-sky-400 border-sky-500/30'
-                      : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                      ? 'bg-sky-50 dark:bg-sky-500/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-500/30'
+                      : 'bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30'
                   }`}
                 >
                   {isAdmin ? 'ADMINISTRADOR' : 'PRODUTOR'}
                 </span>
               </div>
-              <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider block truncate">
+              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block truncate">
                 {isAdmin ? 'Painel do Produtor' : 'Área Restrita'}
               </span>
             </div>
@@ -398,7 +398,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={closeMobileMenu}
-            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition lg:hidden"
+            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition lg:hidden"
             title="Fechar menu"
           >
             <X size={18} />
@@ -410,7 +410,7 @@ export function Sidebar() {
           <div className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
             <span>{isAdmin ? 'Módulos Globais' : 'Painel da Produtora'}</span>
             {!isAdmin && (
-              <span className="text-[9px] text-amber-400 font-mono">Restrito</span>
+              <span className="text-[9px] text-amber-600 dark:text-amber-400 font-mono">Restrito</span>
             )}
           </div>
 
@@ -439,8 +439,8 @@ export function Sidebar() {
                   <div
                     className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all group ${
                       isActive
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                        ? 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs font-semibold dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60 border border-transparent'
                     }`}
                   >
                     <Link
@@ -453,27 +453,27 @@ export function Sidebar() {
                     >
                       <Icon
                         size={17}
-                        className={`shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}
+                        className={`shrink-0 ${isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'}`}
                       />
                       <span className="truncate">{displayLabel}</span>
                     </Link>
                     <div className="flex items-center gap-1.5 shrink-0 ml-1">
                       {item.badge && (
-                        <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
+                        <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
                           {item.badge}
                         </span>
                       )}
                       <button
                         type="button"
                         onClick={(e) => toggleMenu(item.href, e)}
-                        className="p-1 -mr-1 text-slate-400 hover:text-white hover:bg-slate-700/60 rounded transition cursor-pointer"
+                        className="p-1 -mr-1 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/60 rounded transition cursor-pointer"
                         title={isExpanded ? 'Recolher submenu' : 'Expandir submenu'}
                         aria-label={isExpanded ? 'Recolher submenu' : 'Expandir submenu'}
                       >
                         <ChevronDown
                           size={14}
                           className={`transition-transform duration-200 ${
-                            isExpanded ? 'rotate-0 text-emerald-400' : '-rotate-90 text-slate-400'
+                            isExpanded ? 'rotate-0 text-emerald-600 dark:text-emerald-400' : '-rotate-90 text-slate-400'
                           }`}
                         />
                       </button>
@@ -485,19 +485,19 @@ export function Sidebar() {
                     onClick={closeMobileMenu}
                     className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
                       isActive
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                        ? 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs font-semibold dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60 border border-transparent'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Icon
                         size={17}
-                        className={`shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}
+                        className={`shrink-0 ${isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'}`}
                       />
                       <span className="truncate">{displayLabel}</span>
                     </div>
                     {item.badge && (
-                      <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
+                      <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
                         {item.badge}
                       </span>
                     )}
@@ -506,7 +506,7 @@ export function Sidebar() {
 
                 {/* Sub-itens do RH Disk V2.1 (Menu Hierárquico dos 10 Grupos Oficiais) */}
                 {item.href === '/rh' && isExpanded && (
-                  <div className="ml-5 mt-0.5 mb-1.5 space-y-0.5 border-l-2 border-emerald-900/60 pl-2">
+                  <div className="ml-5 mt-0.5 mb-1.5 space-y-0.5 border-l-2 border-emerald-200 dark:border-emerald-900/60 pl-2">
                     {[
                       { tab: 'visao', label: '1. Visão Geral RH' },
                       { tab: 'aprovacoes', label: '2. Central de Aprovações (SoD)' },
@@ -533,8 +533,8 @@ export function Sidebar() {
                           }}
                           className={`block px-2 py-1 text-[11px] rounded transition ${
                             isSubActive
-                              ? 'text-emerald-400 font-bold bg-emerald-950/40 border-l-2 border-emerald-400 pl-1.5 shadow-sm'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                              ? 'text-emerald-900 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950/40 border-l-2 border-emerald-600 dark:border-emerald-400 pl-1.5 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/40'
                           }`}
                         >
                           &bull; {sub.label}
@@ -618,23 +618,23 @@ export function Sidebar() {
         </nav>
 
         {/* Security & Status Footer */}
-        <div className="p-3 border-t border-[#1e293b] text-xs text-slate-400 space-y-2 shrink-0">
+        <div className="p-3 border-t border-slate-200 dark:border-[#1e293b] text-xs text-slate-500 dark:text-slate-400 space-y-2 shrink-0">
           <Link
             href="/diagnostico"
             onClick={closeMobileMenu}
-            className="flex items-center justify-between text-emerald-400 hover:text-emerald-300 font-medium transition"
+            className="flex items-center justify-between text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-medium transition"
           >
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="shrink-0" />
               <span>Diagnóstico</span>
             </div>
-            <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
               Ao Vivo
             </span>
           </Link>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1">
             <span>{isAdmin ? 'Núcleo Central' : 'Ambiente do Produtor'}</span>
-            <span className="text-[10px] font-mono font-bold text-sky-400">
+            <span className="text-[10px] font-mono font-bold text-sky-700 dark:text-sky-400">
               {EDDIE_BUILD.uiVersion}
             </span>
           </div>

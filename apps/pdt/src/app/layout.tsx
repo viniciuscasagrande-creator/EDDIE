@@ -39,8 +39,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
-      <body className="bg-[#0B0F19] text-slate-100 flex min-h-screen">
+    <html lang="pt-BR" className="light" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('eddie_theme_mode') || 'light';
+                if (theme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.classList.remove('light');
+                } else {
+                  document.documentElement.classList.add('light');
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 flex min-h-screen antialiased transition-colors duration-200">
         <AuthSessionProvider>
           <ProducerEventProvider>
             <MobileNavProvider>
