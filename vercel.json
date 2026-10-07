@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "corepack enable && pnpm install --frozen-lockfile",
-  "buildCommand": "corepack enable && pnpm --filter @ticketing/contracts build && pnpm --filter @ticketing/pdt build && node -e \"const fs=require('fs'); if(fs.existsSync('apps/pdt/.next')) fs.cpSync('apps/pdt/.next','.next',{recursive:true}); if(fs.existsSync('apps/pdt/public')) fs.cpSync('apps/pdt/public','public',{recursive:true});\"",
+  "buildCommand": "node scripts/vercel-build.mjs",
   "outputDirectory": ".next"
 }
