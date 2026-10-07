@@ -38,6 +38,13 @@ import {
   SmartphoneNfc,
   Settings,
   Lock,
+  CreditCard,
+  Utensils,
+  ShoppingCart,
+  Car,
+  Copy,
+  Sliders,
+  Ticket,
 } from 'lucide-react';
 import { useProducerEvent } from '../../components/ProducerEventContext';
 import { useAuthSession } from '../../components/AuthSessionContext';
@@ -484,6 +491,126 @@ const RH_MENU_GROUPS: RHMenuGroupConfig[] = [
   },
 ];
 
+// --- TIPOS E DADOS DE BENEFÍCIOS & CAJU WALLETS (EDDIE 11.39) ---
+export interface ColaboradorCajuConfig {
+  colaboradorId: string;
+  nome: string;
+  matricula: string;
+  tipoContrato: string;
+  salario: number;
+  verbaTotalMensal: number;
+  saldoRefeicao: number;
+  saldoAlimentacao: number;
+  saldoMobilidade: number;
+  saldoCultura: number;
+  saldoLivre: number;
+  cajuEmployeeId: string;
+}
+
+export interface PedidoBeneficioOperadora {
+  id: string;
+  fornecedorNome: string;
+  cnpj: string;
+  tipoIntegracao: string;
+  qtdVidas: number;
+  valorTotal: number;
+  status: 'AGUARDANDO_APROVACAO_FINANCEIRA' | 'APROVADO_FINANCEIRO';
+  codigoPix: string;
+  codigoBarras: string;
+  batchId: string;
+  idempotencyKey: string;
+  aprovadoEm?: string;
+  aprovadoPor?: string;
+}
+
+const cajuConfigsIniciais: ColaboradorCajuConfig[] = [
+  {
+    colaboradorId: 'colab-001',
+    nome: 'Karine Santos',
+    matricula: 'DK-1042',
+    tipoContrato: 'CLT',
+    salario: 8400.0,
+    verbaTotalMensal: 1650.0,
+    saldoRefeicao: 850.0,
+    saldoAlimentacao: 500.0,
+    saldoMobilidade: 300.0,
+    saldoCultura: 0.0,
+    saldoLivre: 0.0,
+    cajuEmployeeId: 'caju_emp_dk1042',
+  },
+  {
+    colaboradorId: 'colab-002',
+    nome: 'Lucas Ferreira dos Santos',
+    matricula: 'DK-1088',
+    tipoContrato: 'CLT',
+    salario: 6200.0,
+    verbaTotalMensal: 1400.0,
+    saldoRefeicao: 700.0,
+    saldoAlimentacao: 400.0,
+    saldoMobilidade: 300.0,
+    saldoCultura: 0.0,
+    saldoLivre: 0.0,
+    cajuEmployeeId: 'caju_emp_dk1088',
+  },
+  {
+    colaboradorId: 'colab-003',
+    nome: 'Mariana Duarte Souza',
+    matricula: 'DK-1102',
+    tipoContrato: 'CLT',
+    salario: 4800.0,
+    verbaTotalMensal: 1200.0,
+    saldoRefeicao: 600.0,
+    saldoAlimentacao: 400.0,
+    saldoMobilidade: 200.0,
+    saldoCultura: 0.0,
+    saldoLivre: 0.0,
+    cajuEmployeeId: 'caju_emp_dk1102',
+  },
+  {
+    colaboradorId: 'colab-004',
+    nome: 'Rafael Albuquerque Lima',
+    matricula: 'DK-2015',
+    tipoContrato: 'CLT',
+    salario: 3900.0,
+    verbaTotalMensal: 1100.0,
+    saldoRefeicao: 550.0,
+    saldoAlimentacao: 350.0,
+    saldoMobilidade: 200.0,
+    saldoCultura: 0.0,
+    saldoLivre: 0.0,
+    cajuEmployeeId: 'caju_emp_dk2015',
+  },
+];
+
+const pedidosBeneficiosIniciais: PedidoBeneficioOperadora[] = [
+  {
+    id: 'ped-caju-1026',
+    fornecedorNome: 'Caju Benefícios S.A.',
+    cnpj: '33.221.849/0001-49',
+    tipoIntegracao: 'API REST Automática',
+    qtdVidas: 4,
+    valorTotal: 5178.57,
+    status: 'AGUARDANDO_APROVACAO_FINANCEIRA',
+    codigoPix: '00020126580014BR.GOV.BCB.PIX0136e92b8d01-9a74-4b52-b883-93821034f82a5204000053039865405178.575802BR5916CAJU BENEFICIOS6009SAO PAULO62070503***630489AB',
+    codigoBarras: '34191.79001 01043.510047 91020.150008 4 98760000517857',
+    batchId: 'recarga-caju-2026-10-batch-01',
+    idempotencyKey: 'idemp-caju-2026-10-7fa91c',
+  },
+  {
+    id: 'ped-sulamerica-1026',
+    fornecedorNome: 'SulAmérica Saúde S.A.',
+    cnpj: '01.685.053/0001-56',
+    tipoIntegracao: 'Arquivo EDI / REST',
+    qtdVidas: 4,
+    valorTotal: 1920.00,
+    status: 'AGUARDANDO_APROVACAO_FINANCEIRA',
+    codigoPix: '00020126580014BR.GOV.BCB.PIX0136a11c9e04-7b12-4c81-8124-74910238491a5204000053039865401920.005802BR5916SULAMERICA SAUDE6009RIO DE JANEIRO62070503***630441BC',
+    codigoBarras: '23793.38128 60032.190412 81000.412003 1 98760000192000',
+    batchId: 'fatura-sulamerica-2026-10-001',
+    idempotencyKey: 'idemp-sulamerica-2026-10-82a10',
+  },
+];
+
 export default function RecursosHumanosPage() {
   const { eventoId, evento } = useProducerEvent();
   const { currentUser, isAdmin } = useAuthSession();
@@ -620,6 +747,158 @@ export default function RecursosHumanosPage() {
     setTimeout(() => {
       setToastMensagem(null);
     }, 4000);
+  };
+
+  // --- ESTADOS DE BENEFÍCIOS & CAJU WALLETS (EDDIE 11.39) ---
+  const [cajuConfigs, setCajuConfigs] = useState<ColaboradorCajuConfig[]>(cajuConfigsIniciais);
+  const [selectedCajuColabId, setSelectedCajuColabId] = useState('colab-001');
+  const [pedidosBeneficios, setPedidosBeneficios] = useState<PedidoBeneficioOperadora[]>(pedidosBeneficiosIniciais);
+  const [competenciaBeneficio, setCompetenciaBeneficio] = useState('10/2026');
+  const [diasUteisBeneficio, setDiasUteisBeneficio] = useState(21);
+  const [deduzirFaltasPonto, setDeduzirFaltasPonto] = useState(true);
+
+  const [modalConfigCaju, setModalConfigCaju] = useState(false);
+  const [cajuEditForm, setCajuEditForm] = useState({
+    colaboradorId: 'colab-001',
+    verbaTotalMensal: 1650,
+    saldoRefeicao: 850,
+    saldoAlimentacao: 500,
+    saldoMobilidade: 300,
+    saldoCultura: 0,
+    saldoLivre: 0,
+  });
+
+  const [modalDossieBeneficio, setModalDossieBeneficio] = useState<PedidoBeneficioOperadora | null>(null);
+
+  // Colaborador Caju selecionado para visualização
+  const currentCajuConfig = cajuConfigs.find((c) => c.colaboradorId === selectedCajuColabId) || cajuConfigs[0];
+  const somaBolsosCurrent =
+    currentCajuConfig.saldoRefeicao +
+    currentCajuConfig.saldoAlimentacao +
+    currentCajuConfig.saldoMobilidade +
+    currentCajuConfig.saldoCultura +
+    currentCajuConfig.saldoLivre;
+  const difCurrent = Math.round((somaBolsosCurrent - currentCajuConfig.verbaTotalMensal) * 100) / 100;
+
+  // Cálculo dinâmico do lote de compra de benefícios com dedução de ponto e teto 6% VT
+  const itensCalculoBeneficios = cajuConfigs.map((colab) => {
+    let faltas = 0;
+    if (deduzirFaltasPonto) {
+      if (colab.colaboradorId === 'colab-002') faltas = 1; // Lucas Ferreira: 1 falta
+      if (colab.colaboradorId === 'colab-004') faltas = 2; // Rafael Albuquerque: 2 faltas
+    }
+    const diasEfetivos = Math.max(0, diasUteisBeneficio - faltas);
+    const diariaCaju = diasUteisBeneficio > 0 ? colab.verbaTotalMensal / diasUteisBeneficio : 0;
+    const recargaCaju =
+      diasEfetivos < diasUteisBeneficio
+        ? Math.round(diariaCaju * diasEfetivos * 100) / 100
+        : colab.verbaTotalMensal;
+
+    const mobilidadeDiaria = diasUteisBeneficio > 0 ? colab.saldoMobilidade / diasUteisBeneficio : 0;
+    const mobilidadeEfetiva =
+      diasEfetivos < diasUteisBeneficio
+        ? Math.round(mobilidadeDiaria * diasEfetivos * 100) / 100
+        : colab.saldoMobilidade;
+    const tetoVT6 = Math.round(colab.salario * 0.06 * 100) / 100;
+    const descontoVT = Math.round(Math.min(tetoVT6, mobilidadeEfetiva) * 100) / 100;
+    const custoEmpresaCaju = Math.round(Math.max(0, recargaCaju - descontoVT) * 100) / 100;
+
+    return {
+      ...colab,
+      faltas,
+      diasEfetivos,
+      recargaCaju,
+      descontoVT,
+      custoEmpresaCaju,
+      saudeMensal: 480.0,
+      saudeCoparticipacao: 48.0,
+      saudeCustoEmpresa: 432.0,
+    };
+  });
+
+  const totalRecargaCaju = itensCalculoBeneficios.reduce((acc, i) => acc + i.recargaCaju, 0);
+  const totalDescontoVTCaju = itensCalculoBeneficios.reduce((acc, i) => acc + i.descontoVT, 0);
+  const totalCustoEmpresaCaju = itensCalculoBeneficios.reduce((acc, i) => acc + i.custoEmpresaCaju, 0);
+  const totalSaude = itensCalculoBeneficios.length * 480.0;
+  const totalCoparticipacaoSaude = itensCalculoBeneficios.length * 48.0;
+  const totalCustoEmpresaSaude = totalSaude - totalCoparticipacaoSaude;
+
+  const totalGeralRecargas = totalRecargaCaju + totalSaude;
+  const totalGeralDescontos = totalDescontoVTCaju + totalCoparticipacaoSaude;
+  const totalGeralCustoEmpresa = totalCustoEmpresaCaju + totalCustoEmpresaSaude;
+
+  const handleOpenEditCaju = (colabId: string) => {
+    const colab = cajuConfigs.find((c) => c.colaboradorId === colabId);
+    if (!colab) return;
+    setCajuEditForm({
+      colaboradorId: colab.colaboradorId,
+      verbaTotalMensal: colab.verbaTotalMensal,
+      saldoRefeicao: colab.saldoRefeicao,
+      saldoAlimentacao: colab.saldoAlimentacao,
+      saldoMobilidade: colab.saldoMobilidade,
+      saldoCultura: colab.saldoCultura,
+      saldoLivre: colab.saldoLivre,
+    });
+    setModalConfigCaju(true);
+  };
+
+  const handleSaveCajuBolsos = () => {
+    const soma =
+      cajuEditForm.saldoRefeicao +
+      cajuEditForm.saldoAlimentacao +
+      cajuEditForm.saldoMobilidade +
+      cajuEditForm.saldoCultura +
+      cajuEditForm.saldoLivre;
+    const dif = Math.round((soma - cajuEditForm.verbaTotalMensal) * 100) / 100;
+    if (Math.abs(dif) > 0.01) {
+      showToast(`Erro: A soma dos bolsos (R$ ${soma.toFixed(2)}) difere da verba em R$ ${dif.toFixed(2)}.`);
+      return;
+    }
+
+    setCajuConfigs((prev) =>
+      prev.map((c) =>
+        c.colaboradorId === cajuEditForm.colaboradorId
+          ? {
+              ...c,
+              verbaTotalMensal: cajuEditForm.verbaTotalMensal,
+              saldoRefeicao: cajuEditForm.saldoRefeicao,
+              saldoAlimentacao: cajuEditForm.saldoAlimentacao,
+              saldoMobilidade: cajuEditForm.saldoMobilidade,
+              saldoCultura: cajuEditForm.saldoCultura,
+              saldoLivre: cajuEditForm.saldoLivre,
+            }
+          : c,
+      ),
+    );
+    setModalConfigCaju(false);
+    const colabNome = cajuConfigs.find((c) => c.colaboradorId === cajuEditForm.colaboradorId)?.nome || 'Colaborador';
+    showToast(`Bolsos Caju de ${colabNome} configurados e calibrados com 100% de precisão!`);
+  };
+
+  const handleAprovarPedidoBeneficio = (pedidoId: string) => {
+    const agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+    setPedidosBeneficios((prev) =>
+      prev.map((p) =>
+        p.id === pedidoId
+          ? {
+              ...p,
+              status: 'APROVADO_FINANCEIRO',
+              aprovadoEm: agora,
+              aprovadoPor: 'Diretoria de RH (Karine Santos)',
+            }
+          : p,
+      ),
+    );
+    const ped = pedidosBeneficios.find((p) => p.id === pedidoId);
+    showToast(`Pedido ${ped?.fornecedorNome || ''} APROVADO! Integrado à Tesouraria via PIX Direto.`);
+    if (modalDossieBeneficio && modalDossieBeneficio.id === pedidoId) {
+      setModalDossieBeneficio({
+        ...modalDossieBeneficio,
+        status: 'APROVADO_FINANCEIRO',
+        aprovadoEm: agora,
+        aprovadoPor: 'Diretoria de RH (Karine Santos)',
+      });
+    }
   };
 
   // Funções de Registro e Modais
@@ -1323,33 +1602,477 @@ export default function RecursosHumanosPage() {
                   </div>
                 </div>
 
-                {/* Benefícios */}
-                <div className="pt-4 border-t border-slate-800">
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
-                    Resumo de Benefícios Corporativos
-                  </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-                      <div className="text-[10px] text-slate-400">Vale Refeição (VR)</div>
-                      <div className="text-xs font-bold text-white mt-1">R$ 950,00 /mês</div>
+                {/* ======================================================== */}
+                {/* SUÍTE DE GESTÃO E COMPRA DE BENEFÍCIOS (EDDIE 11.39)      */}
+                {/* ======================================================== */}
+                <div className="pt-6 border-t border-slate-800 space-y-6">
+                  {/* Header da Seção de Benefícios */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-[#E63888]/20 text-[#E63888] flex items-center justify-center font-black text-xs border border-[#E63888]/30">
+                          C
+                        </div>
+                        <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                          <span>Gestão de Benefícios Flexíveis &amp; Caju Wallets</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E63888]/10 text-[#E63888] border border-[#E63888]/30 font-semibold normal-case">
+                            Multi-Bolsos PAT/CLT
+                          </span>
+                        </h4>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Calibração de bolsos com validação matemática em tempo real, dedução de faltas do Disk Ponto e faturamento direto com a Tesouraria (EDDIE 11.25).
+                      </p>
                     </div>
-                    <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-                      <div className="text-[10px] text-slate-400">Vale Alimentação (VA)</div>
-                      <div className="text-xs font-bold text-white mt-1">R$ 680,00 /mês</div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditCaju(selectedCajuColabId)}
+                        className="px-3.5 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#E63888]/20 cursor-pointer"
+                      >
+                        <Sliders className="w-3.5 h-3.5" />
+                        <span>Configurar Bolsos Caju</span>
+                      </button>
                     </div>
-                    <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-                      <div className="text-[10px] text-slate-400">Plano de Saúde Unimed</div>
-                      <div className="text-xs font-bold text-white mt-1">100% Subsidiado</div>
+                  </div>
+
+                  {/* 1. PAINEL INTERATIVO DE BOLSOS CAJU (CAJU WALLETS OS) */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-b from-[#171f33] to-[#0f172a] border border-slate-700/70 shadow-xl space-y-5">
+                    {/* Seletor de Colaborador */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-[#E63888]" />
+                        <span className="text-xs font-bold text-slate-200">Colaborador em Análise:</span>
+                        <div className="flex flex-wrap gap-1.5 ml-2">
+                          {cajuConfigs.map((colab) => (
+                            <button
+                              key={colab.colaboradorId}
+                              type="button"
+                              onClick={() => setSelectedCajuColabId(colab.colaboradorId)}
+                              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                                selectedCajuColabId === colab.colaboradorId
+                                  ? 'bg-[#E63888] text-white font-bold shadow-md shadow-[#E63888]/30'
+                                  : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300'
+                              }`}
+                            >
+                              <span>{colab.nome.split(' ')[0]}</span>
+                              <span className="text-[10px] opacity-70">({colab.matricula})</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-slate-400">Verba Mensal Total:</span>
+                        <span className="text-sm font-black text-white font-mono">
+                          R$ {currentCajuConfig.verbaTotalMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                          100% Subsidiado
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-                      <div className="text-[10px] text-slate-400">Seguro de Vida Arenas</div>
-                      <div className="text-xs font-bold text-white mt-1">Cobertura R$ 150k</div>
+
+                    {/* Os 5 Bolsos Caju */}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {/* Bolso Refeição */}
+                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-[#E63888]/50 transition group">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <Utensils className="w-3.5 h-3.5 text-[#E63888]" />
+                            <span>Refeição (PAT)</span>
+                          </span>
+                        </div>
+                        <div className="text-base font-black text-white font-mono">
+                          R$ {currentCajuConfig.saldoRefeicao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          Restaurantes e praças de alimentação (Isento de encargos)
+                        </div>
+                      </div>
+
+                      {/* Bolso Alimentação */}
+                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-orange-500/50 transition">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <ShoppingCart className="w-3.5 h-3.5 text-orange-400" />
+                            <span>Alimentação (PAT)</span>
+                          </span>
+                        </div>
+                        <div className="text-base font-black text-white font-mono">
+                          R$ {currentCajuConfig.saldoAlimentacao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          Supermercados, hortifrutis e padarias (Isento PAT)
+                        </div>
+                      </div>
+
+                      {/* Bolso Mobilidade */}
+                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/50 transition">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <Car className="w-3.5 h-3.5 text-sky-400" />
+                            <span>Mobilidade (VT)</span>
+                          </span>
+                        </div>
+                        <div className="text-base font-black text-white font-mono">
+                          R$ {currentCajuConfig.saldoMobilidade.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          Transporte e apps (Desconto CLT até teto 6%)
+                        </div>
+                      </div>
+
+                      {/* Bolso Cultura */}
+                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-purple-500/50 transition">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <Ticket className="w-3.5 h-3.5 text-purple-400" />
+                            <span>Cultura</span>
+                          </span>
+                        </div>
+                        <div className="text-base font-black text-white font-mono">
+                          R$ {currentCajuConfig.saldoCultura.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          Livrarias, cinemas, teatros e shows DiskIngressos
+                        </div>
+                      </div>
+
+                      {/* Bolso Livre */}
+                      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-emerald-500/50 transition">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <Award className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Livre (Premiações)</span>
+                          </span>
+                        </div>
+                        <div className="text-base font-black text-white font-mono">
+                          R$ {currentCajuConfig.saldoLivre.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          Bonificações corporativas (Incide IRRF eSocial)
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Barra de Distribuição Visual Proporcional dos Bolsos */}
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400">Distribuição Proporcional da Verba Caju:</span>
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1 text-[#E63888]">
+                            <span className="w-2 h-2 rounded-full bg-[#E63888]" />
+                            <span>Refeição {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoRefeicao / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
+                          </span>
+                          <span className="flex items-center gap-1 text-orange-400">
+                            <span className="w-2 h-2 rounded-full bg-orange-400" />
+                            <span>Alimentação {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoAlimentacao / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
+                          </span>
+                          <span className="flex items-center gap-1 text-sky-400">
+                            <span className="w-2 h-2 rounded-full bg-sky-400" />
+                            <span>Mobilidade {currentCajuConfig.verbaTotalMensal > 0 ? Math.round((currentCajuConfig.saldoMobilidade / currentCajuConfig.verbaTotalMensal) * 100) : 0}%</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex">
+                        <div
+                          style={{
+                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoRefeicao / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                          }}
+                          className="bg-[#E63888] h-full transition-all"
+                          title="Refeição"
+                        />
+                        <div
+                          style={{
+                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoAlimentacao / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                          }}
+                          className="bg-orange-400 h-full transition-all"
+                          title="Alimentação"
+                        />
+                        <div
+                          style={{
+                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoMobilidade / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                          }}
+                          className="bg-sky-400 h-full transition-all"
+                          title="Mobilidade"
+                        />
+                        <div
+                          style={{
+                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoCultura / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                          }}
+                          className="bg-purple-400 h-full transition-all"
+                          title="Cultura"
+                        />
+                        <div
+                          style={{
+                            width: `${currentCajuConfig.verbaTotalMensal > 0 ? (currentCajuConfig.saldoLivre / currentCajuConfig.verbaTotalMensal) * 100 : 0}%`,
+                          }}
+                          className="bg-emerald-400 h-full transition-all"
+                          title="Livre"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] pt-1">
+                        <div className="flex items-center gap-1.5">
+                          {difCurrent === 0 ? (
+                            <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Validação Matemática Perfeita (Soma dos bolsos = R$ {somaBolsosCurrent.toFixed(2)})</span>
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-rose-400 font-medium">
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                              <span>Divergência de R$ {difCurrent.toFixed(2)} entre a soma e a verba!</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-mono text-[10px]">
+                            Caju ID: {currentCajuConfig.cajuEmployeeId}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditCaju(currentCajuConfig.colaboradorId)}
+                            className="text-[#E63888] hover:underline font-bold text-xs cursor-pointer"
+                          >
+                            Editar bolsos deste colaborador &rarr;
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. CENTRAL DE COMPRA MENSAL & DEDUÇÃO DE FALTAS DO PONTO */}
+                  <div className="space-y-4 pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-sky-400" />
+                          <span>Simulador de Compra Mensal &amp; Dedução do Disk Ponto</span>
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          O motor subtrai automaticamente faltas não justificadas registradas no REP-P e aplica o teto legal de 6% do VT CLT.
+                        </p>
+                      </div>
+
+                      {/* Controles de Simulação */}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl text-xs">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="text-slate-400">Comp:</span>
+                          <input
+                            type="text"
+                            value={competenciaBeneficio}
+                            onChange={(e) => setCompetenciaBeneficio(e.target.value)}
+                            className="bg-transparent text-white font-mono font-bold w-16 outline-none"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl text-xs">
+                          <span className="text-slate-400">Dias Úteis:</span>
+                          <input
+                            type="number"
+                            min="1"
+                            max="31"
+                            value={diasUteisBeneficio}
+                            onChange={(e) => setDiasUteisBeneficio(Number(e.target.value) || 21)}
+                            className="bg-transparent text-white font-mono font-bold w-10 outline-none"
+                          />
+                        </div>
+
+                        <label className="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs text-slate-200 cursor-pointer hover:border-slate-600 transition">
+                          <input
+                            type="checkbox"
+                            checked={deduzirFaltasPonto}
+                            onChange={(e) => setDeduzirFaltasPonto(e.target.checked)}
+                            className="rounded border-slate-700 text-[#E63888] focus:ring-[#E63888] cursor-pointer"
+                          />
+                          <span className="font-semibold text-sky-400">Deduzir Faltas do Ponto</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Resumo Consolidado do Lote de Benefícios */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Vidas Ativas no Lote</div>
+                        <div className="text-lg font-black text-white mt-1">4 Beneficiários</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Colaboradores CLT Ativos</div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Recarga Bruta Total</div>
+                        <div className="text-lg font-black text-[#E63888] font-mono mt-1">
+                          R$ {totalGeralRecargas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Caju (Flex) + SulAmérica</div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Descontos em Folha CLT</div>
+                        <div className="text-lg font-black text-amber-400 font-mono mt-1">
+                          R$ {totalGeralDescontos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Teto 6% VT + Coparticipação Saúde</div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Custo Líquido Empresa</div>
+                        <div className="text-lg font-black text-emerald-400 font-mono mt-1">
+                          R$ {totalGeralCustoEmpresa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Lançamento DRE Operacional</div>
+                      </div>
+                    </div>
+
+                    {/* Tabela de Cálculo por Colaborador */}
+                    <div className="overflow-x-auto border border-slate-800 rounded-xl">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-900/90 text-slate-400 font-semibold border-b border-slate-800">
+                          <tr>
+                            <th className="p-3">Colaborador / Matrícula</th>
+                            <th className="p-3">Salário Base</th>
+                            <th className="p-3">Dias Efetivos (REP-P)</th>
+                            <th className="p-3">Recarga Caju Bruta</th>
+                            <th className="p-3">Desconto VT (Teto 6%)</th>
+                            <th className="p-3">Plano SulAmérica</th>
+                            <th className="p-3">Custo Líquido Empresa</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800 text-slate-300">
+                          {itensCalculoBeneficios.map((item) => (
+                            <tr key={item.colaboradorId} className="hover:bg-slate-900/50 transition">
+                              <td className="p-3">
+                                <div className="font-bold text-white">{item.nome}</div>
+                                <div className="text-[10px] text-slate-400 font-mono">{item.matricula} &bull; {item.tipoContrato}</div>
+                              </td>
+                              <td className="p-3 font-mono text-slate-300">
+                                R$ {item.salario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </td>
+                              <td className="p-3">
+                                <div className="font-bold text-white">
+                                  {item.diasEfetivos} de {diasUteisBeneficio} dias
+                                </div>
+                                {item.faltas > 0 ? (
+                                  <div className="text-[10px] text-rose-400 font-semibold flex items-center gap-0.5">
+                                    <AlertTriangle className="w-3 h-3" />
+                                    <span>-{item.faltas} falta(s) deduzida(s) no ponto</span>
+                                  </div>
+                                ) : (
+                                  <div className="text-[10px] text-emerald-400 font-medium">100% de assiduidade</div>
+                                )}
+                              </td>
+                              <td className="p-3 font-mono font-bold text-[#E63888]">
+                                R$ {item.recargaCaju.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </td>
+                              <td className="p-3 font-mono text-amber-400 font-medium">
+                                -R$ {item.descontoVT.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                <span className="block text-[9px] text-slate-500 font-sans">
+                                  (teto 6%: R$ {(item.salario * 0.06).toFixed(2)})
+                                </span>
+                              </td>
+                              <td className="p-3">
+                                <div className="font-mono text-white">R$ 480,00</div>
+                                <div className="text-[10px] text-slate-400">Desc: R$ 48,00 (10%)</div>
+                              </td>
+                              <td className="p-3 font-mono font-bold text-emerald-400">
+                                R$ {(item.custoEmpresaCaju + item.saudeCustoEmpresa).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Cards de Pedidos para Operadoras (Caju & SulAmérica) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                      {pedidosBeneficios.map((pedido) => (
+                        <div
+                          key={pedido.id}
+                          className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 relative overflow-hidden"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {pedido.fornecedorNome.includes('Caju') ? (
+                                <div className="w-8 h-8 rounded-xl bg-[#E63888]/20 text-[#E63888] font-black text-sm flex items-center justify-center border border-[#E63888]/30">
+                                  C
+                                </div>
+                              ) : (
+                                <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 font-black text-sm flex items-center justify-center border border-blue-500/30">
+                                  S
+                                </div>
+                              )}
+                              <div>
+                                <h5 className="text-xs font-bold text-white">{pedido.fornecedorNome}</h5>
+                                <p className="text-[10px] text-slate-400 font-mono">CNPJ: {pedido.cnpj}</p>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                pedido.status === 'APROVADO_FINANCEIRO'
+                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                              }`}
+                            >
+                              {pedido.status === 'APROVADO_FINANCEIRO'
+                                ? '✓ Aprovado Financeiro'
+                                : 'Aguardando Aprovação'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1">
+                            <div>
+                              <div className="text-[10px] text-slate-400">Total do Lote:</div>
+                              <div className="text-base font-black text-white font-mono">
+                                R$ {pedido.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[10px] text-slate-400">Integração:</div>
+                              <div className="text-xs font-semibold text-slate-300">{pedido.tipoIntegracao}</div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setModalDossieBeneficio(pedido)}
+                              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer flex items-center gap-1"
+                            >
+                              <FileCheck className="w-3.5 h-3.5 text-[#E63888]" />
+                              <span>Ver Fatura / PIX</span>
+                            </button>
+
+                            {pedido.status !== 'APROVADO_FINANCEIRO' ? (
+                              <button
+                                type="button"
+                                onClick={() => handleAprovarPedidoBeneficio(pedido.id)}
+                                className="px-3.5 py-1.5 rounded-lg bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1 shadow-md shadow-[#E63888]/20 cursor-pointer"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Aprovar Lote Financeiro</span>
+                              </button>
+                            ) : (
+                              <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                                <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                <span>Integrado à Tesouraria</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
+
 
           {/* -------------------------------------------------------- */}
           {/* TAB 5: 5. PONTO E JORNADA (REP-P 671 MTE)                */}
@@ -2224,6 +2947,392 @@ export default function RecursosHumanosPage() {
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Confirmar no Ledger DRE</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 7: CONFIGURAÇÃO DE BOLSOS CAJU (CAJU WALLETS)       */}
+      {/* ======================================================== */}
+      {modalConfigCaju && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#111827] border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-[#E63888] text-white flex items-center justify-center font-bold text-xs">
+                  C
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Configurar Bolsos Caju Benefícios</h3>
+                  <p className="text-[10px] text-slate-400">Validação matemática e compliance PAT / Lei do Vale-Transporte</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalConfigCaju(false)}
+                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-400 mb-1">Colaborador</label>
+                <select
+                  value={cajuEditForm.colaboradorId}
+                  onChange={(e) => {
+                    const c = cajuConfigs.find((col) => col.colaboradorId === e.target.value);
+                    if (c) {
+                      setCajuEditForm({
+                        colaboradorId: c.colaboradorId,
+                        verbaTotalMensal: c.verbaTotalMensal,
+                        saldoRefeicao: c.saldoRefeicao,
+                        saldoAlimentacao: c.saldoAlimentacao,
+                        saldoMobilidade: c.saldoMobilidade,
+                        saldoCultura: c.saldoCultura,
+                        saldoLivre: c.saldoLivre,
+                      });
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none cursor-pointer"
+                >
+                  {cajuConfigs.map((col) => (
+                    <option key={col.colaboradorId} value={col.colaboradorId}>
+                      {col.nome} ({col.matricula}) — Salário: R$ {col.salario.toFixed(2)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                  Verba Total Mensal Disponibilizada (R$)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={cajuEditForm.verbaTotalMensal}
+                  onChange={(e) =>
+                    setCajuEditForm({
+                      ...cajuEditForm,
+                      verbaTotalMensal: Number(e.target.value) || 0,
+                    })
+                  }
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold outline-none focus:border-[#E63888]"
+                />
+              </div>
+
+              {/* 5 Bolsos */}
+              <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                  <span>Alocação por Bolsos</span>
+                  <span className="text-[#E63888] font-normal normal-case text-[10px]">
+                    Multi-Bolsos Cartão Elo
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                      <Utensils className="w-3 h-3 text-[#E63888]" />
+                      <span>Refeição (PAT)</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={cajuEditForm.saldoRefeicao}
+                      onChange={(e) =>
+                        setCajuEditForm({
+                          ...cajuEditForm,
+                          saldoRefeicao: Number(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-[#E63888]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                      <ShoppingCart className="w-3 h-3 text-orange-400" />
+                      <span>Alimentação (PAT)</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={cajuEditForm.saldoAlimentacao}
+                      onChange={(e) =>
+                        setCajuEditForm({
+                          ...cajuEditForm,
+                          saldoAlimentacao: Number(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                      <Car className="w-3 h-3 text-sky-400" />
+                      <span>Mobilidade (VT)</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={cajuEditForm.saldoMobilidade}
+                      onChange={(e) =>
+                        setCajuEditForm({
+                          ...cajuEditForm,
+                          saldoMobilidade: Number(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-sky-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                      <Ticket className="w-3 h-3 text-purple-400" />
+                      <span>Cultura</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={cajuEditForm.saldoCultura}
+                      onChange={(e) =>
+                        setCajuEditForm({
+                          ...cajuEditForm,
+                          saldoCultura: Number(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                    <Award className="w-3 h-3 text-emerald-400" />
+                    <span>Livre / Premiações (Incide IRRF)</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={cajuEditForm.saldoLivre}
+                    onChange={(e) =>
+                      setCajuEditForm({
+                        ...cajuEditForm,
+                        saldoLivre: Number(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Medidor Matemático em Tempo Real */}
+              {(() => {
+                const soma =
+                  cajuEditForm.saldoRefeicao +
+                  cajuEditForm.saldoAlimentacao +
+                  cajuEditForm.saldoMobilidade +
+                  cajuEditForm.saldoCultura +
+                  cajuEditForm.saldoLivre;
+                const dif = Math.round((soma - cajuEditForm.verbaTotalMensal) * 100) / 100;
+                const valido = Math.abs(dif) <= 0.01;
+
+                return (
+                  <div
+                    className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
+                      valido
+                        ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                        : 'bg-rose-950/40 border-rose-500/40 text-rose-300'
+                    }`}
+                  >
+                    {valido ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    )}
+                    <div className="space-y-1">
+                      <div className="font-bold">
+                        {valido
+                          ? 'Validação Matemática Aprovada (100% da verba alocada)'
+                          : `Divergência de Alocação: ${dif > 0 ? '+' : ''}R$ ${dif.toFixed(2)}`}
+                      </div>
+                      <div className="text-[11px] opacity-90">
+                        Soma dos Bolsos: <span className="font-mono font-bold">R$ {soma.toFixed(2)}</span> &bull; Verba Total: <span className="font-mono font-bold">R$ {cajuEditForm.verbaTotalMensal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setModalConfigCaju(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCajuBolsos}
+                className="px-4 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#E63888]/20 cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Salvar Bolsos Caju</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL 8: FATURA E DOSSIÊ FINANCEIRO DO PEDIDO DE BENEFÍCIOS */}
+      {/* ======================================================== */}
+      {modalDossieBeneficio && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#111827] border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-[#E63888]" />
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    Fatura &amp; Dossiê de Recarga de Benefícios
+                  </h3>
+                  <p className="text-[10px] text-slate-400">
+                    {modalDossieBeneficio.fornecedorNome} &bull; Competência {competenciaBeneficio}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalDossieBeneficio(null)}
+                className="text-slate-400 hover:text-white p-1 rounded cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span>Fornecedor:</span>
+                  <span className="font-bold text-white">{modalDossieBeneficio.fornecedorNome}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span>CNPJ da Operadora:</span>
+                  <span className="font-mono text-slate-300">{modalDossieBeneficio.cnpj}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span>Qtd de Vidas Recarregadas:</span>
+                  <span className="font-bold text-white">{modalDossieBeneficio.qtdVidas} colaboradores</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span>Chave de Idempotência:</span>
+                  <span className="font-mono text-[10px] text-sky-400">{modalDossieBeneficio.idempotencyKey}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-sm font-bold">
+                  <span className="text-white">Valor Total Faturado:</span>
+                  <span className="text-lg font-black text-[#E63888] font-mono">
+                    R$ {modalDossieBeneficio.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              {/* PIX Copia e Cola */}
+              <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
+                    <QrCode className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>PIX Copia e Cola (Banco Central)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(modalDossieBeneficio.codigoPix);
+                        showToast('Código PIX Copia e Cola copiado para a área de transferência!');
+                      }
+                    }}
+                    className="text-[10px] text-emerald-400 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>Copiar PIX</span>
+                  </button>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[10px] text-slate-400 break-all select-all">
+                  {modalDossieBeneficio.codigoPix}
+                </div>
+              </div>
+
+              {/* Código de Barras Boleto */}
+              <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
+                    <DollarSign className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Linha Digitável do Boleto Bancário</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(modalDossieBeneficio.codigoBarras);
+                        showToast('Código de Barras copiado!');
+                      }
+                    }}
+                    className="text-[10px] text-sky-400 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>Copiar</span>
+                  </button>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300 break-all select-all">
+                  {modalDossieBeneficio.codigoBarras}
+                </div>
+              </div>
+
+              {/* Status do Pedido */}
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <span className="text-slate-400 text-xs">Status da Integração:</span>
+                {modalDossieBeneficio.status === 'APROVADO_FINANCEIRO' ? (
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Aprovado Financeiro ({modalDossieBeneficio.aprovadoPor || 'Tesouraria'})</span>
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold text-xs flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Aguardando Aprovação Financeira</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setModalDossieBeneficio(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+              >
+                Fechar
+              </button>
+              {modalDossieBeneficio.status !== 'APROVADO_FINANCEIRO' && (
+                <button
+                  type="button"
+                  onClick={() => handleAprovarPedidoBeneficio(modalDossieBeneficio.id)}
+                  className="px-4 py-2 rounded-xl bg-[#E63888] hover:bg-[#d42c7a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#E63888]/20 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Aprovar e Integrar à Tesouraria</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

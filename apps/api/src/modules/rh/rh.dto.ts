@@ -57,3 +57,44 @@ export interface ApropriarCustoEventoInput {
   statusPagamento?: string;
   chavePixDestino?: string;
 }
+
+export interface ConfigurarBolsosCajuInput {
+  colaboradorId: string;
+  cajuEmployeeId?: string;
+  verbaTotalMensal: number;
+  saldoRefeicao: number;
+  saldoAlimentacao: number;
+  saldoMobilidade: number;
+  saldoCultura?: number;
+  saldoLivre?: number;
+}
+
+export interface VincularBeneficioColaboradorInput {
+  colaboradorId: string;
+  beneficioId: string;
+  valorDiario?: number;
+  valorMensal?: number;
+  status?: string;
+}
+
+export interface CalcularCompraBeneficiosInput {
+  competencia: string; // Ex: "2026-10"
+  diasUteis?: number; // Padrão: 21
+  deduzirFaltasPonto?: boolean; // Padrão: true
+  fornecedorId?: string;
+}
+
+export interface CriarPedidoBeneficioInput {
+  fornecedorId: string;
+  competencia: string;
+  diasUteis: number;
+  valorTotal: number;
+  qtdVidas: number;
+  batchIdCaju?: string;
+}
+
+export interface AprovarPedidoBeneficioInput {
+  pedidoId: string;
+  aprovadoPor: string;
+}
+

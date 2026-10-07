@@ -4045,6 +4045,8 @@ model ColaboradorRH {
   bancosHoras       BancoHorasRH[]
   custosEventos     CustoMaoDeObraEventoRH[]
   auditorias        RHAuditLogRH[]           @relation("ColaboradorAfetado")
+  beneficios        ColaboradorBeneficioRH[]
+  beneficioCaju     BeneficioCajuRH?
 
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
@@ -4208,6 +4210,103 @@ model RHAuditLogRH {
 
   @@index([tenantId, acao])
   @@map("rh_audit_logs")
+  @@schema("rh")
+}
+
+model FornecedorBeneficioRH {
+  id              String                    @id @default(uuid()) @db.Uuid
+  tenantId        String                    @db.Uuid
+  nomeFantasia    String                    // Ex: "Caju Benefícios", "Flash", "Ticket", "SPTrans", "SulAmérica"
+  cnpj            String
+  tipoIntegracao  String                    @default("API_REST") // API_REST, ARQUIVO_TXT, CNAB
+  ativo           Boolean                   @default(true)
+  beneficios      BeneficioCatalogoRH[]
+  pedidosCompra   PedidoCompraBeneficioRH[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@unique([tenantId, cnpj])
+  @@map("rh_fornecedores_beneficios")
+  @@schema("rh")
+}
+
+model BeneficioCatalogoRH {
+  id                  String                    @id @default(uuid()) @db.Uuid
+  tenantId            String                    @db.Uuid
+  fornecedorId        String                    @db.Uuid
+  fornecedor          FornecedorBeneficioRH     @relation(fields: [fornecedorId], references: [id])
+  nome                String                    // Ex: "Vale Transporte", "Cartão Flexível Caju", "Plano de Saúde"
+  tipo                String                    // TRANSPORTE, ALIMENTACAO, SAUDE, FLEXIVEL
+  regraDescontoFolha  String                    // CLT_VT_6, VALOR_FIXO, PERCENTUAL_COPARTICIPACAO, ISENTO
+  ativo               Boolean                   @default(true)
+  vinculos            ColaboradorBeneficioRH[]
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  @@index([tenantId, fornecedorId])
+  @@map("rh_beneficios_catalogo")
+  @@schema("rh")
+}
+
+model ColaboradorBeneficioRH {
+  id              String               @id @default(uuid()) @db.Uuid
+  tenantId        String               @db.Uuid
+  colaboradorId   String               @db.Uuid
+  colaborador     ColaboradorRH        @relation(fields: [colaboradorId], references: [id])
+  beneficioId     String               @db.Uuid
+  beneficio       BeneficioCatalogoRH  @relation(fields: [beneficioId], references: [id])
+  valorDiario     Decimal              @default(0.0) @db.Decimal(10, 2)
+  valorMensal     Decimal              @default(0.0) @db.Decimal(10, 2)
+  status          String               @default("ATIVO") // ATIVO, SUSPENSO, CANCELADO
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@unique([tenantId, colaboradorId, beneficioId])
+  @@map("rh_colaborador_beneficios")
+  @@schema("rh")
+}
+
+model PedidoCompraBeneficioRH {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  tenantId             String                 @db.Uuid
+  fornecedorId         String                 @db.Uuid
+  fornecedor           FornecedorBeneficioRH  @relation(fields: [fornecedorId], references: [id])
+  competencia          String                 // "2026-10"
+  diasUteis            Int                    @default(21)
+  valorTotal           Decimal                @db.Decimal(12, 2)
+  qtdVidas             Int
+  status               String                 @default("AGUARDANDO_APROVACAO_FINANCEIRA") // AGUARDANDO_APROVACAO_FINANCEIRA, APROVADO_FINANCEIRO, PROCESSADO_OPERADORA
+  codigoPix            String?
+  codigoBarrasBoleto   String?
+  batchIdCaju          String?
+  aprovadoPor          String?
+  aprovadoEm           DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  @@index([tenantId, competencia])
+  @@map("rh_pedidos_compra_beneficios")
+  @@schema("rh")
+}
+
+model BeneficioCajuRH {
+  id                  String         @id @default(uuid()) @db.Uuid
+  tenantId            String         @db.Uuid
+  colaboradorId       String         @unique @db.Uuid
+  colaborador         ColaboradorRH  @relation(fields: [colaboradorId], references: [id])
+  cajuEmployeeId      String?        // ID retornado pela API da Caju na criação
+  verbaTotalMensal    Decimal        @db.Decimal(10, 2)
+  saldoRefeicao       Decimal        @default(0.0) @db.Decimal(10, 2) // PAT (Restaurantes)
+  saldoAlimentacao    Decimal        @default(0.0) @db.Decimal(10, 2) // PAT (Supermercados)
+  saldoMobilidade     Decimal        @default(0.0) @db.Decimal(10, 2) // Lei do VT (Apps, Postos)
+  saldoCultura        Decimal        @default(0.0) @db.Decimal(10, 2)
+  saldoLivre          Decimal        @default(0.0) @db.Decimal(10, 2) // Premiações/Bônus (Incide IRRF)
+  status              String         @default("ATIVO")
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([tenantId, status])
+  @@map("rh_beneficios_caju")
   @@schema("rh")
 }
 

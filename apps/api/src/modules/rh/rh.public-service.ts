@@ -29,4 +29,12 @@ export class RHPublicService {
   async obterResumoExecutivo(tenantId: string) {
     return this.rhService.obterResumoExecutivo(tenantId);
   }
+
+  /**
+   * Retorna o lote de compra de benefícios calculado para a competência.
+   */
+  async calcularCompraBeneficios(tenantId: string, competencia: string, diasUteis?: number) {
+    return this.rhService.calcularCompraBeneficios(tenantId, { competencia, diasUteis });
+  }
 }
+
